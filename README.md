@@ -1,4 +1,4 @@
-# OTAS POS
+# PYI_TAW_TAR POS
 
 A lightweight, offline-capable Point of Sale system tailored for mobile accessory shops with dual-location inventory management.
 
