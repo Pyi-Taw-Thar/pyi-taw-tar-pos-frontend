@@ -77,6 +77,7 @@ export const en = {
     groupFinance: "Finance & Reports",
     groupSystem: "System",
     checkout: "Checkout (POS)",
+    quickSale: "Quick Sale",
     directSale: "Direct Sale",
     createQuotation: "Create Quotation",
     inventory: "Inventory",
@@ -175,6 +176,14 @@ export const en = {
     unitPrice: "Unit price",
     customPrice: "custom price",
     resetToListPrice: "Reset to list price",
+  },
+  quickSale: {
+    brands: "Brands",
+    brandProducts: "Products",
+    selectBrand: "Select a brand to start selling",
+    noBrands: "No brands available",
+    noProducts: "No products found for this brand",
+    backToBrands: "Back to Brands",
   },
   inventory: {
     title: "Product Inventory",

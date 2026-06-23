@@ -78,6 +78,7 @@ export const my = {
     groupFinance: "ငွေကြေး နှင့် အစီရင်ခံစာ",
     groupSystem: "စနစ်",
     checkout: "ဘောင်ချာထုတ်",
+    quickSale: "အမြန်ရောင်း",
     directSale: "တိုက်ရိုက် ရောင်းချမှု",
     createQuotation: "Quotation ဖန်တီးမည်",
     inventory: "ကုန်ပစ္စည်းစာရင်း",
@@ -176,6 +177,14 @@ export const my = {
     unitPrice: "ယူနစ်စျေးနှုန်း",
     customPrice: "စိတ်ကြိုက်စျေး",
     resetToListPrice: "စာရင်းစျေးသို့ ပြန်ထားမည်",
+  },
+  quickSale: {
+    brands: "အမှတ်တံဆိပ်များ",
+    brandProducts: "ကုန်ပစ္စည်းများ",
+    selectBrand: "စတင်ရောင်းချရန် အမှတ်တံဆိပ်တစ်ခုကို ရွေးချယ်ပါ",
+    noBrands: "အမှတ်တံဆိပ်များ မရှိသေးပါ",
+    noProducts: "ဤအမှတ်တံဆိပ်အတွက် ကုန်ပစ္စည်းမရှိပါ",
+    backToBrands: "နောက်သို့",
   },
   inventory: {
     title: "ကုန်ပစ္စည်းစာရင်း",

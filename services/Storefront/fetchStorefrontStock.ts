@@ -7,6 +7,7 @@ export interface StorefrontStockInventory {
   productCode: string;
   SKU: string;
   category: string;
+  brand?: string;
   profitMargin: number | null;
   profitAmount: number | null;
   sellingPrice?: number;

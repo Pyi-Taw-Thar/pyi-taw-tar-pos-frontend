@@ -7,6 +7,7 @@ import { LanguageProvider } from "./context/LanguageContext";
 import { Sidebar } from "./components/Sidebar";
 import { LanguageSwitcher } from "./components/LanguageSwitcher";
 import { POS } from "./pages/POS";
+import { QuickSale } from "./pages/QuickSale";
 import { DirectSale } from "./pages/DirectSale";
 import { Warehouse } from "./pages/Warehouse";
 import { WarehouseDetail } from "./pages/WarehouseDetail";
@@ -86,6 +87,7 @@ const AppLayout: React.FC = () => {
         <Routes>
           <Route path="/" element={<Navigate to="/pos" replace />} />
           <Route path="/pos" element={<POS />} />
+          <Route path="/quick-sale" element={<QuickSale />} />
           <Route path="/direct-sale" element={<DirectSale />} />
           <Route path="/inventory" element={<Inventory />} />
           <Route path="/warehouse" element={<Warehouse />} />

@@ -87,6 +87,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         icon: ShoppingCart,
         children: [
           { path: "/pos", label: t("sidebar.checkout"), icon: ShoppingCart },
+          { path: "/quick-sale", label: t("sidebar.quickSale"), icon: ShoppingBag },
           // {
           //   path: "/direct-sale",
           //   label: t("sidebar.directSale"),
