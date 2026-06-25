@@ -13,6 +13,7 @@ export interface StorefrontStockInventory {
   sellingPrice?: number;
   unitOfMeasure?: string;
   uomConversions?: UomConversion[];
+  wholesalePrices?: Array<{ unit: string; quantity: number; price: number }>;
   ecommerceMaxPerUser?: number;
   ecommercePurchaseResetMode?: "manual" | "timeline";
   ecommercePurchaseResetDays?: number;

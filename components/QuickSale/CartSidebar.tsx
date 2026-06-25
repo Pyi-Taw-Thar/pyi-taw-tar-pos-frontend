@@ -1,13 +1,12 @@
-import React, { useState } from "react";
+import React from "react";
 import { Trash2 } from "lucide-react";
 import { useLanguage } from "../../context/LanguageContext";
 import {
   getCartLineId,
-  getCartLineUnitPrice,
+  getCartLineEffectivePrice,
   getCartLineMaxQty,
 } from "../../utils/posCartUom";
 import type { UomCartItem } from "../../utils/posCartUom";
-import { CartProductModal } from "./CartProductModal";
 
 interface CartSidebarProps {
   cart: UomCartItem[];
@@ -20,6 +19,7 @@ interface CartSidebarProps {
   onSetCartLineUnit: (lineId: string, unit: string) => void;
   onRemoveFromCart: (lineId: string) => void;
   onOpenCheckout: () => void;
+  onSelectLine: (lineId: string) => void;
 }
 
 export const CartSidebar: React.FC<CartSidebarProps> = ({
@@ -33,12 +33,9 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
   onSetCartLineUnit,
   onRemoveFromCart,
   onOpenCheckout,
+  onSelectLine,
 }) => {
   const { t } = useLanguage();
-  const [selectedLineId, setSelectedLineId] = useState<string | null>(null);
-  const selectedItem = selectedLineId
-    ? cart.find((item) => getCartLineId(item) === selectedLineId) ?? null
-    : null;
 
   return (
     <div className="flex-1 bg-white flex flex-col border-r border-[#E9ECEF] shadow-xl h-[calc(100vh-60px)] sticky top-0">
@@ -65,13 +62,13 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
             <tbody>
               {cart.map((item, index) => {
                 const lineId = getCartLineId(item);
-                const unitPrice = getCartLineUnitPrice(item);
+                const unitPrice = getCartLineEffectivePrice(item);
                 const maxQty = getCartLineMaxQty(item);
                 return (
                   <tr
                     key={lineId}
                     className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer"
-                    onClick={() => setSelectedLineId(lineId)}
+                    onClick={() => onSelectLine(lineId)}
                   >
                     <td className="px-4 py-2 text-gray-500">{index + 1}</td>
                     <td className="px-4 py-2 font-medium text-gray-800">
@@ -137,19 +134,6 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
           {t("pos.proceedToCheckout")}
         </button>
       </div>
-
-      <CartProductModal
-        isOpen={selectedLineId !== null}
-        item={selectedItem}
-        onClose={() => setSelectedLineId(null)}
-        onUnitChange={onSetCartLineUnit}
-        onSetQty={onSetQty}
-        onUpdateQty={onUpdateQty}
-        onRemoveFromCart={(lineId) => {
-          onRemoveFromCart(lineId);
-          setSelectedLineId(null);
-        }}
-      />
     </div>
   );
 };

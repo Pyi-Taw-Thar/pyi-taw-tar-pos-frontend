@@ -1,9 +1,10 @@
-import React from "react";
-import { X, Minus, Plus } from "lucide-react";
+import React, { useState } from "react";
+import { X, Minus, Plus, ChevronDown } from "lucide-react";
 import { CartUnitSelector } from "../UOM/CartUnitSelector";
 import {
   getCartLineId,
   getCartLineUnitPrice,
+  getCartLineEffectivePrice,
   getCartLineMaxQty,
   getInventoryUomFromStock,
 } from "../../utils/posCartUom";
@@ -28,12 +29,22 @@ export const CartProductModal: React.FC<CartProductModalProps> = ({
   onUpdateQty,
   onRemoveFromCart,
 }) => {
+  const [showWholesale, setShowWholesale] = useState(false);
+
   if (!isOpen || !item) return null;
 
   const lineId = getCartLineId(item);
   const { baseUnit, conversions } = getInventoryUomFromStock(item.stockItem);
   const unitPrice = getCartLineUnitPrice(item);
   const maxQty = getCartLineMaxQty(item);
+  const sellingPrice = item.stockItem.inventoryId.sellingPrice || 0;
+
+  const wholesalePrices =
+    item.stockItem.inventoryId.wholesalePrices
+      ?.filter((w) => w.unit === item.selectedUnit)
+      .sort((a, b) => a.quantity - b.quantity) || [];
+
+  const effectiveUnitPrice = getCartLineEffectivePrice(item);
 
   return (
     <div
@@ -110,17 +121,71 @@ export const CartProductModal: React.FC<CartProductModalProps> = ({
                 Sale Price
               </label>
               <div className="border border-gray-300 rounded px-3 py-1.5 text-sm font-medium text-gray-800 bg-gray-50">
-                {unitPrice.toLocaleString()}
+                {effectiveUnitPrice.toLocaleString()}
               </div>
             </div>
 
             <div className="space-y-1">
               <label className="text-xs text-gray-500 uppercase">Amount</label>
               <div className="border border-gray-300 rounded px-3 py-1.5 text-sm font-bold text-gray-900 bg-gray-50">
-                {(unitPrice * item.qty).toLocaleString()}
+                {(effectiveUnitPrice * item.qty).toLocaleString()}
               </div>
             </div>
           </div>
+
+          {wholesalePrices.length > 0 && (
+            <div className="mt-4">
+              <button
+                onClick={() => setShowWholesale(!showWholesale)}
+                className="flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
+              >
+                <ChevronDown
+                  className={`w-3.5 h-3.5 transition-transform ${showWholesale ? "rotate-180" : ""}`}
+                />
+                Wholesale Prices
+              </button>
+              {showWholesale && (
+                <div className="mt-2 border border-dark-200 rounded-lg overflow-hidden">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="bg-dark-100 text-left text-dark-600">
+                        <th className="px-3 py-1.5">Min Qty</th>
+                        <th className="px-3 py-1.5 text-right">Price</th>
+                        <th className="px-3 py-1.5 text-right">Save</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {wholesalePrices.map((tier, idx) => {
+                          const base =
+                            unitPrice > 0 ? unitPrice : sellingPrice;
+                          const savePercent =
+                            base > 0
+                              ? Math.round((1 - tier.price / base) * 100)
+                              : 0;
+                          const isBest = tier.price === effectiveUnitPrice && item.qty >= tier.quantity;
+                          return (
+                            <tr
+                              key={idx}
+                              className={`border-t border-dark-200 ${isBest ? "bg-primary/10" : ""}`}
+                            >
+                              <td className="px-3 py-1.5 font-medium text-gray-800">
+                                {tier.quantity}+
+                              </td>
+                              <td className="px-3 py-1.5 text-right text-gray-800">
+                                {tier.price.toLocaleString()}
+                              </td>
+                              <td className={`px-3 py-1.5 text-right font-medium ${isBest ? "text-primary" : "text-green-600"}`}>
+                                {savePercent > 0 ? `-${savePercent}%` : "-"}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="px-5 py-4 border-t bg-gray-50 flex items-center gap-3 justify-end">
@@ -131,10 +196,7 @@ export const CartProductModal: React.FC<CartProductModalProps> = ({
             Cancel
           </button>
           <button
-            onClick={() => {
-              onRemoveFromCart(lineId);
-              onClose();
-            }}
+            onClick={onClose}
             className="px-5 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary/90 transition-colors"
           >
             Confirm

@@ -47,6 +47,16 @@ export function getCartLineUnitPrice(item: UomCartItem): number {
   );
 }
 
+export function getCartLineEffectivePrice(item: UomCartItem): number {
+  const unitPrice = getCartLineUnitPrice(item);
+  const tiers =
+    item.stockItem.inventoryId.wholesalePrices
+      ?.filter((w) => w.unit === item.selectedUnit)
+      .sort((a, b) => a.quantity - b.quantity) || [];
+  const best = [...tiers].reverse().find((t) => item.qty >= t.quantity);
+  return best ? best.price : unitPrice;
+}
+
 export function getCartLineMaxQty(item: UomCartItem): number {
   const { baseUnit, conversions } = getInventoryUomFromStock(item.stockItem);
   return getAvailableQuantityInUnit(
@@ -69,5 +79,5 @@ export function cartLineToOrderProduct(item: UomCartItem) {
 }
 
 export function cartLineSubtotal(item: UomCartItem): number {
-  return getCartLineUnitPrice(item) * item.qty;
+  return getCartLineEffectivePrice(item) * item.qty;
 }

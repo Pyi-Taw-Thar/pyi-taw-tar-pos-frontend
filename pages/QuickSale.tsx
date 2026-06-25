@@ -1,15 +1,23 @@
-import React from "react";
+import React, { useState } from "react";
 import { Store, Loader2 } from "lucide-react";
 import { useQuickSale } from "../hooks/useQuickSale";
 import { useLanguage } from "../context/LanguageContext";
 import { BrandPanel } from "../components/QuickSale/BrandPanel";
 import { CartSidebar } from "../components/QuickSale/CartSidebar";
+import { CartProductModal } from "../components/QuickSale/CartProductModal";
 import { CheckoutModal } from "../components/QuickSale/CheckoutModal";
 import { SuccessModal } from "../components/QuickSale/SuccessModal";
+import { getCartLineId } from "../utils/posCartUom";
+import { cartLineKey } from "../utils/uom";
 
 export const QuickSale: React.FC = () => {
   const { t } = useLanguage();
   const pos = useQuickSale();
+  const [selectedLineId, setSelectedLineId] = useState<string | null>(null);
+
+  const selectedItem = selectedLineId
+    ? pos.cart.find((item) => getCartLineId(item) === selectedLineId) ?? null
+    : null;
 
   if (pos.storefronts.length === 0) {
     return (
@@ -35,6 +43,7 @@ export const QuickSale: React.FC = () => {
         onSetCartLineUnit={pos.setCartLineUnit}
         onRemoveFromCart={pos.removeFromCart}
         onOpenCheckout={() => pos.setShowCheckoutModal(true)}
+        onSelectLine={setSelectedLineId}
       />
 
       <BrandPanel
@@ -55,6 +64,25 @@ export const QuickSale: React.FC = () => {
         loading={pos.loading}
         filteredProducts={pos.filteredProducts}
         onAddToCart={pos.addToCart}
+      />
+
+      <CartProductModal
+        isOpen={selectedLineId !== null}
+        item={selectedItem}
+        onClose={() => setSelectedLineId(null)}
+        onUnitChange={(lineId, unit) => {
+          pos.setCartLineUnit(lineId, unit);
+          const item = pos.cart.find((i) => getCartLineId(i) === lineId);
+          if (item) {
+            setSelectedLineId(cartLineKey(item.stockItem._id, unit));
+          }
+        }}
+        onSetQty={pos.setQty}
+        onUpdateQty={pos.updateQty}
+        onRemoveFromCart={(lineId) => {
+          pos.removeFromCart(lineId);
+          setSelectedLineId(null);
+        }}
       />
 
       {pos.isProcessing && (
