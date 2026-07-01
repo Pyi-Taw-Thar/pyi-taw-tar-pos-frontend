@@ -25,7 +25,7 @@ import {
   createCartLine,
   getCartLineId,
   getCartLineMaxQty,
-  getCartLineUnitPrice,
+  getCartLineEffectivePrice,
   getInventoryUomFromStock,
 } from "../utils/posCartUom";
 
@@ -60,13 +60,15 @@ export function usePOS() {
   const [itemsPerPage] = useState(100);
 
   const [cart, setCart] = useState<CartItem[]>([]);
+  console.log("cart", cart);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [paidAmount, setPaidAmount] = useState<number>(0);
   const [paymentType, setPaymentType] = useState<"paid" | "credit">("paid");
   const [creditPersonas, setCreditPersonas] = useState<CreditPersona[]>([]);
-  const [selectedCreditPersonId, setSelectedCreditPersonId] = useState<string>("");
+  const [selectedCreditPersonId, setSelectedCreditPersonId] =
+    useState<string>("");
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successOrderNumber, setSuccessOrderNumber] = useState("");
@@ -203,7 +205,9 @@ export function usePOS() {
           return prev;
         }
         return prev.map((item) =>
-          getCartLineId(item) === lineId ? { ...item, qty: item.qty + 1 } : item,
+          getCartLineId(item) === lineId
+            ? { ...item, qty: item.qty + 1 }
+            : item,
         );
       }
       return [...prev, newLine];
@@ -367,18 +371,19 @@ export function usePOS() {
       };
 
       const result = await createOrder(orderPayload);
+      console.log("result", result);
 
       if (result.success) {
         const receiptData = {
           date: new Date().toISOString(),
           invoiceNumber: result.data?.orderNumber || `INV-${Date.now()}`,
-          storefrontName: "HONGCHI Myanmar",
+          // storefrontName: "HONGCHI Myanmar",
           items: cart.map((i) => ({
             name: i.stockItem.inventoryId.productName,
             code: i.stockItem.inventoryId.productCode,
             qty: i.qty,
             unit: i.selectedUnit,
-            price: getCartLineUnitPrice(i),
+            price: getCartLineEffectivePrice(i),
           })),
           subtotal,
           discountPercent: discount,

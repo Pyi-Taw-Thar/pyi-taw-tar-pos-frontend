@@ -25,7 +25,7 @@ import {
   createCartLine,
   getCartLineId,
   getCartLineMaxQty,
-  getCartLineUnitPrice,
+  getCartLineEffectivePrice,
   getInventoryUomFromStock,
 } from "../utils/posCartUom";
 
@@ -67,7 +67,8 @@ export function useQuickSale() {
   const [paidAmount, setPaidAmount] = useState<number>(0);
   const [paymentType, setPaymentType] = useState<"paid" | "credit">("paid");
   const [creditPersonas, setCreditPersonas] = useState<CreditPersona[]>([]);
-  const [selectedCreditPersonId, setSelectedCreditPersonId] = useState<string>("");
+  const [selectedCreditPersonId, setSelectedCreditPersonId] =
+    useState<string>("");
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successOrderNumber, setSuccessOrderNumber] = useState("");
@@ -181,23 +182,31 @@ export function useQuickSale() {
     toast.success(t("pos.productsRefreshed"));
   };
 
-  const uniqueBrands = [...new Set(allStockItems
-    .map((item) => item.inventoryId?.brand)
-    .filter((b): b is string => !!b)
-  )];
+  const uniqueBrands = [
+    ...new Set(
+      allStockItems
+        .map((item) => item.inventoryId?.brand)
+        .filter((b): b is string => !!b),
+    ),
+  ];
 
   const filteredProducts = allStockItems.filter((item) => {
     const hideProduct = item.inventoryId?._id === "69a15d55218ec5ff9a3fe4a3";
     if (hideProduct) return false;
-    if (selectedBrand && item.inventoryId?.brand !== selectedBrand) return false;
+    if (selectedBrand && item.inventoryId?.brand !== selectedBrand)
+      return false;
     return true;
   });
 
   const selectedBrandCategories = selectedBrand
-    ? [...new Set(allStockItems
-        .filter((item) => item.inventoryId?.brand === selectedBrand)
-        .map((item) => item.inventoryId?.category)
-        .filter((c): c is string => !!c))]
+    ? [
+        ...new Set(
+          allStockItems
+            .filter((item) => item.inventoryId?.brand === selectedBrand)
+            .map((item) => item.inventoryId?.category)
+            .filter((c): c is string => !!c),
+        ),
+      ]
     : categories;
 
   const addToCart = (stockItem: StorefrontStockItem) => {
@@ -218,7 +227,9 @@ export function useQuickSale() {
           return prev;
         }
         return prev.map((item) =>
-          getCartLineId(item) === lineId ? { ...item, qty: item.qty + 1 } : item,
+          getCartLineId(item) === lineId
+            ? { ...item, qty: item.qty + 1 }
+            : item,
         );
       }
       return [...prev, newLine];
@@ -382,6 +393,7 @@ export function useQuickSale() {
       };
 
       const result = await createOrder(orderPayload);
+      console.log("result", result);
 
       if (result.success) {
         const receiptData = {
@@ -393,7 +405,7 @@ export function useQuickSale() {
             code: i.stockItem.inventoryId.productCode,
             qty: i.qty,
             unit: i.selectedUnit,
-            price: getCartLineUnitPrice(i),
+            price: getCartLineEffectivePrice(i),
           })),
           subtotal,
           discountPercent: discount,
