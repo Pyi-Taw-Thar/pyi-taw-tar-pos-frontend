@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { Product, ProductCategory } from "../types";
 import { createProduct } from "../services/Inventory/createProduct";
 import { updateProduct } from "../services/Inventory/updateProduct";
+import { uploadProductImages } from "../services/Inventory/updateProductImages";
 import { updateProductStatus } from "../services/Inventory/updateProductStatus";
 import { fetchProducts } from "../services/Inventory/fetchProducts";
 import { transferInventoryToWarehouse } from "../services/Inventory/transferInventoryToWarehouse";
@@ -338,6 +339,10 @@ export const Inventory: React.FC = () => {
         }
 
         await updateProduct(editingId, apiPayload);
+
+        if (formData.images && formData.images.length > 0) {
+          await uploadProductImages(editingId, formData.images);
+        }
 
         setIsModalOpen(false);
         setEditingId(null);
