@@ -5,6 +5,7 @@ import { Product } from "../../types";
 import { UomConversion } from "../../types/uom";
 import { useLanguage } from "../../context/LanguageContext";
 import { UomConversionsEditor } from "./UomConversionsEditor";
+import { deleteProductImage } from "../../services/Inventory/updateProductImages";
 
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_IMAGE_SIZE_MB = 5;
@@ -90,6 +91,13 @@ export interface ApiProduct {
   reorderPoint?: number;
   reorderQuantity?: number;
   taxRate?: number;
+  images?: Array<{
+    url: string;
+    key?: string;
+    isPrimary?: boolean;
+    _id?: string;
+    id?: string;
+  }>;
   status?: string;
   tags?: string[];
   note?: string;
@@ -127,6 +135,9 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
   const [isImageDragOver, setIsImageDragOver] = useState(false);
+  const [existingImages, setExistingImages] = useState<
+    Array<{ url: string; key?: string; isPrimary?: boolean; _id?: string; id?: string }>
+  >([]);
 
   // Combobox states for category and subCategory
   const [categoryInput, setCategoryInput] = useState("");
@@ -185,6 +196,17 @@ export const ProductModal: React.FC<ProductModalProps> = ({
       urls.forEach((url) => URL.revokeObjectURL(url));
     };
   }, [formData.images]);
+
+  useEffect(() => {
+    if (editingId) {
+      const product = apiProducts.find(
+        (p) => p._id === editingId || p.id === editingId,
+      );
+      setExistingImages(product?.images || []);
+    } else {
+      setExistingImages([]);
+    }
+  }, [editingId, apiProducts]);
 
   const wholesalePrices = formData.wholesalePrices || [];
   const productImages = formData.images || [];
@@ -635,6 +657,53 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                   </p>
                 </div>
               </div>
+
+              {editingId && existingImages.length > 0 && (
+                <div className="mb-4">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+                    Existing images ({existingImages.length})
+                  </p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                    {existingImages.map((img) => (
+                      <div
+                        key={img._id || img.id || img.url}
+                        className="group relative aspect-square rounded-xl overflow-hidden border border-slate-200 bg-slate-100 shadow-sm"
+                      >
+                        <img
+                          src={img.url}
+                          alt="Existing"
+                          className="w-full h-full object-cover"
+                        />
+                        {img.isPrimary && (
+                          <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 text-[9px] font-bold text-white bg-blue-600 rounded">
+                            PRIMARY
+                          </span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            const imgId = img._id || img.id;
+                            if (!imgId) return;
+                            try {
+                              await deleteProductImage(editingId, imgId);
+                              setExistingImages((prev) =>
+                                prev.filter((i) => (i._id || i.id) !== imgId),
+                              );
+                              toast.success("Image deleted");
+                            } catch {
+                              toast.error("Failed to delete image");
+                            }
+                          }}
+                          className="absolute top-1.5 right-1.5 p-1.5 rounded-full bg-black/50 text-white opacity-0 group-hover:opacity-100 hover:bg-red-600 transition-all"
+                          aria-label="Delete image"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <input
                 ref={imageInputRef}
