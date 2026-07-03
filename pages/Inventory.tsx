@@ -413,6 +413,9 @@ export const Inventory: React.FC = () => {
           ({ unit, quantity, price }) => ({ unit, quantity, price }),
         );
       }
+      if (formData.images && formData.images.length > 0) {
+        apiPayload.images = formData.images;
+      }
 
       await createProduct(apiPayload);
 
