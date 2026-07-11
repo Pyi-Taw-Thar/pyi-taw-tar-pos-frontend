@@ -290,16 +290,6 @@ export const EcommerceOrderDetailModal: React.FC<
                 </div>
               </div>
 
-              {primaryProductImage && (
-                <div className="mb-6 border rounded-lg overflow-hidden bg-slate-50">
-                  <img
-                    src={primaryProductImage}
-                    alt={order.products[0]?.inventoryId?.productName}
-                    className="w-full h-44 object-cover"
-                  />
-                </div>
-              )}
-
               {/* Note */}
               {order.note && (
                 <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
