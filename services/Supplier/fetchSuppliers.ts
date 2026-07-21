@@ -1,26 +1,54 @@
 import axios from "../axios";
 import { Supplier } from "../../types";
 
-interface FetchSuppliersResponse {
+export interface SupplierQueryParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  township?: string;
+  isCredit?: boolean | string;
+  isConsign?: boolean | string;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+  isDeleted?: boolean;
+}
+
+export interface PaginationMeta {
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  itemsPerPage: number;
+}
+
+export interface FetchSuppliersResponse {
   success: boolean;
   message: string;
   data: Supplier[];
+  pagination?: PaginationMeta;
 }
 
 /**
- * Fetch all supplier profiles via API
- * @param {boolean} isDeleted - Optional: Set to true to fetch soft-deleted suppliers
- * @returns {Promise<FetchSuppliersResponse>} Response from API
+ * Fetch supplier profiles via API with filter & query params
  */
 export const fetchSuppliers = async (
-  isDeleted?: boolean
+  params?: boolean | SupplierQueryParams
 ): Promise<FetchSuppliersResponse> => {
   try {
-    const url =
-      isDeleted !== undefined
-        ? `/supplier-profile?isDeleted=${isDeleted}`
-        : "/supplier-profile";
-    const response = await axios.get(url);
+    let queryParams: Record<string, any> = {};
+
+    if (typeof params === "boolean") {
+      if (params) queryParams.isDeleted = true;
+    } else if (params && typeof params === "object") {
+      Object.entries(params).forEach(([key, val]) => {
+        if (val !== "" && val !== undefined && val !== null) {
+          queryParams[key] = val;
+        }
+      });
+    }
+
+    const response = await axios.get("/supplier-profile", {
+      params: queryParams,
+    });
 
     return response.data;
   } catch (error) {

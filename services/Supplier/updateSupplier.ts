@@ -2,7 +2,15 @@ import axios from "../axios";
 
 export interface UpdateSupplierPayload {
   supplierName?: string;
+  shortDesc?: string;
+  companyName?: string;
   contactNumber?: string;
+  email?: string;
+  address?: string;
+  township?: string;
+  isCredit?: boolean;
+  dueInDays?: number;
+  isConsign?: boolean;
 }
 
 interface UpdateSupplierResponse {

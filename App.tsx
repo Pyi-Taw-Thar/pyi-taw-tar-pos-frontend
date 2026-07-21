@@ -23,6 +23,7 @@ import { Credits } from "./pages/Credits";
 import { CreditDetail } from "./pages/CreditDetail";
 import { Expenses } from "./pages/Expenses";
 import { Suppliers } from "./pages/Suppliers";
+import { SupplierDetail } from "./pages/SupplierDetail";
 import { Orders } from "./pages/Orders";
 import { DirectSaleOrders } from "./pages/DirectSaleOrders";
 import { EcommerceOrders } from "./pages/EcommerceOrders";
@@ -96,6 +97,7 @@ const AppLayout: React.FC = () => {
           <Route path="/storefront/:id" element={<StorefrontDetail />} />
           <Route path="/storefront/:storeId/product/:productId" element={<StorefrontProductDetail />} />
           <Route path="/suppliers" element={<Suppliers />} />
+          <Route path="/suppliers/:id" element={<SupplierDetail />} />
           <Route path="/purchasing" element={<Purchasing />} />
           <Route path="/orders" element={<Orders />} />
           <Route path="/direct-sale-orders" element={<DirectSaleOrders />} />

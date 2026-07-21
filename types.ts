@@ -119,11 +119,13 @@ export interface PurchaseOrderProduct {
 
 export interface ApiPurchaseOrder {
   _id: string;
-  supplierId: Supplier;
+  supplierId: Supplier | string;
   products: PurchaseOrderProduct[];
   status: string;
   note: string;
   totalAmount: number;
+  paidAmount?: number;
+  remainingBalance?: number;
   createdAt: string;
   updatedAt: string;
   __v?: number;
@@ -146,11 +148,16 @@ export interface PurchaseOrderItem {
 
 export interface PurchaseOrder {
   id: string;
+  _id?: string;
   poNumber: string;
   date: string; // ISO String
   supplierName: string;
+  supplierId?: Supplier | string;
+  totalAmount?: number;
+  paidAmount?: number;
+  remainingBalance?: number;
   items: PurchaseOrderItem[];
-  status: "PENDING" | "PARTIALLY_RECEIVED" | "RECEIVED";
+  status: "PENDING" | "PARTIALLY_RECEIVED" | "RECEIVED" | "confirmed" | "arrived" | "completed" | "cancelled" | string;
   note?: string;
 }
 
@@ -196,7 +203,15 @@ export interface Supplier {
   id: string;
   _id?: string;
   supplierName: string;
+  shortDesc?: string;
+  companyName?: string;
   contactNumber: string;
+  email?: string;
+  address?: string;
+  township?: string;
+  isCredit?: boolean;
+  dueInDays?: number;
+  isConsign?: boolean;
   isDeleted?: boolean;
   deletedAt?: string | null;
   createdAt?: string;
