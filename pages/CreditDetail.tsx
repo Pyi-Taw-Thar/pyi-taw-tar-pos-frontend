@@ -76,6 +76,25 @@ export const CreditDetail: React.FC = () => {
     useState<CreditRecordsPagination | null>(null);
   const [paymentsLoading, setPaymentsLoading] = useState(false);
 
+  // Products lazy load state
+  const [productsLoaded, setProductsLoaded] = useState(false);
+
+  const loadProducts = async () => {
+    if (!id || productsLoaded) return;
+    setLoadingProducts(true);
+    try {
+      const response = await fetchCreditPersonaProducts(id);
+      if (response.success) {
+        setProductsReport(response);
+        setProductsLoaded(true);
+      }
+    } catch (error) {
+      console.error("Error loading products:", error);
+    } finally {
+      setLoadingProducts(false);
+    }
+  };
+
   // Add Payment Modal State
   const [showAddPaymentModal, setShowAddPaymentModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -114,7 +133,7 @@ export const CreditDetail: React.FC = () => {
     if (!id) return;
     setPaymentsLoading(true);
     try {
-      const response = await fetchCreditPersonaRecords(id, page);
+      const response = await fetchCreditPersonaRecords(id, page, true);
       if (response.success && response.data) {
         setPersonaDetail((prev) =>
           prev
@@ -142,13 +161,9 @@ export const CreditDetail: React.FC = () => {
   const loadCreditDetail = async () => {
     if (!id) return;
     setLoading(true);
-    setLoadingProducts(true);
     setPaymentsPage(1);
     try {
-      const [personaResponse, productsResponse] = await Promise.all([
-        fetchCreditPersonaRecords(id, 1),
-        fetchCreditPersonaProducts(id),
-      ]);
+      const personaResponse = await fetchCreditPersonaRecords(id, 1);
 
       if (personaResponse.success && personaResponse.data) {
         setPersonaDetail(personaResponse.data);
@@ -158,16 +173,11 @@ export const CreditDetail: React.FC = () => {
       } else {
         toast.error(personaResponse.message || "Failed to load credit details");
       }
-
-      if (productsResponse.success) {
-        setProductsReport(productsResponse);
-      }
     } catch (error) {
       console.error("Error loading credit details:", error);
       toast.error("Failed to load credit details");
     } finally {
       setLoading(false);
-      setLoadingProducts(false);
     }
   };
 
@@ -368,6 +378,17 @@ export const CreditDetail: React.FC = () => {
           <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
             <User className="w-6 h-6 text-primary" />
             {personName}
+            {personaDetail && (
+              <span className={`ml-2 inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${
+                personaDetail.summary.totalOutstandingAmount <= 0
+                  ? "bg-green-100 text-green-700"
+                  : "bg-orange-100 text-orange-700"
+              }`}>
+                {personaDetail.summary.totalOutstandingAmount <= 0
+                  ? "✓ Settled"
+                  : `${personaDetail.summary.totalOutstandingAmount.toLocaleString()} MMK left`}
+              </span>
+            )}
           </h1>
           {personPhone && (
             <p className="text-slate-500 text-sm flex items-center gap-1 mt-1">
@@ -481,7 +502,7 @@ export const CreditDetail: React.FC = () => {
               {personaDetail.orders.length})
             </button>
             <button
-              onClick={() => setActiveTab("products")}
+              onClick={() => { setActiveTab("products"); loadProducts(); }}
               className={`px-6 py-3 font-semibold flex items-center gap-2 transition-colors border-b-2 ${
                 activeTab === "products"
                   ? "border-primary text-primary"
@@ -493,7 +514,7 @@ export const CreditDetail: React.FC = () => {
               {productsReport?.data.totals.totalUniqueProducts || 0})
             </button>
             <button
-              onClick={() => setActiveTab("payments")}
+              onClick={() => { setActiveTab("payments"); loadPaymentRecords(1); }}
               className={`px-6 py-3 font-semibold flex items-center gap-2 transition-colors border-b-2 ${
                 activeTab === "payments"
                   ? "border-primary text-primary"
@@ -513,28 +534,90 @@ export const CreditDetail: React.FC = () => {
                 <div className="p-4 border-b bg-slate-50">
                   <h2 className="font-semibold text-slate-800 flex items-center gap-2">
                     <Receipt className="w-5 h-5 text-primary" />
-                    {t("creditDetail.associatedOrders")}
+                    {t("creditDetail.associatedOrders")} ({personaDetail.orders.length})
                   </h2>
                 </div>
-                <div className="p-6">
-                  {personaDetail.orders.length === 0 ? (
+                {personaDetail.orders.length === 0 ? (
+                  <div className="p-6">
                     <p className="text-slate-400 text-sm text-center py-4">
                       {t("creditDetail.noOrders")}
                     </p>
-                  ) : (
-                    <div className="flex flex-wrap gap-2">
-                      {personaDetail.orders.map((order) => (
-                        <button
-                          key={order._id}
-                          onClick={() => handleViewOrder(order._id)}
-                          className="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-200 transition-colors cursor-pointer"
-                        >
-                          {order.orderNumber}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left">
+                      <thead className="bg-slate-50 text-slate-600 border-b">
+                        <tr>
+                          <th className="px-4 py-3 font-medium">Order No</th>
+                          <th className="px-4 py-3 font-medium text-right">Amount (MMK)</th>
+                          <th className="px-4 py-3 font-medium text-right">Paid (MMK)</th>
+                          <th className="px-4 py-3 font-medium text-right">Remaining (MMK)</th>
+                          <th className="px-4 py-3 font-medium text-center">Status</th>
+                          <th className="px-4 py-3 font-medium text-center">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y">
+                        {[...personaDetail.orders].reverse().map((order) => {
+                          const remaining = (order.finalAmount || 0) - (order.paidAmount || 0);
+                          const isFullyPaid = remaining <= 0;
+                          return (
+                            <tr
+                              key={order._id}
+                              className="hover:bg-slate-50 transition-colors"
+                            >
+                              <td className="px-4 py-3">
+                                <button
+                                  onClick={() => handleViewOrder(order._id)}
+                                  className="text-blue-600 font-medium hover:text-blue-800 hover:underline"
+                                >
+                                  {order.orderNumber}
+                                </button>
+                              </td>
+                              <td className="px-4 py-3 text-right font-medium text-slate-800">
+                                {order.finalAmount?.toLocaleString() || "—"}
+                              </td>
+                              <td className="px-4 py-3 text-right text-green-600 font-medium">
+                                {order.paidAmount?.toLocaleString() || "0"}
+                              </td>
+                              <td className="px-4 py-3 text-right">
+                                <span className={`font-medium ${isFullyPaid ? "text-green-600" : "text-orange-600"}`}>
+                                  {remaining.toLocaleString()}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 text-center">
+                                <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold ${
+                                  isFullyPaid
+                                    ? "bg-green-100 text-green-700"
+                                    : "bg-orange-100 text-orange-700"
+                                }`}>
+                                  {isFullyPaid ? "Paid" : "Remaining"}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 text-center">
+                                {!isFullyPaid && (
+                                  <button
+                                    onClick={() => {
+                                      setPaymentForm({
+                                        orderId: order._id,
+                                        paidAmount: 0,
+                                        paymentMethod: "cash",
+                                      });
+                                      setShowAddPaymentModal(true);
+                                    }}
+                                    className="inline-flex items-center gap-1 px-3 py-1.5 bg-green-100 text-green-700 rounded-lg text-xs font-semibold hover:bg-green-200 transition-colors"
+                                  >
+                                    <Plus className="w-3 h-3" />
+                                    Pay
+                                  </button>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             )}
 

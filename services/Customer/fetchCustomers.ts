@@ -15,6 +15,9 @@ export interface Customer {
   addresses: CustomerAddress[];
   isActive: boolean;
   tier?: string;
+  isCreditPerson?: boolean;
+  blacklist?: boolean;
+  blacklistReason?: string | null;
   createdAt: string;
   updatedAt: string;
 }

@@ -20,6 +20,7 @@ import {
 import { registerCustomer } from "../services/Customer/registerCustomer";
 import { updateCustomer } from "../services/Customer/updateCustomer";
 import { updateCustomerTier, CustomerTier } from "../services/Customer/updateCustomerTier";
+import { toggleCreditPerson } from "../services/Customer/toggleCreditPerson";
 import { CustomerDetailModal } from "../components/Customer/CustomerDetailModal";
 
 const formatDate = (iso: string) => {
@@ -158,6 +159,24 @@ export const Customers: React.FC = () => {
       toast.error(error?.message || "Failed to update tier");
     } finally {
       setUpdatingTierCustomerId(null);
+    }
+  };
+
+  const handleToggleCredit = async (customerId: string) => {
+    try {
+      const result = await toggleCreditPerson(customerId);
+      if (result.success) {
+        toast.success(
+          result.data?.isCreditPerson
+            ? "Credit person status enabled"
+            : "Credit person status removed"
+        );
+        loadCustomers();
+      } else {
+        toast.error(result.message || "Failed to toggle credit status");
+      }
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to toggle credit status");
     }
   };
 
@@ -429,6 +448,9 @@ export const Customers: React.FC = () => {
               <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500">
                 {t("common.status")}
               </th>
+              <th className="px-3 py-2 text-center text-xs font-semibold text-slate-500">
+                Credit
+              </th>
               <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500">
                 {t("common.date")}
               </th>
@@ -440,13 +462,13 @@ export const Customers: React.FC = () => {
           <tbody className="divide-y">
             {loading ? (
               <tr>
-                <td colSpan={8} className="py-10 text-center text-slate-500">
+                <td colSpan={9} className="py-10 text-center text-slate-500">
                   {t("common.loading")}
                 </td>
               </tr>
             ) : filteredCustomers.length === 0 ? (
               <tr>
-                <td colSpan={8} className="py-10 text-center text-slate-500">
+                <td colSpan={9} className="py-10 text-center text-slate-500">
                   {t("customers.noCustomers")}
                 </td>
               </tr>
@@ -487,6 +509,23 @@ export const Customers: React.FC = () => {
                           ? t("customers.active")
                           : t("customers.inactive")}
                       </span>
+                    </td>
+                    <td className="px-3 py-2 text-center">
+                      <button
+                        onClick={() => handleToggleCredit(customer._id)}
+                        className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold border transition-colors ${
+                          customer.isCreditPerson
+                            ? "bg-green-100 text-green-700 border-green-200 hover:bg-green-200"
+                            : "bg-slate-50 text-slate-400 border-slate-200 hover:bg-slate-100"
+                        }`}
+                        title={
+                          customer.isCreditPerson
+                            ? "Disable credit person"
+                            : "Enable credit person"
+                        }
+                      >
+                        {customer.isCreditPerson ? "✓ Credit" : "+ Credit"}
+                      </button>
                     </td>
                     <td className="px-3 py-2 text-slate-700">
                       {formatDate(customer.createdAt)}

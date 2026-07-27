@@ -70,7 +70,7 @@ export const Credits: React.FC = () => {
 
   const handleOpenEditModal = (persona: CreditPersona) => {
     setEditingId(persona._id);
-    setFormData({ name: persona.name, phone: persona.phone });
+    setFormData({ name: persona.name, phone: persona.phone || "" });
     setIsAddModalOpen(true);
   };
 
@@ -149,8 +149,8 @@ export const Credits: React.FC = () => {
   const filteredPersonas = creditPersonas.filter((persona) => {
     const searchLower = search.toLowerCase();
     return (
-      persona.name.toLowerCase().includes(searchLower) ||
-      persona.phone.includes(search)
+      persona.name?.toLowerCase().includes(searchLower) ||
+      persona.phone?.includes(search)
     );
   });
 
@@ -338,7 +338,7 @@ export const Credits: React.FC = () => {
                       <td className="px-2 sm:px-4 py-3">
                         <div className="flex items-center gap-1.5 text-slate-600 text-xs sm:text-sm">
                           <Phone className="w-3.5 h-3.5 flex-shrink-0" />
-                          <span className="truncate">{persona.phone}</span>
+                          <span className="truncate">{persona.phone || "—"}</span>
                         </div>
                       </td>
                       <td className="px-2 sm:px-4 py-3">

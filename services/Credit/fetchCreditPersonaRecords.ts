@@ -43,6 +43,9 @@ export interface CreditPersonaSummary {
 export interface CreditPersonaOrder {
   _id: string;
   orderNumber: string;
+  finalAmount?: number;
+  paidAmount?: number;
+  createdAt?: string;
 }
 
 export interface CreditPersonaRecordsData {
@@ -76,11 +79,12 @@ interface FetchCreditPersonaRecordsResponse {
 export const fetchCreditPersonaRecords = async (
   creditPersonId: string,
   page: number = 1,
+  loadRecords: boolean = false,
 ): Promise<FetchCreditPersonaRecordsResponse> => {
   try {
     const response = await axios.get(
       `/credit-persona/${creditPersonId}/credit-records`,
-      { params: { page } },
+      { params: { page, ...(loadRecords ? { load_records: "true" } : {}) } },
     );
     return response.data;
   } catch (error: unknown) {
