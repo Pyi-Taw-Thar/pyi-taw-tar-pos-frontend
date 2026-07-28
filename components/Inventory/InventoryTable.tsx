@@ -75,6 +75,7 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
               <th className="px-2 sm:px-4 py-3 text-center">No</th>
               <th className="px-2 sm:px-4 py-3">Code</th>
               <th className="px-2 sm:px-4 py-3">Name</th>
+              <th className="px-2 sm:px-4 py-3">Brand</th>
               <th className="px-2 sm:px-4 py-3">Category</th>
               <th className="px-2 sm:px-4 py-3 text-right">Cost</th>
               <th className="px-2 sm:px-4 py-3 text-right">Price</th>
@@ -112,6 +113,9 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
                     >
                       {p.name}
                     </div>
+                  </td>
+                  <td className="px-2 sm:px-4 py-3 text-slate-500 text-xs sm:text-sm">
+                    {p.brand || "—"}
                   </td>
                   <td className="px-2 sm:px-4 py-3 text-slate-500 text-xs sm:text-sm">
                     {p.category}

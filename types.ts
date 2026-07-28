@@ -31,6 +31,7 @@ export interface Product {
   productName?: string;
   productCode?: string;
   category: ProductCategory;
+  brand?: string;
   stockWarehouse: number;
   stockShop: number;
   costPrice: number;
@@ -39,7 +40,7 @@ export interface Product {
   lowStockThreshold: number;
   status?: "active" | "inactive";
   unitOfMeasure?: string;
-  uomConversions?: { unit: string; factor: number; isDefaultSellingUnit?: boolean }[];
+  uomConversions?: { unit: string; factor: number; isDefaultSellingUnit?: boolean; convertFrom?: string | null }[];
 }
 
 export interface CartItem extends Product {

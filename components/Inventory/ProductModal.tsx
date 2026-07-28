@@ -285,21 +285,40 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto">
-      <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-3xl my-8 max-h-[90vh] overflow-y-auto">
-        <h2 className="text-xl font-bold mb-4">
-          {editingId
-            ? t("inventory.editProduct")
-            : t("inventory.addNewProduct")}
-        </h2>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-3xl mx-4 flex flex-col max-h-[90vh]">
+        {/* Fixed Header */}
+        <div className="flex items-center justify-between p-4 border-b bg-white rounded-t-xl shrink-0">
+          <h2 className="text-xl font-bold text-slate-800">
+            {editingId
+              ? t("inventory.editProduct")
+              : t("inventory.addNewProduct")}
+          </h2>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+            >
+              {t("common.cancel")}
+            </button>
+            <button
+              onClick={onSave}
+              disabled={isLoading}
+              className="px-4 py-2 text-sm bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {isLoading ? t("inventory.saving") : t("inventory.save")}
+            </button>
+          </div>
+        </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded text-sm">
+          <div className="mx-4 mt-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded text-sm shrink-0">
             {error}
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-4 mb-4">
+        {/* Scrollable Body */}
+        <div className="overflow-y-auto p-6 space-y-5">
           {/* Required Fields */}
           <div className="col-span-2">
             <label className="block text-xs font-bold text-slate-500">
@@ -520,25 +539,16 @@ export const ProductModal: React.FC<ProductModalProps> = ({
 
           {/* Wholesale prices */}
           <div className="col-span-2">
-            <div className="rounded-xl border border-amber-100 bg-gradient-to-br from-amber-50/80 to-white p-4">
-              <div className="flex items-center justify-between gap-3 mb-3">
+            <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+              <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="p-2 rounded-lg bg-amber-100 text-amber-700">
-                    <Layers className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-800">
-                      Wholesale prices
-                    </h3>
-                    <p className="text-xs text-slate-500">
-                      Bulk quantity tiers and unit prices (MMK)
-                    </p>
-                  </div>
+                  <Layers className="w-4 h-4 text-slate-500" />
+                  <h3 className="text-sm font-semibold text-slate-700">Wholesale Prices</h3>
                 </div>
                 <button
                   type="button"
                   onClick={addWholesaleRow}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-amber-800 bg-amber-100 hover:bg-amber-200 rounded-lg transition-colors"
+                  className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-slate-600 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg transition-colors"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   Add tier
@@ -546,21 +556,19 @@ export const ProductModal: React.FC<ProductModalProps> = ({
               </div>
 
               {wholesalePrices.length === 0 ? (
-                <div className="rounded-lg border-2 border-dashed border-amber-200/80 bg-white/60 py-8 text-center">
-                  <p className="text-sm text-slate-500 mb-3">
-                    No wholesale tiers yet
-                  </p>
+                <div className="p-6 text-center">
+                  <p className="text-sm text-slate-400">No wholesale tiers yet</p>
                   <button
                     type="button"
                     onClick={addWholesaleRow}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-amber-800 border border-amber-200 rounded-lg hover:bg-amber-50"
+                    className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50"
                   >
                     <Plus className="w-4 h-4" />
                     Add first tier
                   </button>
                 </div>
               ) : (
-                <div className="space-y-2">
+                <div className="p-4 space-y-2">
                   <div className="hidden sm:grid sm:grid-cols-[1fr_1fr_1fr_auto] gap-2 px-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
                     <span>Unit (optional)</span>
                     <span>Min quantity</span>
@@ -643,20 +651,13 @@ export const ProductModal: React.FC<ProductModalProps> = ({
 
           {/* Product images */}
           <div className="col-span-2">
-            <div className="rounded-xl border border-blue-100 bg-gradient-to-br from-blue-50/80 to-white p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="p-2 rounded-lg bg-blue-100 text-blue-700">
-                  <ImagePlus className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-slate-800">
-                    Product images
-                  </h3>
-                  <p className="text-xs text-slate-500">
-                    JPEG, PNG, WebP — max {MAX_IMAGE_SIZE_MB}MB each
-                  </p>
-                </div>
+            <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+              <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-200 flex items-center gap-2">
+                <ImagePlus className="w-4 h-4 text-slate-500" />
+                <h3 className="text-sm font-semibold text-slate-700">Product Images</h3>
+                <span className="text-xs text-slate-400 ml-1">JPEG, PNG, WebP — max 5MB each</span>
               </div>
+              <div className="p-4">
 
               {editingId && existingImages.length > 0 && (
                 <div className="mb-4">
@@ -795,8 +796,9 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                     Clear all images
                   </button>
                 </div>
-              )}
-            </div>
+              )}   {/* closes image preview */}
+            </div>  {/* closes p-4 body */}
+            </div>  {/* closes overflow-hidden wrapper */}
           </div>
 
           <div className="col-span-2">
@@ -812,21 +814,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
             />
           </div>
         </div>
-        <div className="flex justify-end gap-2">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded"
-          >
-            {t("common.cancel")}
-          </button>
-          <button
-            onClick={onSave}
-            disabled={isLoading}
-            className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isLoading ? t("inventory.saving") : t("inventory.save")}
-          </button>
-        </div>
+        {/* End scrollable body */}
       </div>
     </div>
   );

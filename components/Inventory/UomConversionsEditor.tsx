@@ -13,6 +13,7 @@ const emptyRow = (): UomConversion => ({
   unit: "",
   factor: 1,
   isDefaultSellingUnit: false,
+  convertFrom: null,
 });
 
 export const UomConversionsEditor: React.FC<UomConversionsEditorProps> = ({
@@ -75,9 +76,10 @@ export const UomConversionsEditor: React.FC<UomConversionsEditorProps> = ({
       ) : (
         <div className="space-y-2">
           <div className="grid grid-cols-12 gap-2 text-xs font-bold text-slate-500 px-1">
-            <span className="col-span-4">{t("inventory.conversionUnit")}</span>
-            <span className="col-span-3">{t("inventory.conversionFactor")}</span>
-            <span className="col-span-4">{t("inventory.defaultSellingUnit")}</span>
+            <span className="col-span-3">{t("inventory.conversionUnit")}</span>
+            <span className="col-span-2">{t("inventory.conversionFactor")}</span>
+            <span className="col-span-3">Convert From</span>
+            <span className="col-span-3">{t("inventory.defaultSellingUnit")}</span>
             <span className="col-span-1" />
           </div>
           {conversions.map((row, index) => (
@@ -86,7 +88,7 @@ export const UomConversionsEditor: React.FC<UomConversionsEditorProps> = ({
               className="grid grid-cols-12 gap-2 items-center bg-white rounded border p-2"
             >
               <input
-                className="col-span-4 border rounded p-2 text-sm"
+                className="col-span-3 border rounded p-2 text-sm"
                 value={row.unit}
                 placeholder={t("inventory.conversionUnitPlaceholder")}
                 onChange={(e) => updateRow(index, { unit: e.target.value })}
@@ -95,13 +97,31 @@ export const UomConversionsEditor: React.FC<UomConversionsEditorProps> = ({
                 type="number"
                 min="0.0001"
                 step="any"
-                className="col-span-3 border rounded p-2 text-sm"
+                className="col-span-2 border rounded p-2 text-sm"
                 value={row.factor}
                 onChange={(e) =>
                   updateRow(index, { factor: Number(e.target.value) || 0 })
                 }
               />
-              <label className="col-span-4 flex items-center gap-2 text-sm cursor-pointer">
+              <div className="col-span-3">
+                <select
+                  className="w-full border rounded p-2 text-sm bg-white"
+                  value={row.convertFrom || ""}
+                  onChange={(e) =>
+                    updateRow(index, { convertFrom: e.target.value || null })
+                  }
+                >
+                  <option value="">{baseUnit} (base)</option>
+                  {conversions
+                    .filter((_, i) => i !== index && conversions[i].unit)
+                    .map((c, i) => (
+                      <option key={i} value={c.unit}>
+                        {c.unit}
+                      </option>
+                    ))}
+                </select>
+              </div>
+              <label className="col-span-3 flex items-center gap-2 text-sm cursor-pointer">
                 <input
                   type="radio"
                   name="defaultSellingUnit"

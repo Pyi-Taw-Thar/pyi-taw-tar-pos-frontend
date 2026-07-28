@@ -25,9 +25,6 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 }) => {
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<"about" | "quantity">("about");
-  const [stockTab, setStockTab] = useState<"warehouse" | "storefront">(
-    "storefront",
-  );
 
   if (!isOpen) return null;
 
@@ -89,7 +86,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
         </div>
 
         {/* Modal Body */}
-        <div className="flex-1 overflow-y-auto min-h-0 p-6">
+        <div className="flex-1 overflow-y-auto min-h-0 p-6 min-h-[420px]">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-12">
               <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mb-3" />
@@ -100,462 +97,245 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
           ) : product ? (
             <>
               {activeTab === "about" ? (
-                <div className="space-y-6">
-                  {/* Product Basic Info */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                      <p className="text-xs text-blue-600 font-medium mb-1">
-                        {t("inventory.productName")}
-                      </p>
-                      <p className="font-bold text-blue-800">
-                        {product.productName}
-                      </p>
+                <div className="space-y-5">
+                  {/* ── Basic Info ── */}
+                  <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+                    <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-200">
+                      <h4 className="font-semibold text-slate-700 text-sm">Basic Info</h4>
                     </div>
-                    <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                      <p className="text-xs text-green-600 font-medium mb-1">
-                        {t("inventory.productCode")}
-                      </p>
-                      <p className="font-bold text-green-800">
-                        {product.productCode}
-                      </p>
+                    <div className="p-4 grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Product Name</span>
+                        <span className="font-medium text-slate-800 text-right">{product.productName}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Product Code</span>
+                        <span className="font-medium text-slate-800 text-right">{product.productCode}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">SKU</span>
+                        <span className="font-medium text-slate-800 text-right">{product.SKU || "—"}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Category</span>
+                        <span className="font-medium text-slate-800 text-right">{product.category}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Brand</span>
+                        <span className="font-medium text-slate-800 text-right">{product.brand || "—"}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Unit of Measure</span>
+                        <span className="font-medium text-slate-800 text-right">{product.unitOfMeasure}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Status</span>
+                        <span className={`font-medium ${product.status === "active" ? "text-green-600" : "text-red-600"}`}>
+                          {product.status}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Created</span>
+                        <span className="font-medium text-slate-800 text-right">{formatDate(product.createdAt)}</span>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Product Images */}
-                  {productImages.length > 0 && (
-                    <div className="bg-slate-50 p-4 rounded-lg border">
-                      <div className="flex items-center gap-2 mb-3">
-                        <ImageIcon className="w-4 h-4 text-slate-500" />
-                        <p className="text-xs text-slate-500 font-medium">
-                          Product images
-                        </p>
+                  {/* ── Pricing ── */}
+                  <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+                    <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-200">
+                      <h4 className="font-semibold text-slate-700 text-sm">Pricing</h4>
+                    </div>
+                    <div className="p-4 grid grid-cols-3 gap-4">
+                      <div className="text-center p-3 bg-red-50 rounded-lg">
+                        <p className="text-xs text-red-600 font-medium">Buying Price</p>
+                        <p className="text-lg font-bold text-slate-800 mt-1">{product.buyingPrice.toLocaleString()}</p>
                       </div>
-
-                      <div className="space-y-3">
-                        {primaryImageUrl && (
-                          <img
-                            src={primaryImageUrl}
-                            alt={product.productName}
-                            className="w-64 h-64 object-fit rounded-lg border bg-slate-100"
-                          />
-                        )}
-
-                        {productImages.length > 1 && primaryImageUrl && (
-                          <div className="grid grid-cols-3 gap-2">
-                            {productImages
-                              .filter((img) => img.url !== primaryImageUrl)
-                              .slice(0, 6)
-                              .map((img, idx) => (
-                                <div
-                                  key={
-                                    img.key ||
-                                    img.id ||
-                                    img._id ||
-                                    `${img.url}-${idx}`
-                                  }
-                                  className="rounded-md overflow-hidden border bg-slate-100"
-                                >
-                                  <img
-                                    src={img.url}
-                                    alt={product.productName}
-                                    className="w-full h-20 object-cover"
-                                  />
-                                </div>
-                              ))}
-                          </div>
-                        )}
+                      <div className="text-center p-3 bg-green-50 rounded-lg">
+                        <p className="text-xs text-green-600 font-medium">Selling Price</p>
+                        <p className="text-lg font-bold text-slate-800 mt-1">{product.sellingPrice.toLocaleString()}</p>
+                      </div>
+                      <div className="text-center p-3 bg-blue-50 rounded-lg">
+                        <p className="text-xs text-blue-600 font-medium">Profit</p>
+                        <p className="text-lg font-bold text-blue-700 mt-1">{product.profitAmount.toLocaleString()}</p>
+                        <p className="text-xs text-blue-500">{product.profitMargin}%</p>
                       </div>
                     </div>
-                  )}
+                  </div>
 
-                  {/* Pricing & Profit */}
-                  <div className="grid grid-cols-1 gap-4">
-                    <div className="bg-slate-50 p-4 rounded-lg border">
-                      <div className="flex items-center gap-2 mb-3">
-                        <DollarSign className="w-4 h-4 text-slate-500" />
-                        <p className="text-xs text-slate-500 font-medium">
-                          {t("inventory.prices")}
-                        </p>
+                  {/* ── Wholesale Prices ── */}
+                  {wholesalePrices.length > 0 && (
+                    <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+                      <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-200">
+                        <h4 className="font-semibold text-slate-700 text-sm">Wholesale Prices</h4>
                       </div>
-                      <div className="space-y-2">
-                        <div>
-                          <span className="text-xs text-slate-600">
-                            {t("inventory.buyingPriceLabel")}
-                          </span>
-                          <span className="text-sm font-medium text-slate-800 ml-2">
-                            {product.buyingPrice.toLocaleString()} MMK
-                          </span>
-                        </div>
-                        <div>
-                          <span className="text-xs text-slate-600">
-                            {t("inventory.sellingPriceLabel")}
-                          </span>
-                          <span className="text-sm font-bold text-slate-800 ml-2">
-                            {product.sellingPrice.toLocaleString()} MMK
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {wholesalePrices.length > 0 && (
-                      <div className="bg-slate-50 p-4 rounded-lg border">
-                        <div className="flex items-center gap-2 mb-3">
-                          <DollarSign className="w-4 h-4 text-slate-500" />
-                          <p className="text-xs text-slate-500 font-medium">
-                            Wholesale prices
-                          </p>
-                        </div>
-
-                        <table className="w-full text-sm border rounded-lg overflow-hidden">
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
                           <thead className="bg-slate-50">
                             <tr>
-                              <th className="px-3 py-2 text-left text-xs text-slate-500">
-                                Unit
-                              </th>
-                              <th className="px-3 py-2 text-left text-xs text-slate-500">
-                                {t("common.quantity")}
-                              </th>
-                              <th className="px-3 py-2 text-right text-xs text-slate-500">
-                                {t("common.price")} (MMK)
-                              </th>
+                              <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Unit</th>
+                              <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500">Min Qty</th>
+                              <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500">Price (MMK)</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y">
                             {wholesalePrices.map((wp, idx) => (
-                              <tr key={idx}>
-                                <td className="px-3 py-2 text-slate-600">
-                                  {wp.unit?.trim() ? wp.unit : "—"}
-                                </td>
-                                <td className="px-3 py-2">
-                                  {wp.quantity.toLocaleString()}
-                                </td>
-                                <td className="px-3 py-2 text-right font-medium">
-                                  {wp.price.toLocaleString()}{" "}
-                                </td>
+                              <tr key={idx} className="hover:bg-slate-50">
+                                <td className="px-4 py-2.5 text-slate-600">{wp.unit?.trim() || "—"}</td>
+                                <td className="px-4 py-2.5 text-right">{wp.quantity.toLocaleString()}</td>
+                                <td className="px-4 py-2.5 text-right font-medium">{wp.price.toLocaleString()}</td>
                               </tr>
                             ))}
                           </tbody>
                         </table>
                       </div>
-                    )}
-                    {/* <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                      <div className="flex items-center gap-2 mb-3">
-                        <TrendingUp className="w-4 h-4 text-green-600" />
-                        <p className="text-xs text-green-600 font-medium">
-                          {t("inventory.profit")}
-                        </p>
-                      </div>
-                      <div className="space-y-2">
-                        <div>
-                          <span className="text-xs text-green-600">
-                            {t("inventory.profitPercentage")}
-                          </span>
-                          <span className="text-sm font-medium text-green-800 ml-2">
-                            {product.profitMargin}%
-                          </span>
-                        </div>
-                        <div>
-                          <span className="text-xs text-green-600">
-                            {t("inventory.profitAmount")}
-                          </span>
-                          <span className="text-sm font-bold text-green-800 ml-2">
-                            {product.profitAmount.toLocaleString()} MMK
-                          </span>
-                        </div>
-                      </div>
-                    </div> */}
-                  </div>
-
-                  {/* Product Details Grid */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-md font-bold mb-1">SKU</p>
-                      <p className="text-md font-mono text-slate-800">
-                        {product.SKU}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-md font-bold mb-1">
-                        {t("inventory.category")}
-                      </p>
-                      <p className="text-sm text-slate-800">
-                        {product.category}
-                      </p>
-                    </div>
-                    {/* <div>
-                      <p className="text-xs text-slate-500 font-medium mb-1">
-                        {t("inventory.subCategoryDetails")}
-                      </p>
-                      <p className="text-sm text-slate-800">
-                        {product.subCategory || "None"}
-                      </p>
-                    </div> */}
-                    <div>
-                      <p className="text-md font-bold mb-1">
-                        {t("inventory.brand")}
-                      </p>
-                      <p className="text-sm text-slate-800">
-                        {product.brand || "-"}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-md font-bold mb-1">
-                        {t("inventory.unitOfMeasureLabel")}
-                      </p>
-                      <p className="text-sm text-slate-800">
-                        {product.unitOfMeasure}
-                      </p>
-                    </div>
-                    {product.uomConversions &&
-                      product.uomConversions.length > 0 && (
-                        <div className="col-span-2">
-                          <p className="text-xs text-slate-500 font-medium mb-2">
-                            {t("inventory.uomConversions")}
-                          </p>
-                          <table className="w-full text-sm border rounded-lg overflow-hidden">
-                            <thead className="bg-slate-50">
-                              <tr>
-                                <th className="px-3 py-2 text-left text-xs text-slate-500">
-                                  {t("inventory.conversionUnit")}
-                                </th>
-                                <th className="px-3 py-2 text-right text-xs text-slate-500">
-                                  {t("inventory.conversionFactor")}
-                                </th>
-                                <th className="px-3 py-2 text-center text-xs text-slate-500">
-                                  {t("inventory.defaultSellingUnitShort")}
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y">
-                              {product.uomConversions.map((row, i) => (
-                                <tr key={i}>
-                                  <td className="px-3 py-2">{row.unit}</td>
-                                  <td className="px-3 py-2 text-right">
-                                    {row.factor}
-                                  </td>
-                                  <td className="px-3 py-2 text-center">
-                                    {row.isDefaultSellingUnit ? "✓" : ""}
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      )}
-                    {/* <div>
-                      <p className="text-xs text-slate-500 font-medium mb-1">
-                        {t("inventory.productStatus")}
-                      </p>
-                      <span
-                        className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
-                          product.status === "active"
-                            ? "bg-green-100 text-green-700"
-                            : "bg-red-100 text-red-700"
-                        }`}
-                      >
-                        {product.status}
-                      </span>
-                    </div> */}
-                  </div>
-
-                  {/* Note */}
-                  {product.note && (
-                    <div className="mt-4 p-4 bg-orange-50 border border-orange-200 rounded-lg">
-                      <p className="text-xs text-orange-600 font-medium mb-1">
-                        {t("pos.note") || "Note"}
-                      </p>
-                      <p className="text-sm text-slate-800">{product.note}</p>
                     </div>
                   )}
 
-                  {/* Description */}
-                  {/* {product.description && (
-                    <div>
-                      <p className="text-xs text-slate-500 font-medium mb-1">
-                        {t("inventory.productDescription")}
-                      </p>
-                      <p className="text-sm text-slate-800 bg-slate-50 p-3 rounded-lg">
-                        {product.description}
-                      </p>
+                  {/* ── UOM Conversions ── */}
+                  {product.uomConversions && product.uomConversions.length > 0 && (
+                    <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+                      <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-200">
+                        <h4 className="font-semibold text-slate-700 text-sm">UOM Conversions</h4>
+                      </div>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead className="bg-slate-50">
+                            <tr>
+                              <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Unit</th>
+                              <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500">Factor</th>
+                              <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Convert From</th>
+                              <th className="px-4 py-2.5 text-center text-xs font-semibold text-slate-500">Default</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y">
+                            {product.uomConversions.map((row, i) => (
+                              <tr key={i} className="hover:bg-slate-50">
+                                <td className="px-4 py-2.5 font-medium text-slate-800">{row.unit}</td>
+                                <td className="px-4 py-2.5 text-right font-mono text-slate-600">×{row.factor}</td>
+                                <td className="px-4 py-2.5 text-slate-600">{row.convertFrom || product.unitOfMeasure + " (base)"}</td>
+                                <td className="px-4 py-2.5 text-center">{row.isDefaultSellingUnit ? <span className="text-green-600 font-bold text-lg">✓</span> : "—"}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
-                  )} */}
+                  )}
+
+                  {/* ── Product Images ── */}
+                  {productImages.length > 0 && (
+                    <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+                      <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-200">
+                        <h4 className="font-semibold text-slate-700 text-sm">Images</h4>
+                      </div>
+                      <div className="p-4 space-y-3">
+                        {primaryImageUrl && (
+                          <img src={primaryImageUrl} alt={product.productName} className="w-64 h-64 object-contain rounded-lg border bg-slate-50 mx-auto" />
+                        )}
+                        {productImages.length > 1 && primaryImageUrl && (
+                          <div className="grid grid-cols-6 gap-2">
+                            {productImages.filter((img) => img.url !== primaryImageUrl).slice(0, 6).map((img, idx) => (
+                              <div key={img.key || img.id || img._id || `${img.url}-${idx}`} className="rounded-md overflow-hidden border bg-slate-50">
+                                <img src={img.url} alt={product.productName} className="w-full h-16 object-cover" />
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ── Note ── */}
+                  {product.note && (
+                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                      <p className="text-xs font-semibold text-amber-700 mb-1">Note</p>
+                      <p className="text-sm text-amber-900">{product.note}</p>
+                    </div>
+                  )}
                 </div>
               ) : (
-                <div className="space-y-6">
-                  {/* Dates */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-xs text-slate-500 font-medium mb-1">
-                        {t("inventory.createDate")}
-                      </p>
-                      <p className="text-sm text-slate-800">
-                        {formatDate(product.createdAt)}
-                      </p>
+                <div className="space-y-5">
+                  {/* ── Total Quantity ── */}
+                  <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+                    <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-200">
+                      <h4 className="font-semibold text-slate-700 text-sm">Stock Summary</h4>
                     </div>
-                    <div>
-                      <p className="text-xs text-slate-500 font-medium mb-1">
-                        {t("inventory.lastUpdatedDate")}
-                      </p>
-                      <p className="text-sm text-slate-800">
-                        {formatDate(product.updatedAt)}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Total Quantity Summary */}
-                  <div className="bg-[#E8F5E9] p-6 rounded-lg border-2 border-[#E8F5E9]">
-                    <div className="flex items-center justify-between">
-                      <p className="text-[16px] font-medium text-[#2E7D32]">
-                        {t("inventory.productTotalQuantity")}
-                      </p>
-                      <p className="text-4xl font-bold text-slate-800">
+                    <div className="p-6 text-center">
+                      <p className="text-xs text-slate-500 uppercase tracking-wide font-medium mb-1">Total Quantity</p>
+                      <p className="text-5xl font-bold text-slate-800">
                         {product.stockAvailability.totalQuantity.toLocaleString()}
                       </p>
                     </div>
                   </div>
 
-                  {/* Stock Tabs */}
-                  <div className="flex gap-5">
-                    <button
-                      onClick={() => setStockTab("warehouse")}
-                      className={`px-4 py-2 text-sm font-medium transition-colors ${
-                        stockTab === "warehouse"
-                          ? "bg-[#E8F5E9] text-slate-800 rounded-2xl"
-                          : "text-slate-600 hover:text-slate-800"
-                      }`}
-                    >
-                      {t("inventory.warehouses")}
-                    </button>
-                    <button
-                      onClick={() => setStockTab("storefront")}
-                      className={`px-4 py-2 text-sm font-medium transition-colors ${
-                        stockTab === "storefront"
-                          ? "bg-[#E8F5E9] text-slate-800 rounded-2xl"
-                          : "text-slate-600 hover:text-slate-800"
-                      }`}
-                    >
-                      {t("inventory.storefronts")}
-                    </button>
+                  {/* ── Warehouse Stock ── */}
+                  <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+                    <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+                      <h4 className="font-semibold text-slate-700 text-sm">Warehouses</h4>
+                      <span className="text-xs font-medium text-slate-500">
+                        {product.stockAvailability.warehouses.count} location(s) · Total: {product.stockAvailability.warehouses.totalQuantity.toLocaleString()}
+                      </span>
+                    </div>
+                    {product.stockAvailability.warehouses.count > 0 ? (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead className="bg-slate-50">
+                            <tr>
+                              <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Location</th>
+                              <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Address</th>
+                              <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500">Quantity</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y">
+                            {product.stockAvailability.warehouses.locations.map((loc) => (
+                              <tr key={loc.locationId} className="hover:bg-slate-50">
+                                <td className="px-4 py-2.5 font-medium text-slate-800">{loc.locationName}</td>
+                                <td className="px-4 py-2.5 text-slate-500">{loc.locationAddress || "—"}</td>
+                                <td className="px-4 py-2.5 text-right font-bold text-slate-800">{loc.quantity.toLocaleString()}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <div className="p-6 text-center text-slate-400 text-sm">No warehouses found</div>
+                    )}
                   </div>
 
-                  {/* Warehouse Summary Cards */}
-                  {stockTab === "warehouse" &&
-                    product.stockAvailability.warehouses.count > 0 && (
-                      <>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-                            <p className="text-xs text-slate-600 font-medium mb-1">
-                              {t("inventory.warehouses")}
-                            </p>
-                            <p className="text-lg font-bold text-slate-800">
-                              {product.stockAvailability.warehouses.count}{" "}
-                              {t("inventory.warehouses")}
-                            </p>
-                          </div>
-                          <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-                            <p className="text-xs text-slate-600 font-medium mb-1">
-                              {t("inventory.totalQtyInWarehouses")}
-                            </p>
-                            <p className="text-lg font-bold text-slate-800">
-                              {product.stockAvailability.warehouses.totalQuantity.toLocaleString()}
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* Warehouse Location Cards */}
-                        <div className="grid grid-cols-2 gap-4">
-                          {product.stockAvailability.warehouses.locations.map(
-                            (location) => (
-                              <div
-                                key={location.locationId}
-                                className="bg-slate-100 p-4 rounded-lg border border-slate-300"
-                              >
-                                <h4 className="font-semibold text-slate-800 mb-1">
-                                  {location.locationName}
-                                </h4>
-                                <p className="text-xs text-slate-600 mb-3">
-                                  {location.locationAddress || "-"}
-                                </p>
-                                <div className="flex justify-end">
-                                  <span className="text-sm font-bold text-slate-800">
-                                    Quantity{" "}
-                                    {location.quantity.toLocaleString()}
-                                  </span>
-                                </div>
-                              </div>
-                            ),
-                          )}
-                        </div>
-                      </>
-                    )}
-
-                  {/* Storefront Summary Cards */}
-                  {stockTab === "storefront" &&
-                    product.stockAvailability.storefronts.count > 0 && (
-                      <>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-                            <p className="text-xs text-slate-600 font-medium mb-1">
-                              {t("inventory.storefronts")}
-                            </p>
-                            <p className="text-lg font-bold text-slate-800">
-                              {product.stockAvailability.storefronts.count}{" "}
-                              {t("inventory.storefronts")}
-                            </p>
-                          </div>
-                          <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-                            <p className="text-xs text-slate-600 font-medium mb-1">
-                              Total QTY In Storefronts
-                            </p>
-                            <p className="text-lg font-bold text-slate-800">
-                              {product.stockAvailability.storefronts.totalQuantity.toLocaleString()}
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* Storefront Location Cards */}
-                        <div className="grid grid-cols-2 gap-4">
-                          {product.stockAvailability.storefronts.locations.map(
-                            (location) => (
-                              <div
-                                key={location.locationId}
-                                className="bg-slate-100 p-4 rounded-lg border border-slate-300"
-                              >
-                                <h4 className="font-semibold text-slate-800 mb-1">
-                                  {location.locationName}
-                                </h4>
-                                <p className="text-xs text-slate-600 mb-3">
-                                  {location.locationAddress || "-"}
-                                </p>
-                                <div className="flex justify-end">
-                                  <span className="text-sm font-bold text-slate-800">
-                                    Quantity{" "}
-                                    {location.quantity.toLocaleString()}
-                                  </span>
-                                </div>
-                              </div>
-                            ),
-                          )}
-                        </div>
-                      </>
-                    )}
-
-                  {/* Empty States */}
-                  {stockTab === "warehouse" &&
-                    product.stockAvailability.warehouses.count === 0 && (
-                      <div className="text-center py-8 text-slate-500">
-                        <Warehouse className="w-12 h-12 mx-auto mb-2 text-slate-300" />
-                        <p>No warehouses found</p>
+                  {/* ── Storefront Stock ── */}
+                  <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+                    <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+                      <h4 className="font-semibold text-slate-700 text-sm">Storefronts</h4>
+                      <span className="text-xs font-medium text-slate-500">
+                        {product.stockAvailability.storefronts.count} location(s) · Total: {product.stockAvailability.storefronts.totalQuantity.toLocaleString()}
+                      </span>
+                    </div>
+                    {product.stockAvailability.storefronts.count > 0 ? (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead className="bg-slate-50">
+                            <tr>
+                              <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Location</th>
+                              <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Address</th>
+                              <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500">Quantity</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y">
+                            {product.stockAvailability.storefronts.locations.map((loc) => (
+                              <tr key={loc.locationId} className="hover:bg-slate-50">
+                                <td className="px-4 py-2.5 font-medium text-slate-800">{loc.locationName}</td>
+                                <td className="px-4 py-2.5 text-slate-500">{loc.locationAddress || "—"}</td>
+                                <td className="px-4 py-2.5 text-right font-bold text-slate-800">{loc.quantity.toLocaleString()}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
                       </div>
+                    ) : (
+                      <div className="p-6 text-center text-slate-400 text-sm">No storefronts found</div>
                     )}
-
-                  {stockTab === "storefront" &&
-                    product.stockAvailability.storefronts.count === 0 && (
-                      <div className="text-center py-8 text-slate-500">
-                        <Store className="w-12 h-12 mx-auto mb-2 text-slate-300" />
-                        <p>No storefronts found</p>
-                      </div>
-                    )}
+                  </div>
                 </div>
               )}
             </>

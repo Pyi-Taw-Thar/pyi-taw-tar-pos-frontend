@@ -44,7 +44,13 @@ export function getConversionFactor(
   const selected = normalizeUnit(selectedUnit);
   if (selected === base) return 1;
   const conv = conversions?.find((c) => normalizeUnit(c.unit) === selected);
-  return conv?.factor ?? 1;
+  if (!conv) return 1;
+  // Handle chained conversion via convertFrom
+  if (conv.convertFrom && normalizeUnit(conv.convertFrom) !== base) {
+    const parentFactor = getConversionFactor(base, conv.convertFrom, conversions);
+    return conv.factor * parentFactor;
+  }
+  return conv.factor;
 }
 
 /** Price per one unit of `selectedUnit` (base price is per base unit). */
@@ -119,6 +125,7 @@ export function validateUomConversions(
 
   const seen = new Set<string>();
   let hasDefault = false;
+  const allUnitNames = new Set(conversions.map((c) => normalizeUnit(c.unit)));
 
   for (const row of conversions) {
     const unit = normalizeUnit(row.unit);
@@ -130,6 +137,31 @@ export function validateUomConversions(
     if (seen.has(unit)) return "Duplicate conversion unit names are not allowed";
     seen.add(unit);
     if (row.isDefaultSellingUnit) hasDefault = true;
+
+    // Validate convertFrom reference
+    if (row.convertFrom) {
+      const cf = normalizeUnit(row.convertFrom);
+      if (cf !== base && !allUnitNames.has(cf)) {
+        return `Convert-from unit "${row.convertFrom}" not found. Must be base unit or another conversion unit.`;
+      }
+    }
+  }
+
+  // Check for circular references
+  for (const row of conversions) {
+    if (row.convertFrom) {
+      const visited = new Set<string>();
+      let current = normalizeUnit(row.unit);
+      while (current) {
+        if (visited.has(current)) {
+          return "Circular reference detected in UOM conversions";
+        }
+        visited.add(current);
+        const next = conversions.find((c) => normalizeUnit(c.unit) === current);
+        if (!next || !next.convertFrom) break;
+        current = normalizeUnit(next.convertFrom);
+      }
+    }
   }
 
   if (conversions.length > 0 && !hasDefault) {

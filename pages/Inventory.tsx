@@ -116,6 +116,7 @@ export const Inventory: React.FC = () => {
       name: apiProduct.productName,
       category:
         (apiProduct.category as ProductCategory) || ProductCategory.OTHER,
+      brand: apiProduct.brand,
       stockWarehouse: apiProduct.stockWarehouse || 0,
       stockShop: apiProduct.stockShop || 0,
       costPrice: apiProduct.buyingPrice,
@@ -715,7 +716,7 @@ export const Inventory: React.FC = () => {
             <button
               onClick={loadProducts}
               disabled={isFetching}
-              className="inventory-refresh-btn bg-slate-600 text-white px-3 py-2 sm:px-4 rounded hover:bg-slate-700 disabled:opacity-50 text-sm sm:text-base"
+              className="inventory-refresh-btn bg-slate-100 text-slate-700 px-3 py-2 sm:px-4 rounded-lg hover:bg-slate-200 disabled:opacity-50 text-sm sm:text-base font-medium transition-colors"
             >
               {isFetching ? t("common.loading") : t("inventory.refresh")}
             </button>
@@ -726,7 +727,7 @@ export const Inventory: React.FC = () => {
                     setShowSelectBoxes(true);
                     setTransferMode("warehouse");
                   }}
-                  className="inventory-transfer-warehouse-btn bg-blue-600 text-white px-3 py-2 sm:px-4 rounded hover:bg-blue-700 flex items-center gap-2 text-sm sm:text-base"
+                  className="inventory-transfer-warehouse-btn bg-primary text-white px-3 py-2 sm:px-4 rounded-lg hover:bg-primary/90 flex items-center gap-2 text-sm sm:text-base font-medium transition-colors"
                 >
                   <Building2 className="w-4 h-4" />
                   <span className="hidden sm:inline">
@@ -741,7 +742,7 @@ export const Inventory: React.FC = () => {
                     setShowSelectBoxes(true);
                     setTransferMode("storefront");
                   }}
-                  className="inventory-transfer-storefront-btn bg-purple-600 text-white px-3 py-2 sm:px-4 rounded hover:bg-purple-700 flex items-center gap-2 text-sm sm:text-base"
+                  className="inventory-transfer-storefront-btn bg-primary text-white px-3 py-2 sm:px-4 rounded-lg hover:bg-primary/90 flex items-center gap-2 text-sm sm:text-base font-medium transition-colors"
                 >
                   <Store className="w-4 h-4" />
                   <span className="hidden sm:inline">
@@ -759,7 +760,7 @@ export const Inventory: React.FC = () => {
                 {transferMode === "warehouse" && (
                   <button
                     onClick={handleOpenTransferModal}
-                    className="bg-green-600 text-white px-3 py-2 sm:px-4 rounded hover:bg-green-700 flex items-center gap-2 text-sm sm:text-base"
+                    className="bg-primary text-white px-3 py-2 sm:px-4 rounded-lg hover:bg-primary/90 flex items-center gap-2 text-sm sm:text-base font-medium transition-colors"
                   >
                     <Building2 className="w-4 h-4" />
                     <span className="hidden sm:inline">
@@ -775,7 +776,7 @@ export const Inventory: React.FC = () => {
                 {transferMode === "storefront" && (
                   <button
                     onClick={handleOpenTransferStorefrontModal}
-                    className="bg-orange-600 text-white px-3 py-2 sm:px-4 rounded hover:bg-orange-700 flex items-center gap-2 text-sm sm:text-base"
+                    className="bg-primary text-white px-3 py-2 sm:px-4 rounded-lg hover:bg-primary/90 flex items-center gap-2 text-sm sm:text-base font-medium transition-colors"
                   >
                     <Store className="w-4 h-4" />
                     <span className="hidden sm:inline">
@@ -797,7 +798,7 @@ export const Inventory: React.FC = () => {
                   setSelectedProductIds([]);
                   setTransferMode(null);
                 }}
-                className="bg-red-600 text-white px-3 py-2 sm:px-4 rounded hover:bg-red-700 text-sm sm:text-base"
+                className="bg-slate-100 text-slate-700 px-3 py-2 sm:px-4 rounded-lg hover:bg-slate-200 text-sm sm:text-base font-medium transition-colors"
               >
                 <span className="hidden sm:inline">
                   {t("inventory.cancelSelection")}
@@ -817,7 +818,7 @@ export const Inventory: React.FC = () => {
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={isImporting}
-              className="inventory-import-excel-btn bg-emerald-600 text-white px-3 py-2 sm:px-4 rounded hover:bg-emerald-700 disabled:opacity-50 flex items-center gap-2 text-sm sm:text-base"
+              className="inventory-import-excel-btn bg-primary text-white px-3 py-2 sm:px-4 rounded-lg hover:bg-primary/90 disabled:opacity-50 flex items-center gap-2 text-sm sm:text-base font-medium transition-colors"
             >
               {isImporting ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -832,7 +833,7 @@ export const Inventory: React.FC = () => {
                 resetForm();
                 setIsModalOpen(true);
               }}
-              className="inventory-add-product-btn bg-primary text-white px-3 py-2 sm:px-4 rounded hover:bg-primary/90 text-sm sm:text-base"
+              className="inventory-add-product-btn bg-primary text-white px-3 py-2 sm:px-4 rounded-lg hover:bg-primary/90 text-sm sm:text-base font-medium transition-colors"
             >
               +{" "}
               <span className="hidden sm:inline">
