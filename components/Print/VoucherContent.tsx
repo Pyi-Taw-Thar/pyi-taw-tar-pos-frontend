@@ -40,6 +40,9 @@ export interface VoucherReceiptData {
   change?: number;
   note?: string;
   documentType?: VoucherDocumentType;
+  /** Credit person info (for credit orders) */
+  creditPersonName?: string;
+  creditPersonOutstanding?: number;
 }
 
 interface VoucherContentProps {
@@ -61,6 +64,13 @@ export const VoucherContent: React.FC<VoucherContentProps> = ({
     shopBranding.phone && `Tel: ${shopBranding.phone}`,
     shopBranding.website,
   ].filter(Boolean);
+
+  // Get logged-in user for printed-by
+  const adminData = typeof window !== "undefined"
+    ? JSON.parse(localStorage.getItem("adminData") || "{}")
+    : {};
+  const printedByName = adminData.name || "";
+  const printedByRole = adminData.role || "";
 
   return (
     <div className="voucher-container" data-paper={paperSize}>
@@ -188,6 +198,18 @@ export const VoucherContent: React.FC<VoucherContentProps> = ({
               <>
                 <p className="font-bold mb-1">Payment Info:</p>
                 <p>Method: {receiptData.paymentMethod}</p>
+                {receiptData.creditPersonName && (
+                  <>
+                    <p className="mt-1 font-medium text-orange-700">
+                      Credit Person: {receiptData.creditPersonName}
+                    </p>
+                    {receiptData.creditPersonOutstanding != null && receiptData.creditPersonOutstanding > 0 && (
+                      <p className="text-orange-600 text-sm">
+                        Total Outstanding: {receiptData.creditPersonOutstanding.toLocaleString()} MMK
+                      </p>
+                    )}
+                  </>
+                )}
                 {receiptData.paidAmount != null && (
                   <p>
                     Paid: {receiptData.paidAmount.toLocaleString()}{" "}
@@ -259,6 +281,11 @@ export const VoucherContent: React.FC<VoucherContentProps> = ({
           <p className="text-xs text-right">
             Authorised Sign: _________________
           </p>
+          {printedByName && (
+            <p className="text-xs text-slate-500 mt-2">
+              Printed by: {printedByName}
+            </p>
+          )}
         </div>
       </div>
 

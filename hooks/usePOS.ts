@@ -12,6 +12,7 @@ import {
   fetchStorefrontProfiles,
   StorefrontProfile,
 } from "../services/Storefront/fetchStorefrontProfiles";
+import { fetchCreditPersonaRecords } from "../services/Credit/fetchCreditPersonaRecords";
 import { fetchCategories } from "../services/Inventory/fetchCategories";
 import { createOrder } from "../services/Order/createOrder";
 import {
@@ -374,8 +375,29 @@ export function usePOS() {
       console.log("result", result);
 
       if (result.success) {
+        // Find credit person name if credit order
+        const creditPersonName =
+          paymentType === "credit" && selectedCreditPersonId
+            ? creditPersonas.find((cp) => cp._id === selectedCreditPersonId)?.name
+            : undefined;
+
+        // Fetch outstanding balance for credit person
+        let creditPersonOutstanding;
+        if (paymentType === "credit" && selectedCreditPersonId) {
+          try {
+            const recordsResponse = await fetchCreditPersonaRecords(selectedCreditPersonId, 1);
+            if (recordsResponse.success && recordsResponse.data) {
+              creditPersonOutstanding = recordsResponse.data.summary.totalOutstandingAmount;
+            }
+          } catch (e) {
+            console.error("Failed to fetch outstanding balance:", e);
+          }
+        }
+
         const receiptData = {
           date: new Date().toISOString(),
+          creditPersonName,
+          creditPersonOutstanding,
           invoiceNumber: result.data?.orderNumber || `INV-${Date.now()}`,
           // storefrontName: "HONGCHI Myanmar",
           items: cart.map((i) => ({
