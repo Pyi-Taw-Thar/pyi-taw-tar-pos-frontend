@@ -4,7 +4,8 @@ import type { Customer, CustomerAddress } from "./fetchCustomers";
 export interface UpdateCustomerPayload {
   name: string;
   phone: string;
-  addresses: CustomerAddress[];
+  address?: string;
+  township?: string;
 }
 
 export interface UpdateCustomerResponse {

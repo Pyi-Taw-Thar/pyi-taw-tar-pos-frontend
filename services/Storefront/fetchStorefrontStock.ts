@@ -66,6 +66,7 @@ export const fetchStorefrontStock = async (
   category?: string,
   search?: string,
   limitedOnly?: boolean,
+  brand?: string,
 ): Promise<FetchStorefrontStockResponse> => {
   try {
     const params = new URLSearchParams();
@@ -75,6 +76,7 @@ export const fetchStorefrontStock = async (
     if (category && category !== "all") params.append("category", category);
     if (search && search.trim()) params.append("search", search.trim());
     if (limitedOnly) params.append("limitedOnly", "true");
+    if (brand && brand !== "All") params.append("brand", brand);
 
     const url = `/storefront-inventory?${params.toString()}`;
     const response = await axios.get(url);

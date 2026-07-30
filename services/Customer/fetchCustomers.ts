@@ -12,7 +12,8 @@ export interface Customer {
   _id: string;
   name: string;
   phone: string;
-  addresses: CustomerAddress[];
+  address?: string;
+  township?: string;
   isActive: boolean;
   tier?: string;
   isCreditPerson?: boolean;
@@ -32,6 +33,7 @@ export interface CustomerPagination {
 export interface FetchCustomersQuery {
   page?: number;
   limit?: number;
+  search?: string;
 }
 
 export interface FetchCustomersResponse {
@@ -48,6 +50,9 @@ export const fetchCustomers = async (
     const params = new URLSearchParams();
     params.append("page", String(query.page ?? 1));
     params.append("limit", String(query.limit ?? 20));
+    if (query.search) {
+      params.append("search", query.search);
+    }
 
     const response = await axios.get(`/customer?${params.toString()}`);
     const body = response.data;

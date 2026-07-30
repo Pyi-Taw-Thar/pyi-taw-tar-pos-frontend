@@ -47,8 +47,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
     });
   };
 
-  const defaultAddress =
-    customer?.addresses?.find((a) => a.isDefault) || customer?.addresses?.[0];
+
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
@@ -148,39 +147,32 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
               <div>
                 <h4 className="font-semibold text-slate-700 mb-3 flex items-center gap-2">
                   <MapPin className="w-4 h-4" />
-                  {t("customers.addresses")} ({customer.addresses?.length || 0})
+                  {t("common.address")}
                 </h4>
 
-                {customer.addresses?.length === 0 ? (
+                {!customer.address && !customer.township ? (
                   <p className="text-sm text-slate-500">
                     {t("customers.noAddresses")}
                   </p>
                 ) : (
-                  <div className="space-y-3">
-                    {customer.addresses.map((addr, idx) => (
-                      <div
-                        key={addr._id || idx}
-                        className={`p-4 rounded-lg border ${
-                          addr.isDefault || addr === defaultAddress
-                            ? "bg-teal-50 border-teal-200"
-                            : "bg-slate-50 border-slate-200"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between mb-1">
-                          <p className="font-medium text-slate-800 text-sm">
-                            {addr.label || t("common.address")}
-                          </p>
-                          {addr.isDefault && (
-                            <span className="text-[10px] font-semibold uppercase tracking-wide text-teal-700 bg-teal-100 px-2 py-0.5 rounded">
-                              {t("customers.defaultAddress")}
-                            </span>
-                          )}
+                  <div className="p-4 rounded-lg border bg-teal-50 border-teal-200">
+                    <div className="grid grid-cols-1 gap-2">
+                      {customer.township && (
+                        <div>
+                          <span className="text-[10px] font-semibold uppercase tracking-wide text-teal-700 bg-teal-100 px-2 py-0.5 rounded mr-2">
+                            {t("customers.city")} (Township)
+                          </span>
+                          <span className="text-sm font-medium text-slate-800">
+                            {customer.township}
+                          </span>
                         </div>
-                        <p className="text-xs text-slate-600">
-                          {addr.addressLine}, {addr.city}
-                        </p>
-                      </div>
-                    ))}
+                      )}
+                      {customer.address && (
+                        <div className="mt-1 text-sm text-slate-600">
+                          {customer.address}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>

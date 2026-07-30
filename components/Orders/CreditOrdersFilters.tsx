@@ -2,6 +2,7 @@ import React from "react";
 import { Search } from "lucide-react";
 import { StorefrontProfile } from "../../services/Storefront/fetchStorefrontProfiles";
 import { useLanguage } from "@/context/LanguageContext";
+import { getPaymentMethodLabel } from "./orderUtils";
 
 interface CreditOrdersFiltersProps {
   search: string;
@@ -27,6 +28,10 @@ export const CreditOrdersFilters: React.FC<CreditOrdersFiltersProps> = ({
   filteredOrders,
 }) => {
   const { t } = useLanguage();
+  const uniquePaymentMethods = Array.from(
+    new Set(orders.map((o) => o.paymentMethod).filter(Boolean)),
+  );
+
   return (
     <div className="bg-white p-4 rounded-xl shadow-sm border mb-6">
       <div className="flex flex-col md:flex-row md:items-center gap-4">
@@ -59,7 +64,7 @@ export const CreditOrdersFilters: React.FC<CreditOrdersFiltersProps> = ({
             </select>
           </div>
 
-          {/* Payment Method Filter - Hot and Normal only */}
+          {/* Payment Method Filter */}
           <div className="flex items-center gap-2">
             <select
               className="border border-gray-200 rounded-lg px-3 py-2.5 sm:px-4 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm sm:text-base"
@@ -67,8 +72,11 @@ export const CreditOrdersFilters: React.FC<CreditOrdersFiltersProps> = ({
               onChange={(e) => onPaymentMethodChange(e.target.value)}
             >
               <option value="all">{t("creditOrders.allmethod")}</option>
-              <option value="normal">Normal</option>
-              <option value="hot">Hot</option>
+              {uniquePaymentMethods.map((method) => (
+                <option key={String(method)} value={String(method)}>
+                  {getPaymentMethodLabel(String(method))}
+                </option>
+              ))}
             </select>
           </div>
 

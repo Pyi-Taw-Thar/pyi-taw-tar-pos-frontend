@@ -12,6 +12,7 @@ import {
   fetchStorefrontProfiles,
   StorefrontProfile,
 } from "../services/Storefront/fetchStorefrontProfiles";
+import { fetchStorefrontBrands } from "../services/Storefront/fetchStorefrontBrands";
 import { fetchCategories } from "../services/Inventory/fetchCategories";
 import { createOrder } from "../services/Order/createOrder";
 import {
@@ -52,6 +53,7 @@ export function useQuickSale() {
   const [selectedStorefrontId, setSelectedStorefrontId] = useState<string>("");
   const [allStockItems, setAllStockItems] = useState<StorefrontStockItem[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
+  const [brands, setBrands] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -145,10 +147,26 @@ export function useQuickSale() {
     }
   };
 
+  const loadBrands = async (storefrontId: string) => {
+    try {
+      const response = await fetchStorefrontBrands(storefrontId);
+      if (response.success && response.data) {
+        setBrands(response.data);
+      }
+    } catch (error) {
+      console.error("Error loading storefront brands:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (!selectedStorefrontId) return;
+    loadBrands(selectedStorefrontId);
+  }, [selectedStorefrontId]);
+
   useEffect(() => {
     if (!selectedStorefrontId) return;
     loadStockItems();
-  }, [selectedStorefrontId, debouncedSearch, selectedCategory, currentPage]);
+  }, [selectedStorefrontId, debouncedSearch, selectedCategory, selectedBrand, currentPage]);
 
   const loadStockItems = async () => {
     setLoading(true);
@@ -159,6 +177,8 @@ export function useQuickSale() {
         itemsPerPage,
         selectedCategory === "All" ? undefined : selectedCategory,
         search,
+        undefined, // limitedOnly
+        selectedBrand || undefined,
       );
       if (response.success && response.data) {
         setAllStockItems(response.data);
@@ -178,23 +198,18 @@ export function useQuickSale() {
   const handleRefresh = async () => {
     setLoading(true);
     await loadStockItems();
+    if (selectedStorefrontId) {
+      await loadBrands(selectedStorefrontId);
+    }
     setLoading(false);
     toast.success(t("pos.productsRefreshed"));
   };
 
-  const uniqueBrands = [
-    ...new Set(
-      allStockItems
-        .map((item) => item.inventoryId?.brand)
-        .filter((b): b is string => !!b),
-    ),
-  ];
+  const uniqueBrands = brands;
 
   const filteredProducts = allStockItems.filter((item) => {
     const hideProduct = item.inventoryId?._id === "69a15d55218ec5ff9a3fe4a3";
     if (hideProduct) return false;
-    if (selectedBrand && item.inventoryId?.brand !== selectedBrand)
-      return false;
     return true;
   });
 
@@ -202,7 +217,6 @@ export function useQuickSale() {
     ? [
         ...new Set(
           allStockItems
-            .filter((item) => item.inventoryId?.brand === selectedBrand)
             .map((item) => item.inventoryId?.category)
             .filter((c): c is string => !!c),
         ),
@@ -387,7 +401,7 @@ export function useQuickSale() {
         paymentType: paymentType,
         paymentMethod: paymentMethodMap[paymentMethod],
         orderDate: new Date(createdAt).toISOString(),
-        ...(paymentType === "credit" && selectedCreditPersonId
+        ...(selectedCreditPersonId
           ? { creditPersonId: selectedCreditPersonId }
           : {}),
       };
@@ -396,8 +410,19 @@ export function useQuickSale() {
       console.log("result", result);
 
       if (result.success) {
+        const creditPersonName = result.data?.creditPersonId?.name || undefined;
+        const creditPersonAddress = result.data?.creditPersonId?.address || undefined;
+        const creditPersonTownship = result.data?.creditPersonId?.township || undefined;
+        const creditPersonOutstanding = selectedCreditPersonId
+          ? result.data?.creditPersonTotalOutstanding
+          : undefined;
+
         const receiptData = {
           date: new Date().toISOString(),
+          creditPersonName,
+          creditPersonOutstanding,
+          creditPersonAddress,
+          creditPersonTownship,
           invoiceNumber: result.data?.orderNumber || `INV-${Date.now()}`,
           storefrontName: "HONGCHI Myanmar",
           items: cart.map((i) => ({

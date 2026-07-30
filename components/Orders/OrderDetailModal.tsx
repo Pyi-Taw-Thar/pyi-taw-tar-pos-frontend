@@ -57,20 +57,16 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
 
     let creditPersonOutstanding = undefined;
     let creditPersonName = undefined;
+    let creditPersonAddress = undefined;
+    let creditPersonTownship = undefined;
 
     if (order.creditPersonId && typeof order.creditPersonId === "object") {
       creditPersonName = order.creditPersonId.name;
-      const creditPersonId = (order.creditPersonId as any)._id;
-      if (creditPersonId) {
-        try {
-          const recordsResponse = await fetchCreditPersonaRecords(creditPersonId, 1);
-          if (recordsResponse.success && recordsResponse.data) {
-            const totalOutstandingAmount = recordsResponse.data.summary.totalOutstandingAmount || 0;
-            creditPersonOutstanding = Math.max(0, totalOutstandingAmount - (order.finalAmount || 0));
-          }
-        } catch (e) {
-          console.error("Failed to fetch outstanding balance:", e);
-        }
+      creditPersonAddress = order.creditPersonId.address;
+      creditPersonTownship = order.creditPersonId.township;
+      // Use outstanding from order response (backend calculated)
+      if (order.creditPersonTotalOutstanding != null) {
+        creditPersonOutstanding = order.creditPersonTotalOutstanding;
       }
     }
 
@@ -98,6 +94,8 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
       note: order.note || undefined,
       creditPersonName,
       creditPersonOutstanding,
+      creditPersonAddress,
+      creditPersonTownship,
     };
 
     // Save receipt data to localStorage for A4 printing

@@ -8,7 +8,10 @@ import {
   Edit2,
   Plus,
   Trash2,
+  FileUp,
 } from "lucide-react";
+import { useRef } from "react";
+import { importCustomersExcel } from "../services/Customer/importCustomersExcel";
 import { toast } from "sonner";
 import { useLanguage } from "../context/LanguageContext";
 import {
@@ -60,11 +63,15 @@ export const Customers: React.FC = () => {
   const [detailOpen, setDetailOpen] = useState(false);
 
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
     password: "",
+    address: "",
+    township: "",
   });
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -75,30 +82,43 @@ export const Customers: React.FC = () => {
   const [editFormData, setEditFormData] = useState<{
     name: string;
     phone: string;
-    addresses: CustomerAddress[];
+    address: string;
+    township: string;
   }>({
     name: "",
     phone: "",
-    addresses: [],
+    address: "",
+    township: "",
   });
 
   const [updatingTierCustomerId, setUpdatingTierCustomerId] = useState<string | null>(null);
 
   const totalItems = pagination?.totalItems ?? customers.length;
 
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
   useEffect(() => {
-    setPage(1);
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1);
+    }, 400);
+
+    return () => clearTimeout(handler);
   }, [search]);
 
   useEffect(() => {
     loadCustomers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page]);
+  }, [page, debouncedSearch]);
 
   const loadCustomers = async () => {
     setLoading(true);
     try {
-      const response = await fetchCustomers({ page, limit });
+      const response = await fetchCustomers({
+        page,
+        limit,
+        search: debouncedSearch.trim() || undefined,
+      });
 
       if (response.success) {
         setCustomers(response.data);
@@ -125,20 +145,7 @@ export const Customers: React.FC = () => {
     }
   };
 
-  const filteredCustomers = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return customers;
-    return customers.filter(
-      (c) =>
-        c.name?.toLowerCase().includes(q) ||
-        c.phone?.includes(q) ||
-        c.addresses?.some(
-          (a) =>
-            a.city?.toLowerCase().includes(q) ||
-            a.addressLine?.toLowerCase().includes(q),
-        ),
-    );
-  }, [customers, search]);
+  const filteredCustomers = customers;
 
   const handleOpenDetail = (customer: Customer) => {
     setSelectedCustomer(customer);
@@ -187,20 +194,43 @@ export const Customers: React.FC = () => {
   };
 
   const getDefaultAddressPreview = (customer: Customer) => {
-    const addr =
-      customer.addresses?.find((a) => a.isDefault) || customer.addresses?.[0];
-    if (!addr) return "-";
-    return `${addr.addressLine}, ${addr.city}`;
+    const line = customer.address && customer.address !== "-" ? customer.address : "";
+    const township = customer.township || "";
+    if (line && township) return `${line}, ${township}`;
+    return line || township || "-";
+  };
+
+  const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsImporting(true);
+    try {
+      const response = await importCustomersExcel(file);
+      if (response.success) {
+        toast.success(
+          `${response.message} (Created: ${response.data.created}, Skipped: ${response.data.skipped}, Failed: ${response.data.failed})`
+        );
+        loadCustomers();
+      } else {
+        toast.error(response.message);
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Failed to import customers");
+    } finally {
+      setIsImporting(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
   };
 
   const handleOpenRegisterModal = () => {
-    setFormData({ name: "", phone: "", password: "" });
+    setFormData({ name: "", phone: "", password: "", address: "", township: "" });
     setIsRegisterModalOpen(true);
   };
 
   const handleCloseRegisterModal = () => {
     setIsRegisterModalOpen(false);
-    setFormData({ name: "", phone: "", password: "" });
+    setFormData({ name: "", phone: "", password: "", address: "", township: "" });
   };
 
   const handleRegisterCustomer = async () => {
@@ -212,14 +242,6 @@ export const Customers: React.FC = () => {
       toast.error(t("customers.phoneRequired"));
       return;
     }
-    // if (!formData.password.trim()) {
-    //   toast.error(t("customers.passwordRequired"));
-    //   return;
-    // }
-    // if (formData.password.trim().length < 6) {
-    //   toast.error(t("customers.passwordMinLength"));
-    //   return;
-    // }
 
     setIsSubmitting(true);
     try {
@@ -227,6 +249,8 @@ export const Customers: React.FC = () => {
         name: formData.name.trim(),
         phone: formData.phone.trim(),
         password: "password123",
+        address: formData.address.trim(),
+        township: formData.township.trim(),
       });
 
       if (response.success) {
@@ -257,14 +281,8 @@ export const Customers: React.FC = () => {
     setEditFormData({
       name: customer.name || "",
       phone: customer.phone || "",
-      addresses: normalizeAddresses(
-        (customer.addresses || []).map((a) => ({
-          label: a.label || "",
-          addressLine: a.addressLine || "",
-          city: a.city || "",
-          isDefault: !!a.isDefault,
-        })),
-      ),
+      address: customer.address || "",
+      township: customer.township || "",
     });
     setIsEditModalOpen(true);
   };
@@ -273,53 +291,7 @@ export const Customers: React.FC = () => {
     setIsEditModalOpen(false);
     setEditingCustomerId(null);
     setEditSubmitting(false);
-    setEditFormData({ name: "", phone: "", addresses: [] });
-  };
-
-  const handleAddAddress = () => {
-    setEditFormData((prev) => ({
-      ...prev,
-      addresses: [
-        ...prev.addresses,
-        {
-          label: "",
-          addressLine: "",
-          city: "",
-          isDefault: prev.addresses.length === 0,
-        },
-      ],
-    }));
-  };
-
-  const handleRemoveAddress = (idx: number) => {
-    setEditFormData((prev) => {
-      const next = prev.addresses.filter((_, i) => i !== idx);
-      const hasDefault = next.some((a) => a.isDefault);
-      const normalized = hasDefault
-        ? next
-        : next.map((a, i) => ({ ...a, isDefault: i === 0 }));
-      return { ...prev, addresses: normalized };
-    });
-  };
-
-  const handleSetDefaultAddress = (idx: number) => {
-    setEditFormData((prev) => ({
-      ...prev,
-      addresses: prev.addresses.map((a, i) => ({ ...a, isDefault: i === idx })),
-    }));
-  };
-
-  const handleUpdateAddressField = (
-    idx: number,
-    field: keyof Omit<CustomerAddress, "_id" | "isDefault">,
-    value: string,
-  ) => {
-    setEditFormData((prev) => ({
-      ...prev,
-      addresses: prev.addresses.map((a, i) =>
-        i === idx ? { ...a, [field]: value } : a,
-      ),
-    }));
+    setEditFormData({ name: "", phone: "", address: "", township: "" });
   };
 
   const handleEditCustomer = async () => {
@@ -334,28 +306,13 @@ export const Customers: React.FC = () => {
       return;
     }
 
-    const addresses = editFormData.addresses.map((a) => ({
-      label: (a.label || "").trim(),
-      addressLine: (a.addressLine || "").trim(),
-      city: (a.city || "").trim(),
-      isDefault: !!a.isDefault,
-    }));
-
-    if (addresses.length > 0 && !addresses.some((a) => a.isDefault)) {
-      addresses[0].isDefault = true;
-    }
-
-    if (addresses.some((a) => !a.addressLine || !a.city)) {
-      toast.error(t("customers.addressFieldsRequired"));
-      return;
-    }
-
     setEditSubmitting(true);
     try {
       const response = await updateCustomer(editingCustomerId, {
         name: editFormData.name.trim(),
         phone: editFormData.phone.trim(),
-        addresses,
+        address: editFormData.address.trim(),
+        township: editFormData.township.trim(),
       });
 
       if (response.success) {
@@ -393,6 +350,25 @@ export const Customers: React.FC = () => {
           >
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
             <span>{t("common.refresh")}</span>
+          </button>
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleImportExcel}
+            accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+            className="hidden"
+          />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isImporting}
+            className="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 sm:px-4 rounded-lg disabled:opacity-50 text-sm sm:text-base font-medium transition-colors"
+          >
+            {isImporting ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <FileUp className="w-4 h-4" />
+            )}
+            <span>Import Excel</span>
           </button>
           <button
             onClick={handleOpenRegisterModal}
@@ -442,8 +418,8 @@ export const Customers: React.FC = () => {
               <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500">
                 {t("common.address")}
               </th>
-              <th className="px-3 py-2 text-center text-xs font-semibold text-slate-500">
-                {t("customers.addressCount")}
+              <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500">
+                {t("customers.city")}
               </th>
               <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500">
                 {t("common.status")}
@@ -492,10 +468,10 @@ export const Customers: React.FC = () => {
                       {customer.phone}
                     </td>
                     <td className="px-3 py-2 text-slate-600 max-w-[200px] truncate">
-                      {getDefaultAddressPreview(customer)}
+                      {customer.address || "-"}
                     </td>
-                    <td className="px-3 py-2 text-center">
-                      {customer.addresses?.length ?? 0}
+                    <td className="px-3 py-2 text-slate-600 max-w-[150px] truncate">
+                      {customer.township || "-"}
                     </td>
                     <td className="px-3 py-2">
                       <span
@@ -602,7 +578,7 @@ export const Customers: React.FC = () => {
 
       {isRegisterModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-xl">
             <div className="p-6 border-b flex justify-between items-center">
               <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
                 <UserPlus className="w-5 h-5 text-primary" />
@@ -617,51 +593,69 @@ export const Customers: React.FC = () => {
             </div>
 
             <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  {t("common.name")} <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  className="w-full border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none"
-                  placeholder={t("customers.namePlaceholder")}
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    {t("common.name")} <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none"
+                    placeholder={t("customers.namePlaceholder")}
+                    value={formData.name}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    {t("common.phone")} <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="tel"
+                    className="w-full border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none"
+                    placeholder={t("customers.phonePlaceholder")}
+                    value={formData.phone}
+                    onChange={(e) =>
+                      setFormData({ ...formData, phone: e.target.value })
+                    }
+                  />
+                </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  {t("common.phone")} <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="tel"
-                  className="w-full border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none"
-                  placeholder={t("customers.phonePlaceholder")}
-                  value={formData.phone}
-                  onChange={(e) =>
-                    setFormData({ ...formData, phone: e.target.value })
-                  }
-                />
-              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    {t("customers.city")} (Township)
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none"
+                    placeholder="Enter township"
+                    value={formData.township}
+                    onChange={(e) =>
+                      setFormData({ ...formData, township: e.target.value })
+                    }
+                  />
+                </div>
 
-              {/* <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  {t("login.password")}{" "}
-                  <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="password"
-                  className="w-full border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none"
-                  placeholder={t("customers.passwordPlaceholder")}
-                  value={formData.password}
-                  onChange={(e) =>
-                    setFormData({ ...formData, password: e.target.value })
-                  }
-                />
-              </div> */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    {t("customers.addressLine")} (Address)
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none"
+                    placeholder="Enter address"
+                    value={formData.address}
+                    onChange={(e) =>
+                      setFormData({ ...formData, address: e.target.value })
+                    }
+                  />
+                </div>
+              </div>
             </div>
 
             <div className="p-6 border-t bg-slate-50 rounded-b-xl flex flex-col sm:flex-row justify-end gap-3">
@@ -742,108 +736,40 @@ export const Customers: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between gap-3">
-                <h3 className="font-semibold text-slate-800">
-                  {t("customers.addresses")}
-                </h3>
-                <button
-                  onClick={handleAddAddress}
-                  className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm"
-                >
-                  <Plus className="w-4 h-4" />
-                  {t("customers.addAddress")}
-                </button>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 mb-1">
+                    {t("customers.city")} (Township)
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/60 focus:border-primary"
+                    value={editFormData.township}
+                    onChange={(e) =>
+                      setEditFormData((prev) => ({
+                        ...prev,
+                        township: e.target.value,
+                      }))
+                    }
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 mb-1">
+                    {t("customers.addressLine")} (Address)
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/60 focus:border-primary"
+                    value={editFormData.address}
+                    onChange={(e) =>
+                      setEditFormData((prev) => ({
+                        ...prev,
+                        address: e.target.value,
+                      }))
+                    }
+                  />
+                </div>
               </div>
-
-              {editFormData.addresses.length === 0 ? (
-                <div className="text-sm text-slate-500">
-                  {t("customers.noAddresses")}
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {editFormData.addresses.map((addr, idx) => (
-                    <div
-                      key={idx}
-                      className="border border-slate-200 rounded-xl p-4 bg-white"
-                    >
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
-                        <div className="flex items-center gap-3">
-                          <label className="inline-flex items-center gap-2 text-sm text-slate-700">
-                            <input
-                              type="radio"
-                              name="defaultAddress"
-                              checked={!!addr.isDefault}
-                              onChange={() => handleSetDefaultAddress(idx)}
-                            />
-                            {t("customers.defaultAddress")}
-                          </label>
-                        </div>
-                        <button
-                          onClick={() => handleRemoveAddress(idx)}
-                          className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 hover:bg-red-100 text-red-700 text-sm"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                          {t("customers.removeAddress")}
-                        </button>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-500 mb-1">
-                            {t("customers.addressLabel")}
-                          </label>
-                          <input
-                            type="text"
-                            className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/60 focus:border-primary"
-                            value={addr.label || ""}
-                            onChange={(e) =>
-                              handleUpdateAddressField(
-                                idx,
-                                "label",
-                                e.target.value,
-                              )
-                            }
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-500 mb-1">
-                            {t("customers.city")}
-                          </label>
-                          <input
-                            type="text"
-                            className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/60 focus:border-primary"
-                            value={addr.city || ""}
-                            onChange={(e) =>
-                              handleUpdateAddressField(
-                                idx,
-                                "city",
-                                e.target.value,
-                              )
-                            }
-                          />
-                        </div>
-                        <div className="sm:col-span-2">
-                          <label className="block text-xs font-semibold text-slate-500 mb-1">
-                            {t("customers.addressLine")}
-                          </label>
-                          <input
-                            type="text"
-                            className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/60 focus:border-primary"
-                            value={addr.addressLine || ""}
-                            onChange={(e) =>
-                              handleUpdateAddressField(
-                                idx,
-                                "addressLine",
-                                e.target.value,
-                              )
-                            }
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
 
             <div className="p-6 border-t bg-slate-50 rounded-b-xl flex flex-col sm:flex-row justify-end gap-3">

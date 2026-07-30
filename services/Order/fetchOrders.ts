@@ -63,6 +63,7 @@ export interface Order {
   paymentMethod: string;
   createdAt: string;
   updatedAt: string;
+  creditPersonTotalOutstanding?: number;
   totalPaidAmount?: Record<string, unknown>;
   remainingBalance?: number;
   id?: string;

@@ -43,6 +43,8 @@ export interface VoucherReceiptData {
   /** Credit person info (for credit orders) */
   creditPersonName?: string;
   creditPersonOutstanding?: number;
+  creditPersonAddress?: string;
+  creditPersonTownship?: string;
 }
 
 interface VoucherContentProps {
@@ -364,7 +366,7 @@ export const VoucherContent: React.FC<VoucherContentProps> = ({
                       <span className="w-20 font-semibold">မြို့နယ်</span>
                       <span className="mr-2">:</span>
                       <span className="flex-1 border-b border-slate-300 min-h-[20px]">
-                        {/* Township value is empty line to fill manually as in picture */}
+                        {receiptData.creditPersonTownship || ""}
                       </span>
                     </div>
                     <div className="flex items-center">

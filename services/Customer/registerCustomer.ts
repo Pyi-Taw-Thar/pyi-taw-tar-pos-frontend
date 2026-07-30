@@ -5,6 +5,8 @@ export interface RegisterCustomerPayload {
   name: string;
   phone: string;
   password: string;
+  address?: string;
+  township?: string;
 }
 
 export interface RegisterCustomerResponse {

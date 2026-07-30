@@ -46,7 +46,7 @@ interface CheckoutModalProps {
 
 const PAYMENT_METHODS = {
   paid: ["Cash", "KBZPay", "WavePay", "AYA Pay", "UAB Pay", "MMQR", "Bank Transfer", "FOC"],
-  credit: ["Normal", "Hot"],
+  credit: ["Cash", "KBZPay", "WavePay", "AYA Pay", "UAB Pay", "MMQR", "Bank Transfer", "FOC"],
 };
 
 export const CheckoutModal: React.FC<CheckoutModalProps> = ({
@@ -114,28 +114,27 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
               </div>
             </div>
 
-            {paymentType === "credit" && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t("pos.selectCreditPerson")}</label>
-                <div className="relative">
-                  <User className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                  <select
-                    className="w-full pl-9 pr-4 py-2.5 border border-orange-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-orange-400 outline-none bg-orange-50"
-                    value={selectedCreditPersonId}
-                    onChange={(e) => onCreditPersonChange(e.target.value)}
-                  >
-                    <option value="">
-                      {creditPersonas.length === 0
-                        ? `-- ${t("pos.noCreditPersons")} --`
-                        : `-- ${t("pos.selectCreditPersonOptional")} --`}
-                    </option>
-                    {creditPersonas.map((p) => (
-                      <option key={p._id} value={p._id}>{p.name} - {p.phone}</option>
-                    ))}
-                  </select>
-                </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t("pos.selectCreditPerson")}</label>
+              <div className="relative">
+                <User className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                <select
+                  className="w-full pl-9 pr-4 py-2.5 border border-orange-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-orange-400 outline-none bg-orange-50"
+                  value={selectedCreditPersonId}
+                  onChange={(e) => onCreditPersonChange(e.target.value)}
+                >
+                  <option value="">
+                    {creditPersonas.length === 0
+                      ? `-- ${t("pos.noCreditPersons")} --`
+                      : `-- ${t("pos.selectCreditPersonOptional")} --`}
+                  </option>
+                  {creditPersonas.map((p) => (
+                    <option key={p._id} value={p._id}>{p.name}{p.phone ? ` - ${p.phone}` : ""}</option>
+                  ))}
+                </select>
               </div>
-            )}
+            </div>
+
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">{t("pos.paymentMethod")}</label>
