@@ -27,6 +27,7 @@ import { detectDevice } from "../../utils/deviceDetect";
 import { useNavigate } from "react-router-dom";
 import { AddItemsToOrderModal } from "./AddItemsToOrderModal";
 import { RemoveItemsFromOrderModal } from "./RemoveItemsFromOrderModal";
+import { fetchCreditPersonaRecords } from "../../services/Credit/fetchCreditPersonaRecords";
 
 interface OrderDetailModalProps {
   isOpen: boolean;
@@ -51,8 +52,27 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
   const [showAddItemsModal, setShowAddItemsModal] = useState(false);
   const [showRemoveItemsModal, setShowRemoveItemsModal] = useState(false);
 
-  const handlePrintOrder = () => {
+  const handlePrintOrder = async () => {
     if (!order) return;
+
+    let creditPersonOutstanding = undefined;
+    let creditPersonName = undefined;
+
+    if (order.creditPersonId && typeof order.creditPersonId === "object") {
+      creditPersonName = order.creditPersonId.name;
+      const creditPersonId = (order.creditPersonId as any)._id;
+      if (creditPersonId) {
+        try {
+          const recordsResponse = await fetchCreditPersonaRecords(creditPersonId, 1);
+          if (recordsResponse.success && recordsResponse.data) {
+            const totalOutstandingAmount = recordsResponse.data.summary.totalOutstandingAmount || 0;
+            creditPersonOutstanding = Math.max(0, totalOutstandingAmount - (order.finalAmount || 0));
+          }
+        } catch (e) {
+          console.error("Failed to fetch outstanding balance:", e);
+        }
+      }
+    }
 
     // Transform order data to receipt format
     const receiptData = {
@@ -76,6 +96,8 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
       paidAmount: order.paidAmount,
       change: order.extraChange,
       note: order.note || undefined,
+      creditPersonName,
+      creditPersonOutstanding,
     };
 
     // Save receipt data to localStorage for A4 printing

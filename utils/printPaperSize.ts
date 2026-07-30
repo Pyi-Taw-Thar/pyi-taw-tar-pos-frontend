@@ -70,19 +70,15 @@ export const getPrintPaperStyles = (paperSize: PrintPaperSize): string => {
       return `
         ${base}
         @media print {
-          @page { size: A5; margin: 8mm; }
+          @page { size: A5; margin: 0; }
           .voucher-container {
             width: 100% !important;
             max-width: 100% !important;
-            padding: 10mm !important;
           }
         }
         @media screen {
           .voucher-container {
             max-width: 148mm;
-            min-height: 210mm;
-            padding: 10mm;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
           }
         }
         .voucher-container { font-size: 11px; }
@@ -220,19 +216,15 @@ export const getPrintPaperStyles = (paperSize: PrintPaperSize): string => {
       return `
         ${base}
         @media print {
-          @page { size: A4; margin: 10mm; }
+          @page { size: A4; margin: 0; }
           .voucher-container {
             width: 100% !important;
             max-width: 100% !important;
-            padding: 15mm !important;
           }
         }
         @media screen {
           .voucher-container {
             max-width: 210mm;
-            min-height: 297mm;
-            padding: 20mm;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
           }
         }
         .voucher-container { font-size: 13px; }
@@ -247,29 +239,90 @@ export const getPrintPaperStyles = (paperSize: PrintPaperSize): string => {
 };
 
 export const getSharedTableStyles = (): string => `
+  .voucher-page {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-sizing: border-box;
+    page-break-after: always;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  @media screen {
+    .voucher-page {
+      background: white;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      margin: 20px auto;
+    }
+    .voucher-container[data-paper="A4"] .voucher-page {
+      width: 210mm;
+      min-height: 297mm;
+      padding: 15mm;
+    }
+    .voucher-container[data-paper="A5"] .voucher-page {
+      width: 148mm;
+      min-height: 210mm;
+      padding: 10mm;
+    }
+  }
+  @media print {
+    .voucher-page {
+      width: 100% !important;
+      min-height: 100vh !important;
+      height: 100vh !important;
+      margin: 0 !important;
+      box-shadow: none !important;
+    }
+    .voucher-container[data-paper="A4"] .voucher-page {
+      padding: 15mm !important;
+    }
+    .voucher-container[data-paper="A5"] .voucher-page {
+      padding: 10mm !important;
+    }
+  }
+
   .voucher-table {
     width: 100%;
     border-collapse: collapse;
     margin: 16px 0;
+    border: 1px solid #000;
+  }
+  .voucher-table th,
+  .voucher-table td {
+    border: 1px solid #000;
+    padding: 6px 8px;
+    color: #000;
+    font-size: 12px;
   }
   .voucher-table th {
-    background-color: #4CAF50;
-    color: white;
+    background-color: transparent;
     text-align: center;
     font-weight: 700;
-    text-transform: uppercase;
   }
-  .voucher-table th:first-child { text-align: left; }
-  .voucher-table th:last-child { text-align: right; }
-  .voucher-table td {
-    background-color: #E8E8E8;
+  .voucher-table td:nth-child(1) { text-align: center; width: 6%; }
+  .voucher-table td:nth-child(2) { text-align: left; width: 38%; }
+  .voucher-table td:nth-child(3) { text-align: center; width: 10%; }
+  .voucher-table td:nth-child(4) { text-align: center; width: 10%; }
+  .voucher-table td:nth-child(5) { text-align: center; width: 8%; }
+  .voucher-table td:nth-child(6) { text-align: right; width: 14%; }
+  .voucher-table td:nth-child(7) { text-align: right; width: 14%; font-weight: 600; }
+
+  .voucher-checklist-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    border: 1px solid #000;
+  }
+  .voucher-checklist-table th,
+  .voucher-checklist-table td {
+    border: 1px solid #000;
+    padding: 6px;
     color: #000;
-    border-bottom: 3px solid white;
+    font-size: 11px;
+    text-align: center;
   }
-  .voucher-table td:first-child { text-align: left; }
-  .voucher-table td:nth-child(2) { text-align: left; }
-  .voucher-table td:nth-child(3),
-  .voucher-table td:nth-child(4),
-  .voucher-table td:nth-child(5) { text-align: center; }
-  .voucher-table td:last-child { text-align: right; font-weight: 600; }
+  .voucher-checklist-table th {
+    background-color: transparent;
+    font-weight: 700;
+  }
 `;

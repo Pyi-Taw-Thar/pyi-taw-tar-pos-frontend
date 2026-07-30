@@ -130,8 +130,8 @@ export const Customers: React.FC = () => {
     if (!q) return customers;
     return customers.filter(
       (c) =>
-        c.name.toLowerCase().includes(q) ||
-        c.phone.includes(q) ||
+        c.name?.toLowerCase().includes(q) ||
+        c.phone?.includes(q) ||
         c.addresses?.some(
           (a) =>
             a.city?.toLowerCase().includes(q) ||
