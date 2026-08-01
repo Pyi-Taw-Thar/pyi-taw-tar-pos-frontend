@@ -3,6 +3,7 @@ import axios from "../axios";
 interface TransferLineItem {
   productCode: string;
   quantity: number;
+  grnLineItemId?: string;
 }
 
 export interface TransferGRNToStorefrontRequest {

@@ -27,6 +27,8 @@ interface GRNListProps {
   onTransferGRN?: (grn: GRNData) => void;
   onTransferGRNToStorefront?: (grn: GRNData) => void;
   pagination: PaginationData;
+  grnFilter: "pending" | "completed";
+  setGrnFilter: (filter: "pending" | "completed") => void;
 }
 
 export const GRNList: React.FC<GRNListProps> = ({
@@ -36,10 +38,9 @@ export const GRNList: React.FC<GRNListProps> = ({
   onTransferGRN,
   onTransferGRNToStorefront,
   pagination,
+  grnFilter,
+  setGrnFilter,
 }) => {
-  const [grnFilter, setGrnFilter] = useState<"pending" | "completed">(
-    "pending",
-  );
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   const handleUpdateStatus = async (grnId: string, newStatus: string) => {
@@ -128,11 +129,10 @@ export const GRNList: React.FC<GRNListProps> = ({
               <button
                 key={page}
                 onClick={() => handlePageChange(page)}
-                className={`px-3 py-1 rounded-lg text-sm font-medium ${
-                  page === currentPage
+                className={`px-3 py-1 rounded-lg text-sm font-medium ${page === currentPage
                     ? "bg-slate-800 text-white"
                     : "text-slate-600 hover:bg-slate-50 border"
-                }`}
+                  }`}
               >
                 {page}
               </button>
@@ -184,28 +184,26 @@ export const GRNList: React.FC<GRNListProps> = ({
       <div className="flex gap-2">
         <button
           onClick={() => setGrnFilter("pending")}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            grnFilter === "pending"
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${grnFilter === "pending"
               ? "bg-slate-800 text-white"
               : "bg-white text-slate-600 hover:bg-slate-50 border"
-          }`}
+            }`}
         >
           Pending
         </button>
         <button
           onClick={() => setGrnFilter("completed")}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            grnFilter === "completed"
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${grnFilter === "completed"
               ? "bg-primary text-white"
               : "bg-white text-slate-600 hover:bg-slate-50 border"
-          }`}
+            }`}
         >
           Completed
         </button>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
-        <div className="h-[calc(100vh-450px)] overflow-y-auto">
+        <div className="h-[calc(100vh-500px)] overflow-y-auto">
           <table className="w-full text-sm text-left">
             <thead className="bg-slate-50 border-b sticky top-0 z-10">
               <tr>

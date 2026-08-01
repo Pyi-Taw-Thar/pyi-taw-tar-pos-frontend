@@ -60,6 +60,7 @@ export const VoucherContent: React.FC<VoucherContentProps> = ({
   paperSize,
   formatDate,
 }) => {
+  console.log("receiptData:", receiptData);
   const isThermal = paperSize === "thermal-80mm";
   const isQuotation = receiptData.documentType === "quotation";
   const contactParts = [
@@ -471,10 +472,10 @@ export const VoucherContent: React.FC<VoucherContentProps> = ({
                         <span className="font-semibold">ပေးငွေ:</span>
                         <span>{(receiptData.paidAmount ?? 0).toLocaleString()}</span>
                       </div>
-                      <div className="flex justify-between border-t border-slate-400 pt-2 font-bold">
-                        <span>စုစုပေါင်းကျသင့်ငွေ:</span>
+                      <div className="flex justify-between border-t border-slate-400 pt-2">
+                        <span>ကျန်ငွေ:</span>
                         <span>
-                          {receiptData.total.toLocaleString()} {shopBranding.currency}
+                          {(receiptData.total - (receiptData.paidAmount ?? 0)).toLocaleString()} {shopBranding.currency}
                         </span>
                       </div>
                       {receiptData.creditPersonName && (
@@ -482,13 +483,13 @@ export const VoucherContent: React.FC<VoucherContentProps> = ({
                           <div className="flex justify-between text-slate-700 pt-1">
                             <span className="font-semibold">ယခင်ကျန်ငွေ:</span>
                             <span>
-                              {(receiptData.creditPersonOutstanding ?? 0).toLocaleString()} {shopBranding.currency}
+                              {((receiptData.creditPersonOutstanding ?? 0) - (receiptData.total - (receiptData.paidAmount ?? 0))).toLocaleString()} {shopBranding.currency}
                             </span>
                           </div>
                           <div className="flex justify-between border-t border-slate-400 pt-2 font-bold text-base text-red-700">
                             <span>စုစုပေါင်းကျန်ငွေ:</span>
                             <span>
-                              {((receiptData.creditPersonOutstanding ?? 0) + receiptData.total).toLocaleString()} {shopBranding.currency}
+                              {(receiptData.creditPersonOutstanding ?? 0).toLocaleString()} {shopBranding.currency}
                             </span>
                           </div>
                         </>

@@ -227,12 +227,12 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                     <th className="px-3 py-3 font-medium text-slate-600 text-right">
                       Products
                     </th>
-                    <th className="px-3 py-3 font-medium text-slate-600 text-right">
+                    {/* <th className="px-3 py-3 font-medium text-slate-600 text-right">
                       Received
                     </th>
                     <th className="px-3 py-3 font-medium text-slate-600 text-right">
                       Remaining
-                    </th>
+                    </th> */}
                     <th className="px-3 py-3 font-medium text-slate-600">Created By</th>
                     <th className="px-3 py-3 font-medium text-slate-600">Date</th>
                   </tr>
@@ -299,12 +299,12 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                               {formatMMK(po.totalAmount)}
                             </td>
                             <td className="px-3 py-3 text-right">{po.products.length}</td>
-                            <td className="px-3 py-3 text-right text-green-600">
+                            {/* <td className="px-3 py-3 text-right text-green-600">
                               {received}/{ordered}
                             </td>
                             <td className="px-3 py-3 text-right text-amber-600">
                               {remaining}
-                            </td>
+                            </td> */}
                             <td className="px-3 py-3 text-slate-600">
                               {po.purchasedBy?.name || "—"}
                             </td>
@@ -324,9 +324,8 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                                     <tr>
                                       <th className="px-3 py-2 text-left">Product</th>
                                       <th className="px-3 py-2 text-left">Code</th>
-                                      <th className="px-3 py-2 text-right">Ordered</th>
+                                      {/* <th className="px-3 py-2 text-right">Ordered</th> */}
                                       <th className="px-3 py-2 text-right">Received</th>
-                                      <th className="px-3 py-2 text-right">Remaining</th>
                                       <th className="px-3 py-2 text-right">Price</th>
                                     </tr>
                                   </thead>
@@ -335,17 +334,17 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                                       <tr key={`${p.inventoryId}-${idx}`}>
                                         <td className="px-3 py-2">{p.productName}</td>
                                         <td className="px-3 py-2">{p.productCode}</td>
-                                        <td className="px-3 py-2 text-right">
+                                        {/* <td className="px-3 py-2 text-right">
                                           {p.purchaseQuantity}
-                                        </td>
+                                        </td> */}
                                         <td className="px-3 py-2 text-right">
-                                          {p.receivedQuantity}
+                                          {p.receivedQuantity} {p.unit}
                                         </td>
-                                        <td className="px-3 py-2 text-right">
+                                        {/* <td className="px-3 py-2 text-right">
                                           {p.remainingQuantity}
-                                        </td>
+                                        </td> */}
                                         <td className="px-3 py-2 text-right">
-                                          {formatMMK(p.buyingPrice)}
+                                          {formatMMK(p.buyingPrice * p.receivedQuantity)}
                                         </td>
                                       </tr>
                                     ))}

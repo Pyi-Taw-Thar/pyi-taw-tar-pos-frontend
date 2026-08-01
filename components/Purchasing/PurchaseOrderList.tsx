@@ -38,11 +38,14 @@ interface PurchaseOrderListProps {
   pagination: PaginationData;
   deletedPagination: PaginationData;
   onCreateGRN?: (po: ApiPurchaseOrder) => void;
+  poFilter: "pending" | "arrived" | "deleted";
+  setPoFilter: (filter: "pending" | "arrived" | "deleted") => void;
 }
 
 export const PurchaseOrderList: React.FC<PurchaseOrderListProps> = ({
   poList,
   deletedPOList,
+  suppliers,
   setIsCreateModalOpen,
   loadPurchases,
   loadDeletedPurchases,
@@ -50,11 +53,10 @@ export const PurchaseOrderList: React.FC<PurchaseOrderListProps> = ({
   pagination,
   deletedPagination,
   onCreateGRN,
+  poFilter,
+  setPoFilter,
 }) => {
   const { t } = useLanguage();
-  const [poFilter, setPoFilter] = useState<"pending" | "arrived" | "deleted">(
-    "pending",
-  );
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [poToDelete, setPoToDelete] = useState<ApiPurchaseOrder | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -234,11 +236,10 @@ export const PurchaseOrderList: React.FC<PurchaseOrderListProps> = ({
                     handlePageChange(page);
                   }
                 }}
-                className={`px-3 py-1 rounded-lg text-sm font-medium ${
-                  page === currentPage
-                    ? "bg-slate-800 text-white"
-                    : "text-slate-600 hover:bg-slate-50 border"
-                }`}
+                className={`px-3 py-1 rounded-lg text-sm font-medium ${page === currentPage
+                  ? "bg-slate-800 text-white"
+                  : "text-slate-600 hover:bg-slate-50 border"
+                  }`}
               >
                 {page}
               </button>
@@ -281,38 +282,35 @@ export const PurchaseOrderList: React.FC<PurchaseOrderListProps> = ({
       <div className="flex gap-2">
         <button
           onClick={() => setPoFilter("pending")}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            poFilter === "pending"
-              ? "bg-slate-800 text-white"
-              : "bg-white text-slate-600 hover:bg-slate-50 border"
-          }`}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${poFilter === "pending"
+            ? "bg-slate-800 text-white"
+            : "bg-white text-slate-600 hover:bg-slate-50 border"
+            }`}
         >
           {t("purchasing.pending")}
         </button>
         <button
           onClick={() => setPoFilter("arrived")}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            poFilter === "arrived"
-              ? "bg-primary text-white"
-              : "bg-white text-slate-600 hover:bg-slate-50 border"
-          }`}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${poFilter === "arrived"
+            ? "bg-primary text-white"
+            : "bg-white text-slate-600 hover:bg-slate-50 border"
+            }`}
         >
           {t("purchasing.arrived")}
         </button>
         <button
           onClick={() => setPoFilter("deleted")}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            poFilter === "deleted"
-              ? "bg-red-800 text-white"
-              : "bg-white text-slate-600 hover:bg-slate-50 border"
-          }`}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${poFilter === "deleted"
+            ? "bg-red-800 text-white"
+            : "bg-white text-slate-600 hover:bg-slate-50 border"
+            }`}
         >
           {t("purchasing.deleted")}
         </button>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
-        <div className="h-[calc(100vh-450px)] overflow-y-auto">
+        <div className="h-[calc(100vh-510px)] overflow-y-auto">
           <table className="w-full text-xs sm:text-sm text-left">
             <thead className="bg-slate-50 border-b sticky top-0 z-10 text-xs">
               <tr>
@@ -347,9 +345,8 @@ export const PurchaseOrderList: React.FC<PurchaseOrderListProps> = ({
                   return (
                     <tr
                       key={po._id}
-                      className={`hover:bg-slate-50 ${
-                        remaining > 0 ? "bg-amber-50/30" : ""
-                      }`}
+                      className={`hover:bg-slate-50 ${remaining > 0 ? "bg-amber-50/30" : ""
+                        }`}
                     >
                       <td className="p-3 sm:p-4 font-semibold text-slate-800">
                         {po.poNumber}
@@ -377,15 +374,14 @@ export const PurchaseOrderList: React.FC<PurchaseOrderListProps> = ({
                       </td>
                       <td className="p-3 sm:p-4">
                         <span
-                          className={`px-2 py-1 rounded-full text-[10px] font-bold ${
-                            po.status === "pending"
-                              ? "bg-yellow-100 text-yellow-700"
-                              : po.status === "arrived"
+                          className={`px-2 py-1 rounded-full text-[10px] font-bold ${po.status === "pending"
+                            ? "bg-yellow-100 text-yellow-700"
+                            : po.status === "arrived"
                               ? "bg-blue-100 text-blue-700"
                               : po.status === "completed"
-                              ? "bg-green-100 text-green-700"
-                              : "bg-slate-100 text-slate-700"
-                          }`}
+                                ? "bg-green-100 text-green-700"
+                                : "bg-slate-100 text-slate-700"
+                            }`}
                         >
                           {po.status.toUpperCase()}
                         </span>
@@ -404,11 +400,10 @@ export const PurchaseOrderList: React.FC<PurchaseOrderListProps> = ({
                           {poFilter !== "deleted" && (
                             <button
                               onClick={() => setSelectedPoForPayment(po)}
-                              className={`text-xs px-2.5 py-1 rounded font-medium transition-colors flex items-center gap-1 border ${
-                                remaining > 0
-                                  ? "bg-green-600 text-white hover:bg-green-700 border-green-600 shadow-sm"
-                                  : "bg-slate-50 text-slate-600 hover:bg-slate-100 border-slate-200"
-                              }`}
+                              className={`text-xs px-2.5 py-1 rounded font-medium transition-colors flex items-center gap-1 border ${remaining > 0
+                                ? "bg-green-600 text-white hover:bg-green-700 border-green-600 shadow-sm"
+                                : "bg-slate-50 text-slate-600 hover:bg-slate-100 border-slate-200"
+                                }`}
                               title="Record Credit Payment"
                             >
                               <CreditCard className="w-3 h-3" /> Pay

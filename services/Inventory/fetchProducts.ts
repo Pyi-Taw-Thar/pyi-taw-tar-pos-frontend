@@ -1,19 +1,41 @@
 import axios from "../axios";
 import { Product } from "../../types";
 
+export interface ProductQueryParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  category?: string;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+  isDeleted?: boolean;
+}
+
+export interface PaginationMeta {
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  itemsPerPage: number;
+}
+
 interface FetchProductsResponse {
   success: boolean;
   message: string;
   data: Product[];
+  pagination?: PaginationMeta;
 }
 
 /**
- * Fetch products from API
+ * Fetch products from API with search/pagination parameters
  * @returns {Promise<FetchProductsResponse>} Response from API with products data
  */
-export const fetchProducts = async (): Promise<FetchProductsResponse> => {
+export const fetchProducts = async (
+  params?: ProductQueryParams
+): Promise<FetchProductsResponse> => {
   try {
-    const response = await axios.get("/inventory");
+    const response = await axios.get("/inventory", {
+      params,
+    });
 
     return response.data;
   } catch (error) {

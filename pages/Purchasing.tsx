@@ -1,13 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import React from "react";
 import { ShoppingBag, FileText, PackageCheck } from "lucide-react";
-import { Supplier, Product, ApiPurchaseOrder } from "../types";
-import { fetchSuppliers } from "../services/Supplier/fetchSuppliers";
-import { fetchProducts } from "../services/Inventory/fetchProducts";
-import { fetchPurchases } from "../services/Purchase/fetchPurchases";
-import { fetchGRNs, GRNData } from "../services/Purchase/fetchGRNs";
-import { toast } from "sonner";
-import { useLanguage } from "../context/LanguageContext";
+import { usePurchasing } from "../hooks/usePurchasing";
 import { PurchaseOrderList } from "../components/Purchasing/PurchaseOrderList";
 import { CreatePOModal } from "../components/Purchasing/CreatePOModal";
 import { GRNList } from "../components/Purchasing/GRNList";
@@ -17,195 +10,65 @@ import { PODetailModal } from "../components/Purchasing/PODetailModal";
 import { TransferWarehouseModal } from "../components/Purchasing/TransferWarehouseModal";
 import { TransferStorefrontModal } from "../components/Purchasing/TransferStorefrontModal";
 
-type TabType = "po" | "grn";
-
 export const Purchasing: React.FC = () => {
-  const { t } = useLanguage();
-  const location = useLocation();
-  const [activeTab, setActiveTab] = useState<TabType>("po");
-
-  // Shared State
-  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
-
-  // PO State
-  const [poList, setPOList] = useState<ApiPurchaseOrder[]>([]);
-  const [deletedPOList, setDeletedPOList] = useState<ApiPurchaseOrder[]>([]);
-  const [poPagination, setPoPagination] = useState({
-    currentPage: 1,
-    totalPages: 1,
-    totalItems: 0,
-    itemsPerPage: 10,
-  });
-  const [deletedPoPagination, setDeletedPoPagination] = useState({
-    currentPage: 1,
-    totalPages: 1,
-    totalItems: 0,
-    itemsPerPage: 10,
-  });
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [selectedPOId, setSelectedPOId] = useState<string | null>(null);
-  const [isPODetailModalOpen, setIsPODetailModalOpen] = useState(false);
-
-  // GRN State
-  const [grnList, setGRNList] = useState<GRNData[]>([]);
-  const [grnPagination, setGrnPagination] = useState({
-    currentPage: 1,
-    totalPages: 1,
-    totalItems: 0,
-    itemsPerPage: 10,
-  });
-  const [isCreateGRNModalOpen, setIsCreateGRNModalOpen] = useState(false);
-  const [selectedGRNId, setSelectedGRNId] = useState<string | null>(null);
-  const [isGRNDetailModalOpen, setIsGRNDetailModalOpen] = useState(false);
-  const [transferModalType, setTransferModalType] = useState<
-    "warehouse" | "storefront" | null
-  >(null);
-  const [transferGRNId, setTransferGRNId] = useState<string | null>(null);
-
-  // Fetch Suppliers and Products
-  useEffect(() => {
-    const state = location.state as { viewPoId?: string } | null;
-    if (state?.viewPoId) {
-      setSelectedPOId(state.viewPoId);
-      setIsPODetailModalOpen(true);
-      setActiveTab("po");
-      window.history.replaceState({}, document.title);
-    }
-  }, [location.state]);
-
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        // Fetch Suppliers
-        const supplierRes = await fetchSuppliers();
-        if (supplierRes.success) {
-          setSuppliers(supplierRes.data);
-        }
-
-        // Fetch Products
-        const productRes = await fetchProducts();
-        if (productRes.success && Array.isArray(productRes.data)) {
-          setProducts(productRes.data);
-        } else if (Array.isArray(productRes)) {
-          setProducts(productRes);
-        } else if (productRes.data && Array.isArray(productRes.data)) {
-          setProducts(productRes.data);
-        }
-
-        // Fetch Purchase Orders
-        loadPurchases();
-
-        // Fetch Deleted Purchase Orders
-        loadDeletedPurchases();
-
-        // Fetch GRNs
-        loadGRNs();
-      } catch (error) {
-        console.error("Failed to load data", error);
-      }
-    };
-    loadData();
-  }, []);
-
-  const loadPurchases = async (
-    page: number = 1,
-    limit: number = 10,
-    status: "pending" | "arrived" = "pending",
-  ) => {
-    try {
-      const res = await fetchPurchases({ page, limit, status });
-      if (res.success) {
-        setPOList(res.data);
-        // console.log(res.data);
-        setPoPagination(res.pagination);
-      }
-    } catch (error) {
-      console.error("Failed to load POs", error);
-      toast.error(t("purchasing.failedToLoadPO"));
-    }
-  };
-
-  const loadDeletedPurchases = async (page: number = 1, limit: number = 10) => {
-    try {
-      const res = await fetchPurchases({ page, limit, isDeleted: true });
-      if (res.success) {
-        setDeletedPOList(res.data);
-        setDeletedPoPagination(res.pagination);
-        // console.log(res.data);
-      }
-    } catch (error) {
-      console.error("Failed to load deleted POs", error);
-      toast.error("Failed to load deleted POs");
-    }
-  };
-
-  const loadGRNs = async (page: number = 1, limit: number = 10) => {
-    try {
-      const res = await fetchGRNs({ page, limit });
-      if (res.success) {
-        setGRNList(res.data);
-        setGrnPagination(res.pagination);
-      }
-    } catch (error) {
-      console.error("Failed to load GRNs", error);
-      toast.error(t("purchasing.failedToLoadGRN"));
-    }
-  };
-
-  const handleGRNSuccess = () => {
-    loadGRNs(grnPagination.currentPage);
-    loadPurchases(poPagination.currentPage);
-    setActiveTab("grn");
-  };
-
-  const handleCreateGRNFromPO = (po: ApiPurchaseOrder) => {
-    setSelectedPOId(po._id);
-    setIsCreateGRNModalOpen(true);
-  };
-
-  const handleViewPO = (po: ApiPurchaseOrder) => {
-    setSelectedPOId(po._id);
-    setIsPODetailModalOpen(true);
-  };
-
-  const handleViewGRN = (grn: GRNData) => {
-    setSelectedGRNId(grn._id);
-    setIsGRNDetailModalOpen(true);
-  };
-
-  const getGRNId = (grn: GRNData) => grn._id || grn.id;
-
-  const handleTransferGRN = (grn: GRNData) => {
-    setTransferGRNId(getGRNId(grn));
-    setTransferModalType("warehouse");
-  };
-
-  const handleTransferGRNToStorefront = (grn: GRNData) => {
-    setTransferGRNId(getGRNId(grn));
-    setTransferModalType("storefront");
-  };
-
-  const handleCloseTransferModal = () => {
-    setTransferModalType(null);
-    setTransferGRNId(null);
-  };
+  const {
+    t,
+    activeTab,
+    setActiveTab,
+    suppliers,
+    products,
+    poList,
+    deletedPOList,
+    poFilter,
+    setPoFilter,
+    poPagination,
+    deletedPoPagination,
+    isCreateModalOpen,
+    setIsCreateModalOpen,
+    selectedPOId,
+    isPODetailModalOpen,
+    setIsPODetailModalOpen,
+    grnList,
+    grnFilter,
+    setGrnFilter,
+    grnPagination,
+    isCreateGRNModalOpen,
+    setIsCreateGRNModalOpen,
+    selectedGRNId,
+    isGRNDetailModalOpen,
+    setIsGRNDetailModalOpen,
+    transferModalType,
+    transferGRNId,
+    loadPurchases,
+    loadDeletedPurchases,
+    loadGRNs,
+    handleGRNSuccess,
+    handleCreateGRNFromPO,
+    handleViewPO,
+    handleViewGRN,
+    handleTransferGRN,
+    handleTransferGRNToStorefront,
+    handleCloseTransferModal,
+  } = usePurchasing();
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6 flex items-center gap-2 text-slate-800">
-        <ShoppingBag className="w-6 h-6" /> {t("purchasing.title")}
+    <div className="p-6 w-full">
+      {/* Title */}
+      <h1 className="text-xl font-bold mb-5 flex items-center gap-2 text-slate-800 tracking-tight">
+        <div className="p-1.5 bg-yellow-50 text-yellow-800 rounded-lg border border-yellow-100/70 shadow-sm">
+          <ShoppingBag className="w-5 h-5" />
+        </div>
+        {t("purchasing.title")}
       </h1>
 
-      {/* Tabs */}
-      <div className="flex gap-2 mb-6 border-b">
+      {/* Tabs - Modern Segmented Style */}
+      <div className="flex gap-1 mb-5 bg-slate-100/80 p-1 rounded-xl max-w-sm border border-slate-200/50 shadow-inner backdrop-blur-md">
         <button
           onClick={() => setActiveTab("po")}
-          className={`px-4 py-2 font-semibold flex items-center gap-2 ${
-            activeTab === "po"
-              ? "border-b-2 border-yellow-800 text-yellow-800"
-              : "text-slate-500 hover:text-slate-700"
-          }`}
+          className={`flex-1 py-1.5 px-3 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-200 ${activeTab === "po"
+            ? "bg-white text-yellow-800 shadow border border-slate-200/20 scale-[1.01]"
+            : "text-slate-600 hover:text-slate-900 hover:bg-slate-50/50"
+            }`}
         >
           <FileText className="w-4 h-4" />
           <span className="hidden sm:inline">
@@ -215,11 +78,10 @@ export const Purchasing: React.FC = () => {
         </button>
         <button
           onClick={() => setActiveTab("grn")}
-          className={`px-4 py-2 font-semibold flex items-center gap-2 ${
-            activeTab === "grn"
-              ? "border-b-2 border-yellow-800 text-yellow-800"
-              : "text-slate-500 hover:text-slate-700"
-          }`}
+          className={`flex-1 py-1.5 px-3 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-200 ${activeTab === "grn"
+            ? "bg-white text-yellow-800 shadow border border-slate-200/20 scale-[1.01]"
+            : "text-slate-600 hover:text-slate-900 hover:bg-slate-50/50"
+            }`}
         >
           <PackageCheck className="w-4 h-4" />
           <span className="hidden sm:inline">
@@ -229,51 +91,58 @@ export const Purchasing: React.FC = () => {
         </button>
       </div>
 
-      {/* PO Tab */}
-      {activeTab === "po" && (
-        <>
-          <PurchaseOrderList
-            poList={poList}
-            deletedPOList={deletedPOList}
-            suppliers={suppliers}
-            setIsCreateModalOpen={setIsCreateModalOpen}
-            loadPurchases={loadPurchases}
-            loadDeletedPurchases={loadDeletedPurchases}
-            onViewPO={handleViewPO}
-            pagination={poPagination}
-            deletedPagination={deletedPoPagination}
-            onCreateGRN={handleCreateGRNFromPO}
-          />
-          <CreatePOModal
-            isOpen={isCreateModalOpen}
-            onClose={() => setIsCreateModalOpen(false)}
-            suppliers={suppliers}
-            products={products}
-            onSuccess={loadPurchases}
-          />
-          <PODetailModal
-            isOpen={isPODetailModalOpen}
-            onClose={() => setIsPODetailModalOpen(false)}
-            purchaseId={selectedPOId}
-            suppliers={suppliers}
-          />
-        </>
-      )}
+      {/* Main Content Area */}
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden p-6 transition-all duration-300">
+        {/* PO Tab */}
+        {activeTab === "po" && (
+          <div className="space-y-6">
+            <PurchaseOrderList
+              poList={poList}
+              deletedPOList={deletedPOList}
+              suppliers={suppliers}
+              setIsCreateModalOpen={setIsCreateModalOpen}
+              loadPurchases={loadPurchases}
+              loadDeletedPurchases={loadDeletedPurchases}
+              onViewPO={handleViewPO}
+              pagination={poPagination}
+              deletedPagination={deletedPoPagination}
+              onCreateGRN={handleCreateGRNFromPO}
+              poFilter={poFilter}
+              setPoFilter={setPoFilter}
+            />
+            <CreatePOModal
+              isOpen={isCreateModalOpen}
+              onClose={() => setIsCreateModalOpen(false)}
+              suppliers={suppliers}
+              products={products}
+              onSuccess={loadPurchases}
+            />
+            <PODetailModal
+              isOpen={isPODetailModalOpen}
+              onClose={() => setIsPODetailModalOpen(false)}
+              purchaseId={selectedPOId}
+              suppliers={suppliers}
+            />
+          </div>
+        )}
 
-      {/* GRN Tab */}
-      {activeTab === "grn" && (
-        <>
-          <GRNList
-            grnList={grnList}
-            setIsCreateModalOpen={setIsCreateGRNModalOpen}
-            onStatusChange={loadGRNs}
-            onViewGRN={handleViewGRN}
-            onTransferGRN={handleTransferGRN}
-            onTransferGRNToStorefront={handleTransferGRNToStorefront}
-            pagination={grnPagination}
-          />
-        </>
-      )}
+        {/* GRN Tab */}
+        {activeTab === "grn" && (
+          <div className="space-y-6">
+            <GRNList
+              grnList={grnList}
+              setIsCreateModalOpen={setIsCreateGRNModalOpen}
+              onStatusChange={loadGRNs}
+              onViewGRN={handleViewGRN}
+              onTransferGRN={handleTransferGRN}
+              onTransferGRNToStorefront={handleTransferGRNToStorefront}
+              pagination={grnPagination}
+              grnFilter={grnFilter}
+              setGrnFilter={setGrnFilter}
+            />
+          </div>
+        )}
+      </div>
 
       {/* Global Modals - accessible from any tab */}
       <CreateGRNModal
@@ -305,3 +174,5 @@ export const Purchasing: React.FC = () => {
     </div>
   );
 };
+
+export default Purchasing;

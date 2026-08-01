@@ -158,6 +158,9 @@ export const Customers: React.FC = () => {
       const result = await updateCustomerTier(customerId, newTier);
       if (result.success) {
         toast.success("Customer tier updated");
+        if (selectedCustomer && selectedCustomer._id === customerId) {
+          setSelectedCustomer(result.data || { ...selectedCustomer, tier: newTier });
+        }
         loadCustomers();
       } else {
         toast.error(result.message || "Failed to update tier");

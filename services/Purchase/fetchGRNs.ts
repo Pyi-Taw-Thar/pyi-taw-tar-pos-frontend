@@ -34,6 +34,10 @@ export interface GRNData {
     status: string;
     totalAmount: number;
     id: string;
+    supplierId?: {
+      _id: string;
+      supplierName: string;
+    } | null;
   } | null;
   grnDate: string;
   status: string;

@@ -19,6 +19,7 @@ interface TransferItem {
   availableQuantity: number;
   quantity: number;
   isSelected: boolean;
+  grnLineItemId?: string;
 }
 
 interface TransferWarehouseModalProps {
@@ -68,6 +69,7 @@ export const TransferWarehouseModal: React.FC<TransferWarehouseModalProps> = ({
           availableQuantity: item.availableQuantity,
           quantity: item.availableQuantity,
           isSelected: true,
+          grnLineItemId: item._id,
         }));
         setTransferItems(items);
       }
@@ -155,6 +157,7 @@ export const TransferWarehouseModal: React.FC<TransferWarehouseModalProps> = ({
         lineItems: itemsToProcess.map((item) => ({
           productCode: item.productCode,
           quantity: item.quantity,
+          grnLineItemId: item.grnLineItemId,
         })),
         transferDate,
         notes: notes || undefined,

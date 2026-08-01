@@ -39,7 +39,7 @@ export const Modal: React.FC<ModalProps> = ({
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">
       <div
         ref={modalRef}
-        className="bg-white rounded-xl shadow-xl w-full max-w-7xl max-h-[90vh] overflow-hidden flex flex-col"
+        className="bg-white rounded-xl shadow-xl w-full max-w-7xl max-h-[95vh] overflow-hidden flex flex-col"
       >
         <div className="flex items-center justify-between p-4 border-b">
           <h2 className="text-xl font-bold text-gray-800">{title}</h2>

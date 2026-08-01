@@ -16,6 +16,7 @@ interface TransferItem {
   availableQuantity: number;
   quantity: number;
   isSelected: boolean;
+  grnLineItemId?: string;
 }
 
 interface TransferStorefrontModalProps {
@@ -69,6 +70,7 @@ export const TransferStorefrontModal: React.FC<TransferStorefrontModalProps> = (
           availableQuantity: item.availableQuantity,
           quantity: item.availableQuantity,
           isSelected: true,
+          grnLineItemId: item._id,
         }));
         setTransferItems(items);
       }
@@ -160,6 +162,7 @@ export const TransferStorefrontModal: React.FC<TransferStorefrontModalProps> = (
         lineItems: itemsToProcess.map((item) => ({
           productCode: item.productCode,
           quantity: item.quantity,
+          grnLineItemId: item.grnLineItemId,
         })),
         transferDate,
         notes: notes || undefined,

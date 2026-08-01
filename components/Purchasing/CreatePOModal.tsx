@@ -3,6 +3,8 @@ import { Plus, Trash2 } from "lucide-react";
 import { Modal } from "../Modal";
 import { Supplier, Product, PurchaseOrderItem } from "../../types";
 import { createPurchase } from "../../services/Purchase/createPurchase";
+import { fetchSuppliers } from "../../services/Supplier/fetchSuppliers";
+import { fetchProducts } from "../../services/Inventory/fetchProducts";
 import { getUnitOptions, getConversionFactor } from "../../utils/uom";
 import { toast } from "sonner";
 
@@ -33,32 +35,139 @@ export const CreatePOModal: React.FC<CreatePOModalProps> = ({
   const [selectedUnit, setSelectedUnit] = useState("piece");
   const productDropdownRef = useRef<HTMLDivElement>(null);
 
-  const filteredProducts = products.filter((product) =>
-    product.productName
-      ?.toLowerCase()
-      .includes(productSearchQuery.toLowerCase()),
-  );
+  // Product Search & Pagination States
+  const [localProducts, setLocalProducts] = useState<Product[]>([]);
+  const [productPage, setProductPage] = useState(1);
+  const [productPagination, setProductPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+  });
+  const [selectedProductObj, setSelectedProductObj] = useState<Product | null>(null);
 
-  const getSelectedProduct = (): Product | undefined => {
-    return products.find((p) => (p._id || p.id) === poSelectedProduct);
+  // Supplier Search & Pagination States
+  const [localSuppliers, setLocalSuppliers] = useState<Supplier[]>([]);
+  const [supplierSearchQuery, setSupplierSearchQuery] = useState("");
+  const [supplierPage, setSupplierPage] = useState(1);
+  const [supplierPagination, setSupplierPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+  });
+  const [showSupplierDropdown, setShowSupplierDropdown] = useState(false);
+  const supplierDropdownRef = useRef<HTMLDivElement>(null);
+  const [selectedSupplierName, setSelectedSupplierName] = useState("");
+
+  const loadSuppliersData = async (search = "", page = 1) => {
+    try {
+      const res = await fetchSuppliers({ search, page, limit: 10 });
+      if (res.success) {
+        setLocalSuppliers(res.data);
+        if (res.pagination) {
+          setSupplierPagination({
+            currentPage: res.pagination.currentPage,
+            totalPages: res.pagination.totalPages,
+            totalItems: res.pagination.totalItems,
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch suppliers in modal", error);
+    }
   };
 
-  const handleProductSelect = (productId: string, productName: string) => {
-    setPOSelectedProduct(productId);
-    setProductSearchQuery(productName);
+  const loadProductsData = async (search = "", page = 1) => {
+    try {
+      const res = await fetchProducts({ search, page, limit: 10 });
+      if (res.success) {
+        if (Array.isArray(res.data)) {
+          setLocalProducts(res.data);
+        }
+        if (res.pagination) {
+          setProductPagination({
+            currentPage: res.pagination.currentPage,
+            totalPages: res.pagination.totalPages,
+            totalItems: res.pagination.totalItems,
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch products in modal", error);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      loadSuppliersData(supplierSearchQuery, supplierPage);
+    }
+  }, [isOpen, supplierSearchQuery, supplierPage]);
+
+  useEffect(() => {
+    if (isOpen) {
+      loadProductsData(productSearchQuery, productPage);
+    }
+  }, [isOpen, productSearchQuery, productPage]);
+
+  // Reset fields when modal is closed
+  useEffect(() => {
+    if (!isOpen) {
+      setPOSupplierId("");
+      setSelectedSupplierName("");
+      setSupplierSearchQuery("");
+      setSupplierPage(1);
+      setPOItems([]);
+      setPONote("");
+      setPOSelectedProduct("");
+      setSelectedProductObj(null);
+      setProductSearchQuery("");
+      setProductPage(1);
+    }
+  }, [isOpen]);
+
+  // Click outside listener for supplier dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        supplierDropdownRef.current &&
+        !supplierDropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowSupplierDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const handleSupplierSelect = (supplier: Supplier) => {
+    const sId = supplier.id || supplier._id || "";
+    setPOSupplierId(sId);
+    setSelectedSupplierName(
+      supplier.township
+        ? `${supplier.supplierName} (${supplier.township})`
+        : supplier.supplierName || ""
+    );
+    setShowSupplierDropdown(false);
+  };
+
+  const handleProductSelect = (product: Product) => {
+    const pId = product._id || product.id || "";
+    setPOSelectedProduct(pId);
+    setProductSearchQuery(product.productName || product.name || "");
+    setSelectedProductObj(product);
     setShowProductDropdown(false);
     setPONewProductName("");
-    const product = products.find((p) => (p._id || p.id) === productId);
-    if (product) {
-      setSelectedUnit(product.unitOfMeasure || "piece");
-    }
+    setSelectedUnit(product.unitOfMeasure || "piece");
   };
 
   const handleProductInputChange = (value: string) => {
     setProductSearchQuery(value);
+    setProductPage(1);
     setShowProductDropdown(true);
     if (value === "") {
       setPOSelectedProduct("");
+      setSelectedProductObj(null);
       setSelectedUnit("piece");
     }
   };
@@ -88,9 +197,7 @@ export const CreatePOModal: React.FC<CreatePOModalProps> = ({
     let buyingPrice = 0;
 
     if (poSelectedProduct) {
-      const product = products.find(
-        (p) => (p._id || p.id) === poSelectedProduct,
-      );
+      const product = selectedProductObj;
       if (!product) return;
       productName = product.productName || product.name;
       const factor = getConversionFactor(
@@ -170,38 +277,92 @@ export const CreatePOModal: React.FC<CreatePOModalProps> = ({
     }
   };
 
-  const selectedProduct = getSelectedProduct();
+  const selectedProduct = selectedProductObj;
   const unitOptions = selectedProduct
     ? getUnitOptions(
-        selectedProduct.unitOfMeasure || "piece",
-        selectedProduct.uomConversions,
-      )
+      selectedProduct.unitOfMeasure || "piece",
+      selectedProduct.uomConversions,
+    )
     : [];
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Create Purchase Order">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-[75vh]">
         <div className="bg-white p-6 rounded-xl shadow-sm border">
           <div className="space-y-4">
-            <div>
+            <div className="relative" ref={supplierDropdownRef}>
               <label className="block text-xs font-bold text-slate-500 mb-1">
                 Supplier Name
               </label>
-              <select
-                className="w-full border rounded p-2"
-                value={poSupplierId}
-                onChange={(e) => setPOSupplierId(e.target.value)}
-              >
-                <option value="">Select Supplier</option>
-                {suppliers.map((supplier) => (
-                  <option
-                    key={supplier.id || supplier._id}
-                    value={supplier.id || supplier._id}
-                  >
-                    {supplier.supplierName}
-                  </option>
-                ))}
-              </select>
+              <input
+                type="text"
+                className="w-full border rounded p-2 text-sm bg-white cursor-pointer"
+                placeholder="Type to search supplier..."
+                value={showSupplierDropdown ? supplierSearchQuery : (selectedSupplierName || "")}
+                onChange={(e) => {
+                  setSupplierSearchQuery(e.target.value);
+                  setSupplierPage(1);
+                  setShowSupplierDropdown(true);
+                }}
+                onFocus={() => {
+                  setShowSupplierDropdown(true);
+                }}
+              />
+              {showSupplierDropdown && (
+                <div className="absolute z-20 w-full bg-white border border-slate-200 rounded-lg mt-1 max-h-60 overflow-y-auto shadow-lg p-2">
+                  {localSuppliers.length > 0 ? (
+                    localSuppliers.map((supplier) => (
+                      <div
+                        key={supplier.id || supplier._id}
+                        className="px-3 py-2 hover:bg-slate-100 cursor-pointer text-sm rounded transition flex justify-between items-center"
+                        onClick={() => handleSupplierSelect(supplier)}
+                      >
+                        <span className="font-medium text-slate-800">{supplier.supplierName}</span>
+                        {supplier.township && (
+                          <span className="text-[10px] text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200/50">
+                            {supplier.township}
+                          </span>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="px-3 py-2 text-slate-400 text-sm">
+                      No suppliers found
+                    </div>
+                  )}
+
+                  {/* Supplier Pagination */}
+                  {supplierPagination.totalPages > 1 && (
+                    <div className="flex justify-between items-center border-t pt-2 mt-2 gap-2">
+                      <button
+                        type="button"
+                        disabled={supplierPage <= 1}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSupplierPage((prev) => Math.max(prev - 1, 1));
+                        }}
+                        className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-xs rounded disabled:opacity-50 disabled:cursor-not-allowed text-slate-700 font-semibold"
+                      >
+                        Prev
+                      </button>
+                      <span className="text-[10px] text-slate-500 font-semibold">
+                        Page {supplierPage} of {supplierPagination.totalPages}
+                      </span>
+                      <button
+                        type="button"
+                        disabled={supplierPage >= supplierPagination.totalPages}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSupplierPage((prev) => Math.min(prev + 1, supplierPagination.totalPages));
+                        }}
+                        className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-xs rounded disabled:opacity-50 disabled:cursor-not-allowed text-slate-700 font-semibold"
+                      >
+                        Next
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="border-t pt-4 mt-4">
@@ -218,14 +379,14 @@ export const CreatePOModal: React.FC<CreatePOModalProps> = ({
                   onFocus={() => setShowProductDropdown(true)}
                 />
                 {showProductDropdown && (
-                  <div className="absolute z-10 w-full bg-white border border-gray-300 rounded mt-1 max-h-60 overflow-y-auto shadow-lg">
-                    {filteredProducts.length > 0 ? (
-                      filteredProducts.map((p) => (
+                  <div className="absolute z-10 w-full bg-white border border-gray-300 rounded mt-1 max-h-60 overflow-y-auto shadow-lg p-2">
+                    {localProducts.length > 0 ? (
+                      localProducts.map((p) => (
                         <div
                           key={p._id}
-                          className="px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+                          className="px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm rounded transition"
                           onClick={() =>
-                            handleProductSelect(p._id, p.productName)
+                            handleProductSelect(p)
                           }
                         >
                           {p.productName}
@@ -234,6 +395,37 @@ export const CreatePOModal: React.FC<CreatePOModalProps> = ({
                     ) : (
                       <div className="px-3 py-2 text-gray-500 text-sm">
                         No products found
+                      </div>
+                    )}
+
+                    {/* Product Pagination */}
+                    {productPagination.totalPages > 1 && (
+                      <div className="flex justify-between items-center border-t pt-2 mt-2 gap-2">
+                        <button
+                          type="button"
+                          disabled={productPage <= 1}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setProductPage((prev) => Math.max(prev - 1, 1));
+                          }}
+                          className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-xs rounded disabled:opacity-50 disabled:cursor-not-allowed text-slate-700 font-semibold"
+                        >
+                          Prev
+                        </button>
+                        <span className="text-[10px] text-slate-500 font-semibold">
+                          Page {productPage} of {productPagination.totalPages}
+                        </span>
+                        <button
+                          type="button"
+                          disabled={productPage >= productPagination.totalPages}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setProductPage((prev) => Math.min(prev + 1, productPagination.totalPages));
+                          }}
+                          className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-xs rounded disabled:opacity-50 disabled:cursor-not-allowed text-slate-700 font-semibold"
+                        >
+                          Next
+                        </button>
                       </div>
                     )}
                   </div>
