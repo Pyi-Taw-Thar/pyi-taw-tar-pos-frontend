@@ -230,9 +230,9 @@ export const Suppliers: React.FC = () => {
     } catch (error: any) {
       toast.error(
         error.message ||
-          (editingId
-            ? t("suppliers.failedToUpdate")
-            : t("suppliers.failedToCreate")),
+        (editingId
+          ? t("suppliers.failedToUpdate")
+          : t("suppliers.failedToCreate")),
       );
     } finally {
       setIsSubmitting(false);
@@ -335,11 +335,10 @@ export const Suppliers: React.FC = () => {
                   setShowDeleted(false);
                   setPage(1);
                 }}
-                className={`px-3 py-1.5 text-sm font-medium rounded transition-colors ${
-                  !showDeleted
-                    ? "bg-white text-slate-800 shadow-sm"
-                    : "text-slate-600 hover:text-slate-800"
-                }`}
+                className={`px-3 py-1.5 text-sm font-medium rounded transition-colors ${!showDeleted
+                  ? "bg-white text-slate-800 shadow-sm"
+                  : "text-slate-600 hover:text-slate-800"
+                  }`}
               >
                 {t("suppliers.active")}
               </button>
@@ -348,11 +347,10 @@ export const Suppliers: React.FC = () => {
                   setShowDeleted(true);
                   setPage(1);
                 }}
-                className={`px-3 py-1.5 text-sm font-medium rounded transition-colors flex items-center gap-1 ${
-                  showDeleted
-                    ? "bg-white text-slate-800 shadow-sm"
-                    : "text-slate-600 hover:text-slate-800"
-                }`}
+                className={`px-3 py-1.5 text-sm font-medium rounded transition-colors flex items-center gap-1 ${showDeleted
+                  ? "bg-white text-slate-800 shadow-sm"
+                  : "text-slate-600 hover:text-slate-800"
+                  }`}
               >
                 <Archive className="w-4 h-4" />
                 <span className="hidden sm:inline">
@@ -454,7 +452,7 @@ export const Suppliers: React.FC = () => {
             {/* Is Consign Filter */}
             <div>
               <label className="block text-[11px] font-medium text-slate-500 mb-1">
-                အပ်စရင် (Consign)
+                Consign
               </label>
               <select
                 value={isConsignFilter}
@@ -465,8 +463,8 @@ export const Suppliers: React.FC = () => {
                 className="w-full p-2 bg-white border rounded-lg text-slate-700 outline-none focus:ring-1 focus:ring-primary"
               >
                 <option value="">အားလုံး (All)</option>
-                <option value="true">အပ်စရင် Supplier</option>
-                <option value="false">အပ်စရင် မဟုတ်သော Supplier</option>
+                <option value="true">Consign Supplier</option>
+                <option value="false">Consign မဟုတ်သော Supplier</option>
               </select>
             </div>
 
@@ -599,72 +597,71 @@ export const Suppliers: React.FC = () => {
                                 <Edit className="w-4 h-4" />
                               </button>
                             )}
-                          {supplier.isDeleted ? (
-                            <>
+                            {supplier.isDeleted ? (
+                              <>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleRestore(supplier);
+                                  }}
+                                  disabled={
+                                    processingId === (supplier.id || supplier._id)
+                                  }
+                                  className="p-1.5 text-green-600 hover:text-green-700 hover:bg-green-50 rounded transition-colors disabled:opacity-50"
+                                  title={t("suppliers.restore")}
+                                >
+                                  {processingId ===
+                                    (supplier.id || supplier._id) ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                  ) : (
+                                    <RotateCcw className="w-4 h-4" />
+                                  )}
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleOpenPermanentDelete(supplier);
+                                  }}
+                                  disabled={
+                                    processingId === (supplier.id || supplier._id)
+                                  }
+                                  className="p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
+                                  title={t("suppliers.delete")}
+                                >
+                                  {processingId ===
+                                    (supplier.id || supplier._id) ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                  ) : (
+                                    <Trash2 className="w-4 h-4" />
+                                  )}
+                                </button>
+                              </>
+                            ) : (
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleRestore(supplier);
-                                }}
-                                disabled={
-                                  processingId === (supplier.id || supplier._id)
-                                }
-                                className="p-1.5 text-green-600 hover:text-green-700 hover:bg-green-50 rounded transition-colors disabled:opacity-50"
-                                title={t("suppliers.restore")}
-                              >
-                                {processingId ===
-                                (supplier.id || supplier._id) ? (
-                                  <Loader2 className="w-4 h-4 animate-spin" />
-                                ) : (
-                                  <RotateCcw className="w-4 h-4" />
-                                )}
-                              </button>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleOpenPermanentDelete(supplier);
+                                  handleOpenDeactivate(supplier);
                                 }}
                                 disabled={
                                   processingId === (supplier.id || supplier._id)
                                 }
                                 className="p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
-                                title={t("suppliers.delete")}
+                                title={t("suppliers.deactivate")}
                               >
-                                {processingId ===
-                                (supplier.id || supplier._id) ? (
+                                {processingId === (supplier.id || supplier._id) ? (
                                   <Loader2 className="w-4 h-4 animate-spin" />
                                 ) : (
-                                  <Trash2 className="w-4 h-4" />
+                                  <Ban className="w-4 h-4" />
                                 )}
                               </button>
-                            </>
-                          ) : (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleOpenDeactivate(supplier);
-                              }}
-                              disabled={
-                                processingId === (supplier.id || supplier._id)
-                              }
-                              className="p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
-                              title={t("suppliers.deactivate")}
-                            >
-                              {processingId === (supplier.id || supplier._id) ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                              ) : (
-                                <Ban className="w-4 h-4" />
-                              )}
-                            </button>
-                          )}
-                        </>
-                      )}
-                    </div>
+                            )}
+                          </>
+                        )}
+                      </div>
                       <div className="flex items-center">
                         <span
-                          className={`w-2 h-2 rounded-full mr-2 flex-shrink-0 ${
-                            supplier.isDeleted ? "bg-red-500" : "bg-green-500"
-                          }`}
+                          className={`w-2 h-2 rounded-full mr-2 flex-shrink-0 ${supplier.isDeleted ? "bg-red-500" : "bg-green-500"
+                            }`}
                         ></span>
                         <span className="text-xs text-slate-500">
                           {supplier.isDeleted
@@ -981,9 +978,9 @@ export const Suppliers: React.FC = () => {
         message={
           supplierToDelete
             ? t("suppliers.confirmDeactivateMessage").replace(
-                "{name}",
-                supplierToDelete.supplierName,
-              )
+              "{name}",
+              supplierToDelete.supplierName,
+            )
             : t("suppliers.confirmDeactivate")
         }
         confirmText={t("suppliers.deactivate")}
@@ -1005,9 +1002,9 @@ export const Suppliers: React.FC = () => {
         message={
           supplierToPermanentlyDelete
             ? t("suppliers.confirmDeleteMessage").replace(
-                "{name}",
-                supplierToPermanentlyDelete.supplierName,
-              )
+              "{name}",
+              supplierToPermanentlyDelete.supplierName,
+            )
             : t("suppliers.confirmDelete")
         }
         confirmText={t("suppliers.delete")}
@@ -1018,8 +1015,8 @@ export const Suppliers: React.FC = () => {
         isLoading={
           supplierToPermanentlyDelete
             ? processingId ===
-              (supplierToPermanentlyDelete.id ||
-                supplierToPermanentlyDelete._id)
+            (supplierToPermanentlyDelete.id ||
+              supplierToPermanentlyDelete._id)
             : false
         }
       />
