@@ -25,6 +25,7 @@ import { updateCustomer } from "../services/Customer/updateCustomer";
 import { updateCustomerTier, CustomerTier } from "../services/Customer/updateCustomerTier";
 import { toggleCreditPerson } from "../services/Customer/toggleCreditPerson";
 import { CustomerDetailModal } from "../components/Customer/CustomerDetailModal";
+import { fetchTownships } from "../services/Customer/fetchTownships";
 
 const formatDate = (iso: string) => {
   const d = new Date(iso);
@@ -61,6 +62,8 @@ export const Customers: React.FC = () => {
     null,
   );
   const [detailOpen, setDetailOpen] = useState(false);
+  const [townships, setTownships] = useState<string[]>([]);
+  const [selectedTownship, setSelectedTownship] = useState<string>("");
 
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
@@ -107,9 +110,24 @@ export const Customers: React.FC = () => {
   }, [search]);
 
   useEffect(() => {
+    loadTownships();
+  }, []);
+
+  useEffect(() => {
     loadCustomers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, debouncedSearch]);
+  }, [page, debouncedSearch, selectedTownship]);
+
+  const loadTownships = async () => {
+    try {
+      const response = await fetchTownships();
+      if (response.success) {
+        setTownships(response.data);
+      }
+    } catch (error) {
+      console.error("Error loading townships:", error);
+    }
+  };
 
   const loadCustomers = async () => {
     setLoading(true);
@@ -118,6 +136,7 @@ export const Customers: React.FC = () => {
         page,
         limit,
         search: debouncedSearch.trim() || undefined,
+        township: selectedTownship || undefined,
       });
 
       if (response.success) {
@@ -383,17 +402,39 @@ export const Customers: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 mb-4">
-        <label className="block text-xs font-semibold text-slate-500 mb-1">
-          {t("common.search")}
-        </label>
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder={t("customers.searchPlaceholder")}
-          className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/60 focus:border-primary"
-        />
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 mb-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="md:col-span-2">
+          <label className="block text-xs font-semibold text-slate-500 mb-1">
+            {t("common.search")}
+          </label>
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={t("customers.searchPlaceholder")}
+            className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/60 focus:border-primary"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-slate-500 mb-1">
+            Township Filter
+          </label>
+          <select
+            value={selectedTownship}
+            onChange={(e) => {
+              setSelectedTownship(e.target.value);
+              setPage(1);
+            }}
+            className="w-full border rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/60 focus:border-primary"
+          >
+            <option value="">All Townships</option>
+            {townships.map((ts) => (
+              <option key={ts} value={ts}>
+                {ts}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       <div className="flex justify-between items-center mb-2 text-xs text-slate-500">

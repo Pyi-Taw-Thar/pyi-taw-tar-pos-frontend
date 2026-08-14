@@ -34,6 +34,7 @@ export interface FetchCustomersQuery {
   page?: number;
   limit?: number;
   search?: string;
+  township?: string;
 }
 
 export interface FetchCustomersResponse {
@@ -52,6 +53,9 @@ export const fetchCustomers = async (
     params.append("limit", String(query.limit ?? 20));
     if (query.search) {
       params.append("search", query.search);
+    }
+    if (query.township) {
+      params.append("township", query.township);
     }
 
     const response = await axios.get(`/customer?${params.toString()}`);
