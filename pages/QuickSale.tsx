@@ -19,9 +19,20 @@ export const QuickSale: React.FC = () => {
     ? pos.cart.find((item) => getCartLineId(item) === selectedLineId) ?? null
     : null;
 
-  if (pos.storefronts.length === 0) {
+  if (pos.loading && pos.storefronts.length === 0) {
     return (
-      <div className="flex items-center justify-center h-screen bg-dark-100">
+      <div className="flex items-center justify-center h-screen bg-[#F8F9FA]">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="w-10 h-10 animate-spin text-primary" />
+          <p className="text-gray-500 text-sm">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!pos.loading && pos.storefronts.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-[#F8F9FA]">
         <div className="text-center">
           <Store className="w-8 h-8 text-primary mx-auto mb-2" />
           <p className="text-dark-600">You are not assigned to any storefront. Please contact the administrator.</p>
@@ -62,6 +73,7 @@ export const QuickSale: React.FC = () => {
         totalItems={pos.totalItems}
         onPageChange={pos.setCurrentPage}
         loading={pos.loading}
+        brandsLoading={pos.brandsLoading}
         filteredProducts={pos.filteredProducts}
         onAddToCart={pos.addToCart}
       />

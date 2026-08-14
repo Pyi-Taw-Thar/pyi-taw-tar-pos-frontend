@@ -121,6 +121,10 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                         <span className="font-medium text-slate-800 text-right">{product.category}</span>
                       </div>
                       <div className="flex justify-between">
+                        <span className="text-slate-500">Sub Category</span>
+                        <span className="font-medium text-slate-800 text-right">{product.subCategory || "—"}</span>
+                      </div>
+                      <div className="flex justify-between">
                         <span className="text-slate-500">Brand</span>
                         <span className="font-medium text-slate-800 text-right">{product.brand || "—"}</span>
                       </div>

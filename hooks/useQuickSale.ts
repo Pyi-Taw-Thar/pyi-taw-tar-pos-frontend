@@ -55,6 +55,8 @@ export function useQuickSale() {
   const [categories, setCategories] = useState<string[]>([]);
   const [brands, setBrands] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [brandsLoading, setBrandsLoading] = useState(false);
+  const [brandCategories, setBrandCategories] = useState<string[]>([]);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -148,6 +150,7 @@ export function useQuickSale() {
   };
 
   const loadBrands = async (storefrontId: string) => {
+    setBrandsLoading(true);
     try {
       const response = await fetchStorefrontBrands(storefrontId);
       if (response.success && response.data) {
@@ -155,6 +158,8 @@ export function useQuickSale() {
       }
     } catch (error) {
       console.error("Error loading storefront brands:", error);
+    } finally {
+      setBrandsLoading(false);
     }
   };
 
@@ -182,6 +187,18 @@ export function useQuickSale() {
       );
       if (response.success && response.data) {
         setAllStockItems(response.data);
+        // Only capture categories when fetching unfiltered (All) — so selecting a
+        // category never wipes out the other category pills
+        if (!selectedCategory || selectedCategory === "All") {
+          const cats = [
+            ...new Set(
+              response.data
+                .map((item) => item.inventoryId?.category)
+                .filter((c): c is string => !!c),
+            ),
+          ];
+          setBrandCategories(cats);
+        }
         if (response.pagination) {
           setTotalPages(response.pagination.totalPages);
           setTotalItems(response.pagination.totalItems);
@@ -213,15 +230,7 @@ export function useQuickSale() {
     return true;
   });
 
-  const selectedBrandCategories = selectedBrand
-    ? [
-        ...new Set(
-          allStockItems
-            .map((item) => item.inventoryId?.category)
-            .filter((c): c is string => !!c),
-        ),
-      ]
-    : categories;
+  const selectedBrandCategories = selectedBrand ? brandCategories : [];
 
   const addToCart = (stockItem: StorefrontStockItem) => {
     if (stockItem.availableQuantity <= 0) {
@@ -473,6 +482,8 @@ export function useQuickSale() {
   };
 
   const handleBrandSelect = (brand: string) => {
+    setAllStockItems([]);      // clear stale products
+    setBrandCategories([]);    // clear stale categories
     setSelectedBrand(brand);
     setCurrentPage(1);
     setSelectedCategory("All");
@@ -497,6 +508,7 @@ export function useQuickSale() {
     allStockItems,
     categories,
     loading,
+    brandsLoading,
     currentPage,
     setCurrentPage,
     totalPages,

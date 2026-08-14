@@ -142,8 +142,8 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   // Combobox states for category and subCategory
   const [categoryInput, setCategoryInput] = useState("");
   const [categoryShowDropdown, setCategoryShowDropdown] = useState(false);
-  // const [subCategoryInput, setSubCategoryInput] = useState("");
-  // const [subCategoryShowDropdown, setSubCategoryShowDropdown] = useState(false);
+  const [subCategoryInput, setSubCategoryInput] = useState("");
+  const [subCategoryShowDropdown, setSubCategoryShowDropdown] = useState(false);
 
   // Get unique categories from products
   const getUniqueCategories = (): string[] => {
@@ -157,15 +157,15 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   };
 
   // Get unique subcategories from API products
-  // const getUniqueSubCategories = (): string[] => {
-  //   const subCategories = new Set<string>();
-  //   apiProducts.forEach((p) => {
-  //     if (p.subCategory && p.subCategory.trim()) {
-  //       subCategories.add(p.subCategory);
-  //     }
-  //   });
-  //   return Array.from(subCategories).sort();
-  // };
+  const getUniqueSubCategories = (): string[] => {
+    const subCategories = new Set<string>();
+    apiProducts.forEach((p) => {
+      if (p.subCategory && p.subCategory.trim()) {
+        subCategories.add(p.subCategory);
+      }
+    });
+    return Array.from(subCategories).sort();
+  };
 
   // Filter categories/subcategories based on input
   const getFilteredCategories = (input: string): string[] => {
@@ -176,13 +176,13 @@ export const ProductModal: React.FC<ProductModalProps> = ({
     );
   };
 
-  // const getFilteredSubCategories = (input: string): string[] => {
-  //   const allSubCategories = getUniqueSubCategories();
-  //   if (!input.trim()) return allSubCategories;
-  //   return allSubCategories.filter((subCat) =>
-  //     subCat.toLowerCase().includes(input.toLowerCase())
-  //   );
-  // };
+  const getFilteredSubCategories = (input: string): string[] => {
+    const allSubCategories = getUniqueSubCategories();
+    if (!input.trim()) return allSubCategories;
+    return allSubCategories.filter((subCat) =>
+      subCat.toLowerCase().includes(input.toLowerCase())
+    );
+  };
 
   const updateFormData = (updates: Partial<ProductFormData>) => {
     onFormDataChange({ ...formData, ...updates });
@@ -318,9 +318,9 @@ export const ProductModal: React.FC<ProductModalProps> = ({
         )}
 
         {/* Scrollable Body */}
-        <div className="overflow-y-auto p-6 space-y-5">
-          {/* Required Fields */}
-          <div className="col-span-2">
+        <div className="overflow-y-auto p-6 grid grid-cols-2 gap-4 auto-rows-min">
+          {/* Product Name — full width */}
+          <div className="col-span-1">
             <label className="block text-xs font-bold text-slate-500">
               {t("inventory.productName")}{" "}
               <span className="text-red-500">*</span>
@@ -335,7 +335,8 @@ export const ProductModal: React.FC<ProductModalProps> = ({
             />
           </div>
 
-          <div className="col-span-1">
+          {/* Barcode */}
+          <div>
             <label className="block text-xs font-bold text-slate-500">
               {t("inventory.barcode")}
             </label>
@@ -347,6 +348,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
             />
           </div>
 
+          {/* Product Code */}
           <div>
             <label className="block text-xs font-bold text-slate-500">
               {t("inventory.productCode")}{" "}
@@ -359,6 +361,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
             />
           </div>
 
+          {/* SKU */}
           <div>
             <label className="block text-xs font-bold text-slate-500">
               {t("inventory.sku")}
@@ -370,6 +373,19 @@ export const ProductModal: React.FC<ProductModalProps> = ({
             />
           </div>
 
+          {/* Brand */}
+          <div>
+            <label className="block text-xs font-bold text-slate-500">
+              {t("inventory.brand")}
+            </label>
+            <input
+              className="w-full border rounded p-2"
+              value={formData.brand}
+              onChange={(e) => updateFormData({ brand: e.target.value })}
+            />
+          </div>
+
+          {/* Category */}
           <div>
             <label className="block text-xs font-bold text-slate-500">
               {t("inventory.category")} <span className="text-red-500">*</span>
@@ -415,7 +431,8 @@ export const ProductModal: React.FC<ProductModalProps> = ({
             </div>
           </div>
 
-          {/* <div>
+          {/* Sub Category */}
+          <div>
             <label className="block text-xs font-bold text-slate-500">
               {t("inventory.subCategory")}
             </label>
@@ -423,7 +440,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
               <input
                 type="text"
                 className="w-full border rounded p-2 pr-8"
-                value={subCategoryInput || formData.subCategory}
+                value={subCategoryInput || formData.subCategory || ""}
                 onChange={(e) => {
                   const value = e.target.value;
                   setSubCategoryInput(value);
@@ -434,12 +451,12 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                 onBlur={() => {
                   setTimeout(() => setSubCategoryShowDropdown(false), 200);
                 }}
-                placeholder={t("inventory.subCategoryPlaceholder")}
+                placeholder={t("inventory.subCategoryPlaceholder") || "Enter sub category"}
               />
               {subCategoryShowDropdown && (
                 <div className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-48 overflow-y-auto">
                   {getFilteredSubCategories(
-                    subCategoryInput || formData.subCategory,
+                    subCategoryInput || formData.subCategory || "",
                   ).map((subCategory) => (
                     <div
                       key={subCategory}
@@ -457,19 +474,9 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                 </div>
               )}
             </div>
-          </div> */}
-
-          <div>
-            <label className="block text-xs font-bold text-slate-500">
-              {t("inventory.brand")}
-            </label>
-            <input
-              className="w-full border rounded p-2"
-              value={formData.brand}
-              onChange={(e) => updateFormData({ brand: e.target.value })}
-            />
           </div>
 
+          {/* Unit of Measure */}
           <div>
             <label className="block text-xs font-bold text-slate-500">
               {t("inventory.unitOfMeasure")}{" "}
@@ -485,24 +492,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
             />
           </div>
 
-          <UomConversionsEditor
-            baseUnit={formData.unitOfMeasure}
-            conversions={formData.uomConversions}
-            onChange={(uomConversions) => updateFormData({ uomConversions })}
-          />
-
-          {/* <div className="col-span-2">
-            <label className="block text-xs font-bold text-slate-500">
-              {t("common.description")}
-            </label>
-            <textarea
-              className="w-full border rounded p-2"
-              rows={3}
-              value={formData.description}
-              onChange={(e) => updateFormData({ description: e.target.value })}
-            />
-          </div> */}
-
+          {/* Buying Price */}
           <div>
             <label className="block text-xs font-bold text-slate-500">
               {t("inventory.buyingPrice")}{" "}
@@ -520,6 +510,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
             />
           </div>
 
+          {/* Selling Price */}
           <div>
             <label className="block text-xs font-bold text-slate-500">
               {t("inventory.sellingPrice")}{" "}
@@ -537,7 +528,16 @@ export const ProductModal: React.FC<ProductModalProps> = ({
             />
           </div>
 
-          {/* Wholesale prices */}
+          {/* UOM Conversions — full width */}
+          <div className="col-span-2">
+            <UomConversionsEditor
+              baseUnit={formData.unitOfMeasure}
+              conversions={formData.uomConversions}
+              onChange={(uomConversions) => updateFormData({ uomConversions })}
+            />
+          </div>
+
+          {/* Wholesale prices — full width */}
           <div className="col-span-2">
             <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
               <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
@@ -649,7 +649,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
             </div>
           </div>
 
-          {/* Product images */}
+          {/* Product images — full width */}
           <div className="col-span-2">
             <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
               <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-200 flex items-center gap-2">
@@ -659,148 +659,148 @@ export const ProductModal: React.FC<ProductModalProps> = ({
               </div>
               <div className="p-4">
 
-              {editingId && existingImages.length > 0 && (
-                <div className="mb-4">
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                    Existing images ({existingImages.length})
-                  </p>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                    {existingImages.map((img) => (
-                      <div
-                        key={img._id || img.id || img.url}
-                        className="group relative aspect-square rounded-xl overflow-hidden border border-slate-200 bg-slate-100 shadow-sm"
-                      >
-                        <img
-                          src={img.url}
-                          alt="Existing"
-                          className="w-full h-full object-cover"
-                        />
-                        {img.isPrimary && (
-                          <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 text-[9px] font-bold text-white bg-blue-600 rounded">
-                            PRIMARY
-                          </span>
-                        )}
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            const imgId = img._id || img.id;
-                            if (!imgId) return;
-                            try {
-                              await deleteProductImage(editingId, imgId);
-                              setExistingImages((prev) =>
-                                prev.filter((i) => (i._id || i.id) !== imgId),
-                              );
-                              toast.success("Image deleted");
-                            } catch {
-                              toast.error("Failed to delete image");
-                            }
-                          }}
-                          className="absolute top-1.5 right-1.5 p-1.5 rounded-full bg-black/50 text-white opacity-0 group-hover:opacity-100 hover:bg-red-600 transition-all"
-                          aria-label="Delete image"
+                {editingId && existingImages.length > 0 && (
+                  <div className="mb-4">
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+                      Existing images ({existingImages.length})
+                    </p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                      {existingImages.map((img) => (
+                        <div
+                          key={img._id || img.id || img.url}
+                          className="group relative aspect-square rounded-xl overflow-hidden border border-slate-200 bg-slate-100 shadow-sm"
                         >
-                          <X className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <input
-                ref={imageInputRef}
-                type="file"
-                multiple
-                accept={ACCEPTED_IMAGE_TYPES.join(",")}
-                onChange={handleImageInputChange}
-                className="hidden"
-              />
-
-              <div
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    imageInputRef.current?.click();
-                  }
-                }}
-                onClick={() => imageInputRef.current?.click()}
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  setIsImageDragOver(true);
-                }}
-                onDragLeave={() => setIsImageDragOver(false)}
-                onDrop={handleImageDrop}
-                className={`relative rounded-xl border-2 border-dashed transition-all cursor-pointer p-6 text-center ${
-                  isImageDragOver
-                    ? "border-primary bg-primary/5 scale-[1.01]"
-                    : "border-slate-200 bg-white/70 hover:border-primary/50 hover:bg-primary/5"
-                }`}
-              >
-                <div className="flex flex-col items-center gap-2 pointer-events-none">
-                  <div className="p-3 rounded-full bg-slate-100 text-slate-500">
-                    <Upload className="w-6 h-6" />
-                  </div>
-                  <p className="text-sm font-medium text-slate-700">
-                    Drop images here or click to browse
-                  </p>
-                  <p className="text-xs text-slate-400">
-                    You can select multiple files
-                  </p>
-                </div>
-              </div>
-
-              {productImages.length > 0 && (
-                <div className="mt-4">
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                    Preview ({productImages.length})
-                  </p>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                    {productImages.map((file, idx) => (
-                      <div
-                        key={`${file.name}-${file.size}-${idx}`}
-                        className="group relative aspect-square rounded-xl overflow-hidden border border-slate-200 bg-slate-100 shadow-sm"
-                      >
-                        <img
-                          src={imagePreviewUrls[idx]}
-                          alt={file.name}
-                          className="w-full h-full object-cover"
-                        />
-                        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-2 pt-6">
-                          <p className="text-[10px] text-white truncate font-medium">
-                            {file.name}
-                          </p>
-                          <p className="text-[9px] text-white/80">
-                            {(file.size / 1024).toFixed(0)} KB
-                          </p>
+                          <img
+                            src={img.url}
+                            alt="Existing"
+                            className="w-full h-full object-cover"
+                          />
+                          {img.isPrimary && (
+                            <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 text-[9px] font-bold text-white bg-blue-600 rounded">
+                              PRIMARY
+                            </span>
+                          )}
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              const imgId = img._id || img.id;
+                              if (!imgId) return;
+                              try {
+                                await deleteProductImage(editingId, imgId);
+                                setExistingImages((prev) =>
+                                  prev.filter((i) => (i._id || i.id) !== imgId),
+                                );
+                                toast.success("Image deleted");
+                              } catch {
+                                toast.error("Failed to delete image");
+                              }
+                            }}
+                            className="absolute top-1.5 right-1.5 p-1.5 rounded-full bg-black/50 text-white opacity-0 group-hover:opacity-100 hover:bg-red-600 transition-all"
+                            aria-label="Delete image"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
                         </div>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            removeImageAt(idx);
-                          }}
-                          className="absolute top-1.5 right-1.5 p-1.5 rounded-full bg-black/50 text-white opacity-0 group-hover:opacity-100 hover:bg-red-600 transition-all"
-                          aria-label={`Remove ${file.name}`}
-                        >
-                          <X className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => updateFormData({ images: [] })}
-                    className="mt-3 text-xs font-medium text-red-600 hover:text-red-700 hover:underline"
-                  >
-                    Clear all images
-                  </button>
+                )}
+
+                <input
+                  ref={imageInputRef}
+                  type="file"
+                  multiple
+                  accept={ACCEPTED_IMAGE_TYPES.join(",")}
+                  onChange={handleImageInputChange}
+                  className="hidden"
+                />
+
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      imageInputRef.current?.click();
+                    }
+                  }}
+                  onClick={() => imageInputRef.current?.click()}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setIsImageDragOver(true);
+                  }}
+                  onDragLeave={() => setIsImageDragOver(false)}
+                  onDrop={handleImageDrop}
+                  className={`relative rounded-xl border-2 border-dashed transition-all cursor-pointer p-6 text-center ${isImageDragOver
+                      ? "border-primary bg-primary/5 scale-[1.01]"
+                      : "border-slate-200 bg-white/70 hover:border-primary/50 hover:bg-primary/5"
+                    }`}
+                >
+                  <div className="flex flex-col items-center gap-2 pointer-events-none">
+                    <div className="p-3 rounded-full bg-slate-100 text-slate-500">
+                      <Upload className="w-6 h-6" />
+                    </div>
+                    <p className="text-sm font-medium text-slate-700">
+                      Drop images here or click to browse
+                    </p>
+                    <p className="text-xs text-slate-400">
+                      You can select multiple files
+                    </p>
+                  </div>
                 </div>
-              )}   {/* closes image preview */}
-            </div>  {/* closes p-4 body */}
-            </div>  {/* closes overflow-hidden wrapper */}
+
+                {productImages.length > 0 && (
+                  <div className="mt-4">
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+                      Preview ({productImages.length})
+                    </p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                      {productImages.map((file, idx) => (
+                        <div
+                          key={`${file.name}-${file.size}-${idx}`}
+                          className="group relative aspect-square rounded-xl overflow-hidden border border-slate-200 bg-slate-100 shadow-sm"
+                        >
+                          <img
+                            src={imagePreviewUrls[idx]}
+                            alt={file.name}
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-2 pt-6">
+                            <p className="text-[10px] text-white truncate font-medium">
+                              {file.name}
+                            </p>
+                            <p className="text-[9px] text-white/80">
+                              {(file.size / 1024).toFixed(0)} KB
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeImageAt(idx);
+                            }}
+                            className="absolute top-1.5 right-1.5 p-1.5 rounded-full bg-black/50 text-white opacity-0 group-hover:opacity-100 hover:bg-red-600 transition-all"
+                            aria-label={`Remove ${file.name}`}
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => updateFormData({ images: [] })}
+                      className="mt-3 text-xs font-medium text-red-600 hover:text-red-700 hover:underline"
+                    >
+                      Clear all images
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
+          {/* Note — full width */}
           <div className="col-span-2">
             <label className="block text-xs font-bold text-slate-500">
               {t("pos.note") || "Note"}
@@ -814,7 +814,6 @@ export const ProductModal: React.FC<ProductModalProps> = ({
             />
           </div>
         </div>
-        {/* End scrollable body */}
       </div>
     </div>
   );

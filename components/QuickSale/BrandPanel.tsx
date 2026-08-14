@@ -1,5 +1,5 @@
 import React from "react";
-import { Store, Search, Scan, ArrowLeft, ChevronDown } from "lucide-react";
+import { Store, Search, Scan, ArrowLeft, ChevronDown, Loader2 } from "lucide-react";
 import { useLanguage } from "../../context/LanguageContext";
 import type { StorefrontStockItem } from "../../services/Storefront/fetchStorefrontStock";
 
@@ -19,6 +19,7 @@ interface BrandPanelProps {
   totalItems: number;
   onPageChange: (page: number) => void;
   loading: boolean;
+  brandsLoading: boolean;
   filteredProducts: StorefrontStockItem[];
   onAddToCart: (item: StorefrontStockItem) => void;
 }
@@ -39,6 +40,7 @@ export const BrandPanel: React.FC<BrandPanelProps> = ({
   totalItems,
   onPageChange,
   loading,
+  brandsLoading,
   filteredProducts,
   onAddToCart,
 }) => {
@@ -77,10 +79,10 @@ export const BrandPanel: React.FC<BrandPanelProps> = ({
               autoFocus
             />
           </div>
-          <div className="overflow-x-auto flex gap-2 pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="flex flex-wrap gap-2">
             <button
               onClick={() => onCategoryChange("All")}
-              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
                 selectedCategory === "All"
                   ? "bg-primary text-white"
                   : "bg-dark-100 text-dark-600 hover:bg-dark-200"
@@ -92,7 +94,7 @@ export const BrandPanel: React.FC<BrandPanelProps> = ({
               <button
                 key={c}
                 onClick={() => onCategoryChange(c)}
-                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
                   selectedCategory === c
                     ? "bg-primary text-white"
                     : "bg-dark-100 text-dark-600 hover:bg-dark-200"
@@ -210,11 +212,16 @@ export const BrandPanel: React.FC<BrandPanelProps> = ({
           </button>
         ))}
 
-        {brands.length === 0 && (
-          <div className="text-center text-gray-400 mt-10">
+        {brandsLoading ? (
+          <div className="col-span-4 flex flex-col items-center justify-center mt-10 gap-2">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            <p className="text-gray-400 text-sm">Loading brands...</p>
+          </div>
+        ) : brands.length === 0 ? (
+          <div className="col-span-4 text-center text-gray-400 mt-10">
             {t("quickSale.noBrands")}
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );
