@@ -471,7 +471,7 @@ export const my = {
     removeAddress: "လိပ်စာ ဖယ်မည်",
     addressLabel: "ခေါင်းစဉ်",
     addressLine: "လိပ်စာ",
-    city: "မြို့",
+    township: "မြို့နယ်",
     addressFieldsRequired: "လိပ်စာအားလုံးအတွက် လိပ်စာနှင့် မြို့ ကို ဖြည့်ပါ",
   },
   creditOrders: {

@@ -466,6 +466,7 @@ export const en = {
     addressLabel: "Label",
     addressLine: "Address Line",
     city: "City",
+    township: "Township",
     addressFieldsRequired: "Please fill address line and city for all addresses",
   },
   creditOrders: {
