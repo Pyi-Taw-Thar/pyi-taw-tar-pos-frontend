@@ -37,6 +37,8 @@ export interface CreditPerson {
   _id: string;
   name: string;
   phone: string;
+  address?: string;
+  township?: string;
 }
 
 export interface Order {

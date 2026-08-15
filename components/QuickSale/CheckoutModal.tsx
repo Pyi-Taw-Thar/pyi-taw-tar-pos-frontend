@@ -1,5 +1,5 @@
 import React from "react";
-import { X, User, Calendar, Calculator, Loader2 } from "lucide-react";
+import { X, User, Calendar, Calculator, Loader2, Search, ChevronDown } from "lucide-react";
 import { useLanguage } from "../../context/LanguageContext";
 import { MarkupCalculatorModal } from "./MarkupCalculatorModal";
 import { DiscountCalculatorModal } from "./DiscountCalculatorModal";
@@ -69,6 +69,39 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   discountAmount, onDiscountAmountChange,
 }) => {
   const { t } = useLanguage();
+  const [searchTerm, setSearchTerm] = React.useState("");
+  const [selectedTownship, setSelectedTownship] = React.useState("");
+  const [isOpen, setIsOpen] = React.useState(false);
+  const dropdownRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const selectedPersona = creditPersonas.find((p) => p._id === selectedCreditPersonId);
+
+  // Extract unique townships
+  const townships = React.useMemo(() => {
+    const list = creditPersonas.map((p) => p.township).filter(Boolean) as string[];
+    return Array.from(new Set(list));
+  }, [creditPersonas]);
+
+  // Filter credit personas based on search and township
+  const filteredPersonas = React.useMemo(() => {
+    return creditPersonas.filter((p) => {
+      const matchesSearch =
+        p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (p.phone && p.phone.includes(searchTerm));
+      const matchesTownship = !selectedTownship || p.township === selectedTownship;
+      return matchesSearch && matchesTownship;
+    });
+  }, [creditPersonas, searchTerm, selectedTownship]);
 
   if (!show) return null;
 
@@ -116,23 +149,94 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t("pos.selectCreditPerson")}</label>
-              <div className="relative">
-                <User className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                <select
-                  className="w-full pl-9 pr-4 py-2.5 border border-orange-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-orange-400 outline-none bg-orange-50"
-                  value={selectedCreditPersonId}
-                  onChange={(e) => onCreditPersonChange(e.target.value)}
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t("pos.customer")}</label>
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  type="button"
+                  className="w-full flex items-center justify-between pl-9 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-left"
+                  onClick={() => setIsOpen(!isOpen)}
                 >
-                  <option value="">
-                    {creditPersonas.length === 0
-                      ? `-- ${t("pos.noCreditPersons")} --`
-                      : `-- ${t("pos.selectCreditPersonOptional")} --`}
-                  </option>
-                  {creditPersonas.map((p) => (
-                    <option key={p._id} value={p._id}>{p.name}{p.phone ? ` - ${p.phone}` : ""}</option>
-                  ))}
-                </select>
+                  <User className={`absolute left-3 top-2.5 h-4 w-4 ${selectedPersona ? "text-primary" : "text-gray-400"}`} />
+                  <span className="truncate">
+                    {selectedPersona
+                      ? `${selectedPersona.name}${selectedPersona.phone ? ` - ${selectedPersona.phone}` : ""}${selectedPersona.township ? ` (${selectedPersona.township})` : ""}`
+                      : `-- ${t("pos.selectCustomerOptional")} --`}
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    {selectedPersona && (
+                      <span
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onCreditPersonChange("");
+                          setSearchTerm("");
+                        }}
+                        className="p-0.5 hover:bg-gray-100 rounded text-gray-500 transition-colors"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </span>
+                    )}
+                    <ChevronDown className="w-4 h-4 text-gray-400" />
+                  </div>
+                </button>
+
+                {isOpen && (
+                  <div className="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-50 p-2.5 space-y-2 max-h-64 flex flex-col">
+                    <div className="flex gap-2 flex-shrink-0">
+                      <div className="relative flex-1">
+                        <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-gray-400" />
+                        <input
+                          type="text"
+                          className="w-full pl-7 pr-2 py-1.5 border border-gray-200 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                          placeholder="Search name or phone..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                      </div>
+                      <select
+                        className="w-1/3 border border-gray-200 rounded-md text-xs py-1.5 px-2 bg-white focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                        value={selectedTownship}
+                        onChange={(e) => setSelectedTownship(e.target.value)}
+                      >
+                        <option value="">All Townships</option>
+                        {townships.map((t) => (
+                          <option key={t} value={t}>
+                            {t}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="overflow-y-auto flex-1 divide-y divide-gray-100 text-xs">
+                      {filteredPersonas.length === 0 ? (
+                        <div className="p-2 text-center text-gray-500">{t("pos.noCustomers")}</div>
+                      ) : (
+                        filteredPersonas.map((p) => (
+                          <button
+                            key={p._id}
+                            type="button"
+                            className={`w-full text-left p-2 hover:bg-primary/10 hover:text-primary-900 rounded transition-colors flex items-center justify-between ${
+                              selectedCreditPersonId === p._id ? "bg-primary/10 text-primary-900 font-semibold" : "text-gray-700"
+                            }`}
+                            onClick={() => {
+                              onCreditPersonChange(p._id);
+                              setIsOpen(false);
+                            }}
+                          >
+                            <div className="truncate">
+                              <div>{p.name}</div>
+                              {p.phone && <div className="text-[10px] text-gray-500">{p.phone}</div>}
+                            </div>
+                            {p.township && (
+                              <span className="bg-primary/10 text-primary text-[10px] px-1.5 py-0.5 rounded font-normal">
+                                {p.township}
+                              </span>
+                            )}
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
