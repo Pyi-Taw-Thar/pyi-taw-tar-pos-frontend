@@ -438,7 +438,7 @@ export const my = {
   customers: {
     title: "ဖောက်သည်များ",
     subtitle: "မှတ်ပုံတင်ထားသော ဖောက်သည်များကို ကြည့်ရှုနှင့် စီမံခန့်ခွဲပါ",
-    searchPlaceholder: "အမည်၊ ဖုန်း (သို့) လိပ်စာဖြင့် ရှာမယ်...",
+    searchPlaceholder: "အမည်၊ ဖုန်းဖြင့် ရှာမယ်...",
     totalItemsLabel: "စုစုပေါင်း {count} ဦး",
     addressCount: "လိပ်စာများ",
     active: "အသုံးပြုနေသည်",

@@ -432,7 +432,7 @@ export const en = {
   customers: {
     title: "Customers",
     subtitle: "View and manage registered customers",
-    searchPlaceholder: "Search by name, phone, or address...",
+    searchPlaceholder: "Search by name or phone",
     totalItemsLabel: "Total {count} customers",
     addressCount: "Addresses",
     active: "Active",
@@ -465,7 +465,6 @@ export const en = {
     removeAddress: "Remove Address",
     addressLabel: "Label",
     addressLine: "Address Line",
-    city: "City",
     township: "Township",
     addressFieldsRequired: "Please fill address line and city for all addresses",
   },
