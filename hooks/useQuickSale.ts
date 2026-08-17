@@ -118,11 +118,7 @@ export function useQuickSale() {
         setStorefronts(activeStorefronts);
         if (activeStorefronts.length > 0) {
           setSelectedStorefrontId(activeStorefronts[0]._id);
-        } else {
-          setLoading(false);
         }
-      } else {
-        setLoading(false);
       }
 
       if (catResponse.success && catResponse.data) {
@@ -130,9 +126,9 @@ export function useQuickSale() {
       }
     } catch (error) {
       toast.error(t("pos.failedToLoadData"));
-      setLoading(false);
     } finally {
       setIsProcessing(false);
+      setLoading(false);
     }
     loadCreditPersonas();
   };
@@ -169,11 +165,12 @@ export function useQuickSale() {
   }, [selectedStorefrontId]);
 
   useEffect(() => {
-    if (!selectedStorefrontId) return;
+    if (!selectedStorefrontId || !selectedBrand) return;
     loadStockItems();
   }, [selectedStorefrontId, debouncedSearch, selectedCategory, selectedBrand, currentPage]);
 
   const loadStockItems = async () => {
+    if (!selectedBrand) return;
     setLoading(true);
     try {
       const response = await fetchStorefrontStock(
@@ -214,7 +211,9 @@ export function useQuickSale() {
 
   const handleRefresh = async () => {
     setLoading(true);
-    await loadStockItems();
+    if (selectedBrand) {
+      await loadStockItems();
+    }
     if (selectedStorefrontId) {
       await loadBrands(selectedStorefrontId);
     }
@@ -469,7 +468,9 @@ export function useQuickSale() {
         setSuccessOrderNumber(result.data?.orderNumber || `INV-${Date.now()}`);
         setShowSuccessModal(true);
 
-        await loadStockItems();
+        if (selectedBrand) {
+          await loadStockItems();
+        }
       } else {
         toast.error(result.message || t("pos.failedToProcessSale"));
       }
