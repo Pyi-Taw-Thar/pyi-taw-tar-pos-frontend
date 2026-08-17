@@ -208,6 +208,11 @@ export const ProductModal: React.FC<ProductModalProps> = ({
     }
   }, [editingId, apiProducts]);
 
+  useEffect(() => {
+    setCategoryInput("");
+    setSubCategoryInput("");
+  }, [isOpen, editingId]);
+
   const wholesalePrices = formData.wholesalePrices || [];
   const productImages = formData.images || [];
 

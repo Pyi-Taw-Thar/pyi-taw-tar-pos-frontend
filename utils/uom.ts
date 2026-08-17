@@ -164,10 +164,6 @@ export function validateUomConversions(
     }
   }
 
-  if (conversions.length > 0 && !hasDefault) {
-    return "At least one conversion must be marked as default selling unit";
-  }
-
   return null;
 }
 
