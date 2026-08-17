@@ -3,9 +3,6 @@ import {
   Image as ImageIcon,
   X,
   Package,
-  DollarSign,
-  Store,
-  Warehouse,
 } from "lucide-react";
 import { ProductDetail } from "../../services/Inventory/fetchProductById";
 import { useLanguage } from "../../context/LanguageContext";
@@ -65,21 +62,19 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
         <div className="flex px-4 py-2 gap-5">
           <button
             onClick={() => setActiveTab("about")}
-            className={`px-4 py-3 text-sm font-medium transition-colors ${
-              activeTab === "about"
+            className={`px-4 py-3 text-sm font-medium transition-colors ${activeTab === "about"
                 ? "bg-[#E8F5E9] text-slate-800 rounded-2xl"
                 : "text-slate-600 hover:text-slate-800"
-            }`}
+              }`}
           >
             {t("inventory.aboutProduct")}
           </button>
           <button
             onClick={() => setActiveTab("quantity")}
-            className={`px-4 py-3 text-sm font-medium transition-colors ${
-              activeTab === "quantity"
+            className={`px-4 py-3 text-sm font-medium transition-colors ${activeTab === "quantity"
                 ? "bg-[#E8F5E9] text-slate-800 rounded-2xl"
                 : "text-slate-600 hover:text-slate-800"
-            }`}
+              }`}
           >
             {t("inventory.productQuantity")}
           </button>

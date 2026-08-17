@@ -130,7 +130,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   onSave,
   onFormDataChange,
 }) => {
-  console.log("formData", formData);
+  // console.log("formData", formData);
   const { t } = useLanguage();
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
@@ -732,8 +732,8 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                   onDragLeave={() => setIsImageDragOver(false)}
                   onDrop={handleImageDrop}
                   className={`relative rounded-xl border-2 border-dashed transition-all cursor-pointer p-6 text-center ${isImageDragOver
-                      ? "border-primary bg-primary/5 scale-[1.01]"
-                      : "border-slate-200 bg-white/70 hover:border-primary/50 hover:bg-primary/5"
+                    ? "border-primary bg-primary/5 scale-[1.01]"
+                    : "border-slate-200 bg-white/70 hover:border-primary/50 hover:bg-primary/5"
                     }`}
                 >
                   <div className="flex flex-col items-center gap-2 pointer-events-none">
