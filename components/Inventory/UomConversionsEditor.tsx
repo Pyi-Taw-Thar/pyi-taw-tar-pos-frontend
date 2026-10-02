@@ -52,7 +52,7 @@ export const UomConversionsEditor: React.FC<UomConversionsEditorProps> = ({
   };
 
   return (
-    <div className="col-span-2 border rounded-lg p-4 bg-slate-50">
+    <div className="col-span-1 sm:col-span-2 border border-slate-200 rounded-xl p-4 bg-slate-50 shadow-sm">
       <div className="flex items-center justify-between mb-3">
         <label className="text-xs font-bold text-slate-600 uppercase tracking-wide">
           {t("inventory.uomConversions")}
@@ -60,7 +60,7 @@ export const UomConversionsEditor: React.FC<UomConversionsEditorProps> = ({
         <button
           type="button"
           onClick={addRow}
-          className="flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary/80"
+          className="flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary/80 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20 rounded px-1.5 py-0.5"
         >
           <Plus className="w-3.5 h-3.5" />
           {t("inventory.addConversion")}
@@ -75,43 +75,61 @@ export const UomConversionsEditor: React.FC<UomConversionsEditorProps> = ({
         </p>
       ) : (
         <div className="space-y-2">
-          <div className="grid grid-cols-12 gap-2 text-xs font-bold text-slate-500 px-1">
-            <span className="col-span-3">{t("inventory.conversionUnit")}</span>
-            <span className="col-span-2">{t("inventory.conversionFactor")}</span>
-            <span className="col-span-3">Convert From</span>
-            <span className="col-span-3">{t("inventory.defaultSellingUnit")}</span>
-            <span className="col-span-1" />
+          <div className="hidden sm:grid sm:grid-cols-12 gap-2 text-xs font-bold text-slate-500 px-1">
+            <span className="sm:col-span-3">{t("inventory.conversionUnit")}</span>
+            <span className="sm:col-span-2">{t("inventory.conversionFactor")}</span>
+            <span className="sm:col-span-3">{t("inventory.convertFrom")}</span>
+            <span className="sm:col-span-3">{t("inventory.defaultSellingUnit")}</span>
+            <span className="sm:col-span-1" />
           </div>
           {conversions.map((row, index) => (
             <div
               key={index}
-              className="grid grid-cols-12 gap-2 items-center bg-white rounded border p-2"
+              className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center bg-white rounded-lg border border-slate-200 p-2.5 shadow-sm"
             >
-              <input
-                className="col-span-3 border rounded p-2 text-sm"
-                value={row.unit}
-                placeholder={t("inventory.conversionUnitPlaceholder")}
-                onChange={(e) => updateRow(index, { unit: e.target.value })}
-              />
-              <input
-                type="number"
-                min="0.0001"
-                step="any"
-                className="col-span-2 border rounded p-2 text-sm"
-                value={row.factor}
-                onChange={(e) =>
-                  updateRow(index, { factor: Number(e.target.value) || 0 })
-                }
-              />
-              <div className="col-span-3">
+              <div className="sm:col-span-3">
+                <label className="sm:hidden text-xs font-bold text-slate-500 uppercase block mb-1">
+                  {t("inventory.conversionUnit")}
+                </label>
+                <input
+                  className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                  value={row.unit}
+                  placeholder={t("inventory.conversionUnitPlaceholder")}
+                  onChange={(e) => updateRow(index, { unit: e.target.value })}
+                  aria-label={t("inventory.conversionUnit")}
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <label className="sm:hidden text-xs font-bold text-slate-500 uppercase block mb-1">
+                  {t("inventory.conversionFactor")}
+                </label>
+                <input
+                  type="number"
+                  min="0.0001"
+                  step="any"
+                  className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                  value={row.factor}
+                  onChange={(e) =>
+                    updateRow(index, { factor: Number(e.target.value) || 0 })
+                  }
+                  aria-label={t("inventory.conversionFactor")}
+                />
+              </div>
+              <div className="sm:col-span-3">
+                <label className="sm:hidden text-xs font-bold text-slate-500 uppercase block mb-1">
+                  {t("inventory.convertFrom")}
+                </label>
                 <select
-                  className="w-full border rounded p-2 text-sm bg-white"
+                  className="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                   value={row.convertFrom || ""}
                   onChange={(e) =>
                     updateRow(index, { convertFrom: e.target.value || null })
                   }
+                  aria-label={t("inventory.convertFrom")}
                 >
-                  <option value="">{baseUnit} (base)</option>
+                  <option value="">
+                    {t("inventory.baseUnitOption").replace("{base}", baseUnit || "—")}
+                  </option>
                   {conversions
                     .filter((_, i) => i !== index && conversions[i].unit)
                     .map((c, i) => (
@@ -121,22 +139,27 @@ export const UomConversionsEditor: React.FC<UomConversionsEditorProps> = ({
                     ))}
                 </select>
               </div>
-              <label className="col-span-3 flex items-center gap-2 text-sm cursor-pointer">
-                <input
-                  type="radio"
-                  checked={!!row.isDefaultSellingUnit}
-                  onChange={() => setDefaultSelling(index)}
-                />
-                {t("inventory.defaultSellingUnitShort")}
-              </label>
-              <button
-                type="button"
-                onClick={() => removeRow(index)}
-                className="col-span-1 p-1.5 text-red-500 hover:bg-red-50 rounded"
-                aria-label={t("common.delete")}
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
+              <div className="sm:col-span-3">
+                <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
+                  <input
+                    type="radio"
+                    checked={!!row.isDefaultSellingUnit}
+                    onChange={() => setDefaultSelling(index)}
+                    className="text-primary focus:ring-primary"
+                  />
+                  {t("inventory.defaultSellingUnitShort")}
+                </label>
+              </div>
+              <div className="sm:col-span-1 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => removeRow(index)}
+                  className="w-9 h-9 flex items-center justify-center text-red-500 hover:bg-red-50 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-400"
+                  aria-label={t("common.delete")}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           ))}
         </div>
