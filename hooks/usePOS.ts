@@ -28,7 +28,10 @@ import {
   getCartLineMaxQty,
   getCartLineEffectivePrice,
   getInventoryUomFromStock,
+  getCartLineStockId,
+  getInitialCartUnit,
 } from "../utils/posCartUom";
+import { cartLineKey } from "../utils/uom";
 
 enum PaymentMethod {
   CASH = "Cash",
@@ -194,23 +197,36 @@ export function usePOS() {
       return;
     }
 
-    const newLine = createCartLine(stockItem, 1);
-    const lineId = getCartLineId(newLine);
-    const maxQty = getCartLineMaxQty(newLine);
+    const inventoryId = getCartLineStockId(stockItem);
+    const initialUnit = getInitialCartUnit(stockItem);
+    const lineId = cartLineKey(inventoryId, initialUnit);
 
     setCart((prev) => {
-      const existing = prev.find((item) => getCartLineId(item) === lineId);
-      if (existing) {
+      // 1. Check exact match (same inventory ID + same unit)
+      let existingIndex = prev.findIndex(
+        (item) => getCartLineId(item) === lineId
+      );
+
+      // 2. If not found, check if this product already exists in cart with any unit
+      if (existingIndex === -1) {
+        existingIndex = prev.findIndex(
+          (item) => getCartLineStockId(item.stockItem) === inventoryId
+        );
+      }
+
+      if (existingIndex !== -1) {
+        const existing = prev[existingIndex];
+        const maxQty = getCartLineMaxQty(existing);
         if (existing.qty + 1 > maxQty) {
           toast.error(t("pos.cannotExceedStock"));
           return prev;
         }
-        return prev.map((item) =>
-          getCartLineId(item) === lineId
-            ? { ...item, qty: item.qty + 1 }
-            : item,
+        return prev.map((item, idx) =>
+          idx === existingIndex ? { ...item, qty: item.qty + 1 } : item
         );
       }
+
+      const newLine = createCartLine(stockItem, 1);
       return [...prev, newLine];
     });
   };
@@ -251,17 +267,46 @@ export function usePOS() {
   };
 
   const setCartLineUnit = (lineId: string, unit: string) => {
-    setCart((prev) =>
-      prev.map((item) => {
-        if (getCartLineId(item) !== lineId) return item;
+    setCart((prev) => {
+      const targetIndex = prev.findIndex(
+        (item) => getCartLineId(item) === lineId
+      );
+      if (targetIndex === -1) return prev;
+
+      const currentItem = prev[targetIndex];
+      const targetProductId = getCartLineStockId(currentItem.stockItem);
+      const targetLineKey = cartLineKey(targetProductId, unit);
+
+      // If another line already exists with this new unit, merge them
+      const duplicateIndex = prev.findIndex(
+        (item, idx) =>
+          idx !== targetIndex && getCartLineId(item) === targetLineKey
+      );
+
+      if (duplicateIndex !== -1) {
+        const existingItem = prev[duplicateIndex];
+        const mergedQty = existingItem.qty + currentItem.qty;
+        const maxQty = getCartLineMaxQty({ ...existingItem, qty: mergedQty });
+        return prev
+          .filter((_, idx) => idx !== targetIndex)
+          .map((item) => {
+            if (getCartLineId(item) === targetLineKey) {
+              return { ...item, qty: Math.min(mergedQty, maxQty) || 1 };
+            }
+            return item;
+          });
+      }
+
+      return prev.map((item, idx) => {
+        if (idx !== targetIndex) return item;
         const updated = { ...item, selectedUnit: unit };
         const maxQty = getCartLineMaxQty(updated);
         return {
           ...updated,
           qty: Math.min(updated.qty, maxQty) || 1,
         };
-      }),
-    );
+      });
+    });
   };
 
   const removeFromCart = (lineId: string) => {
@@ -308,13 +353,16 @@ export function usePOS() {
               ? batch.inventoryId._id
               : batch.inventoryId;
 
-          const existingCartIndex = cart.findIndex(
-            (item) => item.stockItem.inventoryId._id === inventoryIdStr
-          );
+          let updatedQty = 0;
+          let productFoundInCart = false;
 
-          if (existingCartIndex !== -1) {
-            // Product already in cart - increment quantity and allocate this batch
-            setCart((prev) => {
+          setCart((prev) => {
+            const existingCartIndex = prev.findIndex(
+              (item) => getCartLineStockId(item.stockItem) === inventoryIdStr
+            );
+
+            if (existingCartIndex !== -1) {
+              productFoundInCart = true;
               const updated = [...prev];
               const item = { ...updated[existingCartIndex] };
               const currentBatches = item.scannedBatches
@@ -343,21 +391,40 @@ export function usePOS() {
               item.qty = item.qty + 1;
               item.scannedBatches = currentBatches;
               updated[existingCartIndex] = item;
+              updatedQty = item.qty;
               return updated;
-            });
+            }
+            return prev;
+          });
 
+          if (productFoundInCart) {
             toast.success(
-              `[အသုတ်: ${batch.batchNumber}] စကင်ဖတ်ပြီးပါပြီ (စုစုပေါင်း: ${
-                cart[existingCartIndex].qty + 1
-              })`
+              `[အသုတ်: ${batch.batchNumber}] စကင်ဖတ်ပြီးပါပြီ (စုစုပေါင်း: ${updatedQty})`
             );
             setSearch("");
             return;
           } else {
             // Product not yet in cart - find matching stock item
-            const matchingStock = allStockItems.find(
-              (s) => s.inventoryId._id === inventoryIdStr
+            let matchingStock = allStockItems.find(
+              (s) => getCartLineStockId(s) === inventoryIdStr
             );
+
+            if (!matchingStock && selectedStorefrontId) {
+              try {
+                const stockRes = await fetchStorefrontStock(
+                  selectedStorefrontId,
+                  1,
+                  1,
+                  undefined,
+                  inventoryIdStr
+                );
+                if (stockRes.success && stockRes.data?.length > 0) {
+                  matchingStock = stockRes.data[0];
+                }
+              } catch (e) {
+                console.error("Error fetching matching stock:", e);
+              }
+            }
 
             if (matchingStock) {
               const newLine = createCartLine(matchingStock, 1);
@@ -370,7 +437,17 @@ export function usePOS() {
                   quantity: 1,
                 },
               ];
-              setCart((prev) => [...prev, newLine]);
+              setCart((prev) => {
+                const existingIdx = prev.findIndex(
+                  (item) => getCartLineStockId(item.stockItem) === inventoryIdStr
+                );
+                if (existingIdx !== -1) {
+                  return prev.map((item, idx) =>
+                    idx === existingIdx ? { ...item, qty: item.qty + 1 } : item
+                  );
+                }
+                return [...prev, newLine];
+              });
               toast.success(
                 `[အသုတ်: ${batch.batchNumber}] ${matchingStock.inventoryId.productName} ခြင်းထဲထည့်ပြီးပါပြီ`
               );
@@ -439,7 +516,7 @@ export function usePOS() {
     }
   }, [showCheckoutModal, total, paymentType, paymentMethod]);
 
-  const handleCheckout = async () => {
+  const handleCheckout = async (targetStatus: "completed" | "pending" = "completed") => {
     if (cart.length === 0) return;
 
     if (
@@ -474,7 +551,7 @@ export function usePOS() {
         ? 0
         : Math.round(subtotal - totalAfterDiscount);
 
-      const orderPayload = {
+      const orderPayload: any = {
         storefrontId: selectedStorefrontId,
         ordersProducts: cart.map(cartLineToOrderProduct),
         subTotal: subtotal,
@@ -484,6 +561,7 @@ export function usePOS() {
         paymentType: paymentType,
         paymentMethod: paymentMethodMap[paymentMethod],
         orderDate: new Date(createdAt).toISOString(),
+        orderStatus: targetStatus,
         ...(selectedCreditPersonId
           ? { creditPersonId: selectedCreditPersonId }
           : {}),
@@ -493,6 +571,23 @@ export function usePOS() {
       console.log("result", result);
 
       if (result.success) {
+        if (targetStatus === "pending") {
+          toast.success(
+            `Order (${result.data?.orderNumber}) ကို ဂိုဒေါင်သို့ စစ်ဆေးထုတ်ပိုးရန် ပို့ဆောင်လိုက်ပါပြီ`
+          );
+          setCart([]);
+          setDiscount(0);
+          setMarkup(0);
+          setMarkupAmount(0);
+          setNote("");
+          setPaidAmount(0);
+          setPaymentMethod(PaymentMethod.CASH);
+          setPaymentType("paid");
+          setSelectedCreditPersonId("");
+          setCreatedAt(new Date().toISOString().split("T")[0]);
+          await loadStockItems();
+          return;
+        }
 
         console.log("creditPersonId", selectedCreditPersonId);
         console.log("creditPersonName", creditPersonas.find((cp) => cp._id === selectedCreditPersonId)?.name);

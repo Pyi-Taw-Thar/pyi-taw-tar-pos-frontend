@@ -28,7 +28,10 @@ import {
   getCartLineMaxQty,
   getCartLineEffectivePrice,
   getInventoryUomFromStock,
+  getCartLineStockId,
+  getInitialCartUnit,
 } from "../utils/posCartUom";
+import { cartLineKey } from "../utils/uom";
 
 enum PaymentMethod {
   CASH = "Cash",
@@ -237,23 +240,36 @@ export function useQuickSale() {
       return;
     }
 
-    const newLine = createCartLine(stockItem, 1);
-    const lineId = getCartLineId(newLine);
-    const maxQty = getCartLineMaxQty(newLine);
+    const inventoryId = getCartLineStockId(stockItem);
+    const initialUnit = getInitialCartUnit(stockItem);
+    const lineId = cartLineKey(inventoryId, initialUnit);
 
     setCart((prev) => {
-      const existing = prev.find((item) => getCartLineId(item) === lineId);
-      if (existing) {
+      // 1. Check exact match (same inventory ID + same unit)
+      let existingIndex = prev.findIndex(
+        (item) => getCartLineId(item) === lineId
+      );
+
+      // 2. If not found, check if this product already exists in cart with any unit
+      if (existingIndex === -1) {
+        existingIndex = prev.findIndex(
+          (item) => getCartLineStockId(item.stockItem) === inventoryId
+        );
+      }
+
+      if (existingIndex !== -1) {
+        const existing = prev[existingIndex];
+        const maxQty = getCartLineMaxQty(existing);
         if (existing.qty + 1 > maxQty) {
           toast.error(t("pos.cannotExceedStock"));
           return prev;
         }
-        return prev.map((item) =>
-          getCartLineId(item) === lineId
-            ? { ...item, qty: item.qty + 1 }
-            : item,
+        return prev.map((item, idx) =>
+          idx === existingIndex ? { ...item, qty: item.qty + 1 } : item
         );
       }
+
+      const newLine = createCartLine(stockItem, 1);
       return [...prev, newLine];
     });
   };
@@ -294,17 +310,46 @@ export function useQuickSale() {
   };
 
   const setCartLineUnit = (lineId: string, unit: string) => {
-    setCart((prev) =>
-      prev.map((item) => {
-        if (getCartLineId(item) !== lineId) return item;
+    setCart((prev) => {
+      const targetIndex = prev.findIndex(
+        (item) => getCartLineId(item) === lineId
+      );
+      if (targetIndex === -1) return prev;
+
+      const currentItem = prev[targetIndex];
+      const targetProductId = getCartLineStockId(currentItem.stockItem);
+      const targetLineKey = cartLineKey(targetProductId, unit);
+
+      // If another line already exists with this new unit, merge them
+      const duplicateIndex = prev.findIndex(
+        (item, idx) =>
+          idx !== targetIndex && getCartLineId(item) === targetLineKey
+      );
+
+      if (duplicateIndex !== -1) {
+        const existingItem = prev[duplicateIndex];
+        const mergedQty = existingItem.qty + currentItem.qty;
+        const maxQty = getCartLineMaxQty({ ...existingItem, qty: mergedQty });
+        return prev
+          .filter((_, idx) => idx !== targetIndex)
+          .map((item) => {
+            if (getCartLineId(item) === targetLineKey) {
+              return { ...item, qty: Math.min(mergedQty, maxQty) || 1 };
+            }
+            return item;
+          });
+      }
+
+      return prev.map((item, idx) => {
+        if (idx !== targetIndex) return item;
         const updated = { ...item, selectedUnit: unit };
         const maxQty = getCartLineMaxQty(updated);
         return {
           ...updated,
           qty: Math.min(updated.qty, maxQty) || 1,
         };
-      }),
-    );
+      });
+    });
   };
 
   const removeFromCart = (lineId: string) => {

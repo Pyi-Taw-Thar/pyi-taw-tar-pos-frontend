@@ -93,6 +93,26 @@ export const VoucherContent: React.FC<VoucherContentProps> = ({
     return `${day}/${month}/${year}`;
   };
 
+  // Expand items: If a product has multiple batches, display each as a distinct row on the voucher
+  const displayItems = React.useMemo(() => {
+    const raw = receiptData.items || [];
+    const list: VoucherReceiptItem[] = [];
+    for (const it of raw) {
+      if (it.batches && it.batches.length > 1) {
+        for (const b of it.batches) {
+          list.push({
+            ...it,
+            qty: b.quantity,
+            batches: [b],
+          });
+        }
+      } else {
+        list.push(it);
+      }
+    }
+    return list;
+  }, [receiptData.items]);
+
   if (isThermal) {
     return (
       <div className="voucher-container" data-paper={paperSize}>
@@ -139,7 +159,7 @@ export const VoucherContent: React.FC<VoucherContentProps> = ({
             <div>UNIT</div>
             <div className="voucher-thermal-col-total">TOTAL</div>
           </div>
-          {receiptData.items.map((item, index) => (
+          {displayItems.map((item, index) => (
             <div key={index} className="voucher-thermal-item">
               <div>{index + 1}</div>
               <div
@@ -288,7 +308,7 @@ export const VoucherContent: React.FC<VoucherContentProps> = ({
   }
 
   // A4 / A5 Layout matching the image with React pagination
-  const items = receiptData.items || [];
+  const items = displayItems;
 
   const getPages = (): VoucherReceiptItem[][] => {
     const maxSinglePage = paperSize === "A5" ? 5 : 10;

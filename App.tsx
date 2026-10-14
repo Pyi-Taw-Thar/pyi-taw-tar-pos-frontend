@@ -37,6 +37,7 @@ import { Login } from "./pages/Login";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import PrintReceipt from "./pages/PrintReceipt";
 import { AIChat } from "./pages/AIChat";
+import { OrderFulfillment } from "./pages/OrderFulfillment";
 
 const AppLayout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -100,6 +101,7 @@ const AppLayout: React.FC = () => {
           <Route path="/suppliers/:id" element={<SupplierDetail />} />
           <Route path="/purchasing" element={<Purchasing />} />
           <Route path="/orders" element={<Orders />} />
+          <Route path="/order-fulfillment" element={<OrderFulfillment />} />
           <Route path="/direct-sale-orders" element={<DirectSaleOrders />} />
           <Route path="/admin/ecommerce-orders" element={<EcommerceOrders />} />
           <Route path="/customers" element={<Customers />} />

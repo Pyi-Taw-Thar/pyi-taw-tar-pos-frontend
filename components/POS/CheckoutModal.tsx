@@ -1,5 +1,5 @@
 import React from "react";
-import { X, User, Calendar, Calculator, Loader2, Search, ChevronDown } from "lucide-react";
+import { X, User, Calendar, Calculator, Loader2, Search, ChevronDown, Package } from "lucide-react";
 import { useLanguage } from "../../context/LanguageContext";
 import { MarkupCalculatorModal } from "./MarkupCalculatorModal";
 import { DiscountCalculatorModal } from "./DiscountCalculatorModal";
@@ -33,7 +33,7 @@ interface CheckoutModalProps {
   cartItemCount: number;
   isProcessing: boolean;
   devices: { isMobile: boolean };
-  onCheckout: () => void;
+  onCheckout: (status?: "completed" | "pending") => void;
   showDiscountCalculator: boolean;
   showMarkupCalculator: boolean;
   onOpenDiscountCalc: () => void;
@@ -354,7 +354,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
           </div>
 
           <div className="p-4 border-t bg-[#F8F9FA] space-y-2">
-            <button onClick={onCheckout}
+            <button
+              onClick={() => onCheckout("completed")}
               disabled={cartItemCount === 0 || isProcessing || (paymentType === "paid" && paidAmount < total) || (paymentType === "credit" && paidAmount > total)}
               className="complete-sale-btn w-full bg-primary hover:bg-primary/90 text-white py-3 rounded-lg font-bold transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
@@ -363,6 +364,15 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
               ) : (
                 <>{t("pos.completeSale")} • {total.toLocaleString()} MMK</>
               )}
+            </button>
+            <button
+              type="button"
+              onClick={() => onCheckout("pending")}
+              disabled={cartItemCount === 0 || isProcessing || (paymentType === "paid" && paidAmount < total) || (paymentType === "credit" && paidAmount > total)}
+              className="w-full bg-amber-600 hover:bg-amber-700 text-white py-2.5 rounded-lg font-semibold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
+            >
+              <Package className="w-4 h-4" />
+              ဂိုဒေါင်သို့ ပို့မည် (Send to Warehouse / Pending)
             </button>
             <button onClick={onClose} className="w-full py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
               {t("common.cancel")}

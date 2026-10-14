@@ -110,7 +110,7 @@ export const POS: React.FC = () => {
         cartItemCount={pos.cart.reduce((sum, i) => sum + i.qty, 0)}
         isProcessing={pos.isProcessing}
         devices={pos.devices}
-        onCheckout={() => { pos.handleCheckout(); pos.setShowCheckoutModal(false); }}
+        onCheckout={(status) => { pos.handleCheckout(status); pos.setShowCheckoutModal(false); }}
         showDiscountCalculator={pos.showDiscountCalculator}
         showMarkupCalculator={pos.showMarkupCalculator}
         onOpenDiscountCalc={() => pos.setShowDiscountCalculator(true)}

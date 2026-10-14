@@ -4,6 +4,7 @@ import {
   cartLineKey,
   getAvailableQuantityInUnit,
   getDefaultSellingUnit,
+  getUnitOptions,
   getUnitPrice,
 } from "./uom";
 
@@ -25,25 +26,66 @@ export interface UomCartItem {
 export function getInventoryUomFromStock(stockItem: StorefrontStockItem) {
   const inv = stockItem.inventoryId;
   return {
-    baseUnit: inv.unitOfMeasure?.trim() || "piece",
-    conversions: inv.uomConversions,
+    baseUnit: inv?.unitOfMeasure?.trim() || "piece",
+    conversions: inv?.uomConversions,
   };
+}
+
+export function getInitialCartUnit(stockItem: StorefrontStockItem): string {
+  const { baseUnit, conversions } = getInventoryUomFromStock(stockItem);
+  const defaultUnit = getDefaultSellingUnit(baseUnit, conversions);
+
+  if (stockItem.availableQuantity !== undefined) {
+    const defaultQty = getAvailableQuantityInUnit(
+      baseUnit,
+      defaultUnit,
+      conversions,
+      stockItem.availableQuantity,
+      stockItem.quantityByUnit,
+    );
+    if (defaultQty >= 1) {
+      return defaultUnit;
+    }
+    const options = getUnitOptions(baseUnit, conversions);
+    for (const opt of options) {
+      const qty = getAvailableQuantityInUnit(
+        baseUnit,
+        opt.value,
+        conversions,
+        stockItem.availableQuantity,
+        stockItem.quantityByUnit,
+      );
+      if (qty >= 1) {
+        return opt.value;
+      }
+    }
+  }
+  return defaultUnit;
 }
 
 export function createCartLine(
   stockItem: StorefrontStockItem,
   qty = 1,
 ): UomCartItem {
-  const { baseUnit, conversions } = getInventoryUomFromStock(stockItem);
   return {
     stockItem,
     qty,
-    selectedUnit: getDefaultSellingUnit(baseUnit, conversions),
+    selectedUnit: getInitialCartUnit(stockItem),
   };
 }
 
+export function getCartLineStockId(stockItem: StorefrontStockItem): string {
+  return (
+    (typeof stockItem?.inventoryId === "object" &&
+      stockItem.inventoryId?._id) ||
+    stockItem?._id ||
+    ""
+  );
+}
+
 export function getCartLineId(item: UomCartItem): string {
-  return cartLineKey(item.stockItem._id, item.selectedUnit);
+  const stockId = getCartLineStockId(item.stockItem);
+  return cartLineKey(stockId, item.selectedUnit);
 }
 
 export function getCartLineUnitPrice(item: UomCartItem): number {

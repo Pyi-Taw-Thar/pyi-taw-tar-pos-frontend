@@ -19,6 +19,7 @@ import {
   ChevronDown,
   Users,
   MessageSquare,
+  PackageCheck,
   type LucideIcon,
   ShoppingCart,
 } from "lucide-react";
@@ -106,6 +107,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         icon: Receipt,
         children: [
           { path: "/orders", label: t("sidebar.orders"), icon: Receipt },
+          {
+            path: "/order-fulfillment",
+            label: t("sidebar.orderFulfillment") || "Order ထုတ်ပိုးစစ်ဆေးခြင်း",
+            icon: PackageCheck,
+          },
           // {
           //   path: "/direct-sale-orders",
           //   label: t("sidebar.directSaleOrders"),

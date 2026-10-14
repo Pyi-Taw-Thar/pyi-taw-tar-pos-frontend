@@ -39,6 +39,7 @@ import {
   cartLineToOrderProduct,
   createCartLine,
   getCartLineId,
+  getCartLineStockId,
   getCartLineUnitPrice,
   getInventoryUomFromStock,
 } from "../utils/posCartUom";
@@ -243,11 +244,18 @@ export const QuotationCreate: React.FC = () => {
   const addToCart = (stockItem: StorefrontStockItem) => {
     const newLine = createCartLine(stockItem, 1);
     const lineId = getCartLineId(newLine);
+    const inventoryId = getCartLineStockId(stockItem);
+
     setCart((prev) => {
-      const existing = prev.find((item) => getCartLineId(item) === lineId);
-      if (existing) {
-        return prev.map((item) =>
-          getCartLineId(item) === lineId
+      let existingIndex = prev.findIndex((item) => getCartLineId(item) === lineId);
+      if (existingIndex === -1) {
+        existingIndex = prev.findIndex(
+          (item) => getCartLineStockId(item.stockItem) === inventoryId
+        );
+      }
+      if (existingIndex !== -1) {
+        return prev.map((item, idx) =>
+          idx === existingIndex
             ? { ...item, qty: item.qty + 1 }
             : item,
         );

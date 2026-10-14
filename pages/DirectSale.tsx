@@ -15,6 +15,7 @@ import {
   User,
   Calculator,
   Calendar,
+  Package,
 } from "lucide-react";
 import { useLanguage } from "../context/LanguageContext";
 import { getSavedPrintPaperSize } from "../utils/printPaperSize";
@@ -43,7 +44,11 @@ import {
   DirectSaleCartItem,
   getCatalogUnitPrice,
 } from "../utils/directSaleCart";
-import { getCartLineId, getInventoryUomFromStock } from "../utils/posCartUom";
+import {
+  getCartLineId,
+  getCartLineStockId,
+  getInventoryUomFromStock,
+} from "../utils/posCartUom";
 
 // Payment methods
 enum PaymentMethod {
@@ -212,12 +217,18 @@ export const DirectSale: React.FC = () => {
   const addToCart = (stockItem: StorefrontStockItem) => {
     const newLine = createDirectSaleCartLine(stockItem, 1);
     const lineId = getCartLineId(newLine);
+    const inventoryId = getCartLineStockId(stockItem);
 
     setCart((prev) => {
-      const existing = prev.find((item) => getCartLineId(item) === lineId);
-      if (existing) {
-        return prev.map((item) =>
-          getCartLineId(item) === lineId
+      let existingIndex = prev.findIndex((item) => getCartLineId(item) === lineId);
+      if (existingIndex === -1) {
+        existingIndex = prev.findIndex(
+          (item) => getCartLineStockId(item.stockItem) === inventoryId
+        );
+      }
+      if (existingIndex !== -1) {
+        return prev.map((item, idx) =>
+          idx === existingIndex
             ? { ...item, qty: item.qty + 1 }
             : item,
         );
@@ -341,7 +352,7 @@ export const DirectSale: React.FC = () => {
     }
   }, [showCheckoutModal, total, paymentType, paymentMethod]);
 
-  const handleCheckout = async () => {
+  const handleCheckout = async (targetStatus: "completed" | "pending" = "completed") => {
     if (cart.length === 0) return;
 
     // Only validate paid amount for "paid" payment type, not for "credit" or "FOC"
@@ -384,7 +395,7 @@ export const DirectSale: React.FC = () => {
           ? finalPaidAmount - total
           : 0;
 
-      const orderPayload = {
+      const orderPayload: any = {
         saleType: "direct-sale" as const,
         ...(customerName.trim() ? { customerName: customerName.trim() } : {}),
         ...(customerPhone.trim()
@@ -401,11 +412,34 @@ export const DirectSale: React.FC = () => {
         paymentType: paymentType,
         paymentMethod: paymentMethodMap[paymentMethod],
         orderDate: new Date(createdAt).toISOString(),
+        orderStatus: targetStatus,
       };
 
       const result = await createDirectSale(orderPayload);
 
       if (result.success) {
+        if (targetStatus === "pending") {
+          toast.success(
+            `Order (${result.data?.orderNumber}) ကို ဂိုဒေါင်သို့ စစ်ဆေးထုတ်ပိုးရန် ပို့ဆောင်လိုက်ပါပြီ`
+          );
+          setCart([]);
+          setDiscount(0);
+          setMarkup(0);
+          setMarkupAmount(0);
+          setNote("");
+          setCustomerName("");
+          setCustomerPhone("");
+          setPaidAmount(0);
+          setPaymentMethod(
+            paymentType === "credit" ? PaymentMethod.NORMAL : PaymentMethod.CASH,
+          );
+          setPaymentType("paid");
+          setSelectedCreditPersonId("");
+          setCreatedAt(new Date().toISOString().split("T")[0]);
+          await loadStockItems();
+          return;
+        }
+
         const selectedStorefront = storefronts.find(
           (sf) => sf._id === selectedStorefrontId,
         );
@@ -1300,7 +1334,7 @@ export const DirectSale: React.FC = () => {
             <div className="p-4 border-t bg-gray-50 space-y-2">
               <button
                 onClick={() => {
-                  handleCheckout();
+                  handleCheckout("completed");
                   setShowCheckoutModal(false);
                 }}
                 disabled={
@@ -1321,6 +1355,23 @@ export const DirectSale: React.FC = () => {
                     {t("pos.completeSale")} • {total.toLocaleString()} MMK
                   </>
                 )}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  handleCheckout("pending");
+                  setShowCheckoutModal(false);
+                }}
+                disabled={
+                  cart.length === 0 ||
+                  isProcessing ||
+                  (paymentType === "paid" && paidAmount < total) ||
+                  (paymentType === "credit" && paidAmount > total)
+                }
+                className="w-full bg-amber-600 hover:bg-amber-700 text-white py-2.5 rounded-lg font-semibold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
+              >
+                <Package className="w-4 h-4" />
+                ဂိုဒေါင်သို့ ပို့မည် (Send to Warehouse / Pending)
               </button>
               <button
                 onClick={() => setShowCheckoutModal(false)}
