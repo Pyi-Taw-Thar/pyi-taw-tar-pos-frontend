@@ -95,6 +95,7 @@ export const Inventory: React.FC = () => {
     subCategory: "",
     uomConversions: [],
     brand: "",
+    chemicalNames: [],
     description: "",
     buyingPrice: 0,
     sellingPrice: 0,
@@ -216,6 +217,7 @@ export const Inventory: React.FC = () => {
       category: "",
       subCategory: "",
       brand: "",
+      chemicalNames: [],
       description: "",
       buyingPrice: 0,
       sellingPrice: 0,
@@ -312,6 +314,7 @@ export const Inventory: React.FC = () => {
           sellingPrice: formData.sellingPrice,
           unitOfMeasure: formData.unitOfMeasure || "piece",
           uomConversions: formData.uomConversions || [],
+          chemicalNames: formData.chemicalNames || [],
         };
 
         // Add optional fields only if they have values
@@ -395,6 +398,8 @@ export const Inventory: React.FC = () => {
       if (formData.barcode) apiPayload.barcode = formData.barcode;
       if (formData.subCategory) apiPayload.subCategory = formData.subCategory;
       if (formData.brand) apiPayload.brand = formData.brand;
+      if (formData.chemicalNames && formData.chemicalNames.length > 0)
+        apiPayload.chemicalNames = formData.chemicalNames;
       if (formData.description) apiPayload.description = formData.description;
       if (formData.reorderPoint !== undefined && formData.reorderPoint > 0)
         apiPayload.reorderPoint = formData.reorderPoint;
@@ -449,6 +454,7 @@ export const Inventory: React.FC = () => {
       category: p.category,
       subCategory: apiProduct?.subCategory || "",
       brand: apiProduct?.brand || "",
+      chemicalNames: apiProduct?.chemicalNames || [],
       description: apiProduct?.description || "",
       buyingPrice: p.costPrice,
       sellingPrice: p.sellingPrice,
@@ -542,6 +548,15 @@ export const Inventory: React.FC = () => {
 
       // Search in product code
       if (p.productCode && p.productCode.toLowerCase().includes(query))
+        return true;
+
+      // Search in chemicalNames
+      if (
+        apiProduct?.chemicalNames &&
+        apiProduct.chemicalNames.some((chem) =>
+          chem.toLowerCase().includes(query),
+        )
+      )
         return true;
 
       return false;

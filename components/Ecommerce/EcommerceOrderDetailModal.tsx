@@ -145,8 +145,8 @@ export const EcommerceOrderDetailModal: React.FC<
                 </div>
               </div>
 
-              {/* Customer & shipping */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              {/* Customer Info */}
+              <div className="mb-6">
                 <div className="bg-teal-50 p-4 rounded-lg border border-teal-200">
                   <div className="flex items-center gap-2 mb-2">
                     <User className="w-4 h-4 text-teal-600" />
@@ -159,21 +159,6 @@ export const EcommerceOrderDetailModal: React.FC<
                   </p>
                   <p className="text-xs text-teal-700 mt-1">
                     {order.customerId?.phone || "-"}
-                  </p>
-                </div>
-                <div className="bg-slate-50 border rounded-lg p-4">
-                  <p className="text-xs font-medium text-slate-500 mb-1">
-                    {t("ecommerceOrders.detail.customerInfo")}
-                  </p>
-                  <p className="text-xs text-slate-700">
-                    {order.shippingAddress?.label
-                      ? `[${order.shippingAddress.label}] `
-                      : ""}
-                    {order.shippingAddress?.addressLine || "-"},{" "}
-                    {order.shippingAddress?.city || "-"}
-                  </p>
-                  <p className="text-xs text-slate-500 mt-1">
-                    {order.shippingAddress?.phone || "-"}
                   </p>
                 </div>
               </div>

@@ -48,6 +48,7 @@ export interface ProductDetail {
   category: string;
   subCategory: string;
   brand: string;
+  chemicalNames?: string[];
   description: string;
   buyingPrice: number;
   sellingPrice: number;

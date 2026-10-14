@@ -23,6 +23,10 @@ export interface GRNLineItem {
   profitMargin: number;
   profitAmount: number;
   availableQuantity: number;
+  batchNumber?: string | null;
+  batchBarcode?: string | null;
+  expiryDate?: string | null;
+  manufacturingDate?: string | null;
   id: string;
 }
 

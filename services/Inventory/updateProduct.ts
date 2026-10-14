@@ -10,6 +10,7 @@ export interface UpdateProductPayload {
   category: string;
   subCategory?: string;
   brand?: string;
+  chemicalNames?: string[];
   description?: string;
   buyingPrice: number;
   sellingPrice: number;

@@ -18,6 +18,7 @@ export interface CreateProductPayload {
   barcode?: string;
   subCategory?: string;
   brand?: string;
+  chemicalNames?: string[];
   reorderPoint?: number;
   reorderQuantity?: number;
   taxRate?: number;

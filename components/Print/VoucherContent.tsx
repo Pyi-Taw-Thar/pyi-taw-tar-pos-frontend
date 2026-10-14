@@ -2,6 +2,14 @@ import React from "react";
 import { PrintShopBranding } from "../../utils/printShopBranding";
 import { PrintPaperSize } from "../../utils/printPaperSize";
 
+export interface VoucherBatchItem {
+  batchStockId?: string;
+  batchNumber: string;
+  batchBarcode?: string;
+  expiryDate?: string | Date | null;
+  quantity: number;
+}
+
 export interface VoucherReceiptItem {
   name: string;
   code?: string;
@@ -9,6 +17,7 @@ export interface VoucherReceiptItem {
   /** Unit of measure, e.g. ကျင်း, မူး */
   unit?: string;
   price: number;
+  batches?: VoucherBatchItem[];
 }
 
 function formatReceiptQty(item: VoucherReceiptItem): string {
@@ -138,7 +147,18 @@ export const VoucherContent: React.FC<VoucherContentProps> = ({
                   }`}
                 title={item.name}
               >
-                {item.name}
+                <div>{item.name}</div>
+                {item.batches && item.batches.length > 0 && (
+                  <div className="text-[9px] text-slate-500 font-mono mt-0.5 leading-tight">
+                    {item.batches.map((b, bIdx) => (
+                      <div key={bIdx}>
+                        ↳ B: {b.batchNumber}
+                        {b.expiryDate ? ` (Exp: ${new Date(b.expiryDate).toLocaleDateString()})` : ""}
+                        {item.batches!.length > 1 ? ` x ${b.quantity}` : ""}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               <div className="voucher-thermal-col-price">
                 {item.price.toLocaleString()}
@@ -435,7 +455,20 @@ export const VoucherContent: React.FC<VoucherContentProps> = ({
                       return (
                         <tr key={idx}>
                           <td>{absoluteIndex}</td>
-                          <td>{item.name}</td>
+                          <td>
+                            <div className="font-medium">{item.name}</div>
+                            {item.batches && item.batches.length > 0 && (
+                              <div className="text-xs text-slate-500 font-mono mt-0.5 space-y-0.5">
+                                {item.batches.map((b, bIdx) => (
+                                  <div key={bIdx}>
+                                    ↳ Batch: {b.batchNumber}
+                                    {b.expiryDate ? ` (Exp: ${new Date(b.expiryDate).toLocaleDateString()})` : ""}
+                                    {item.batches!.length > 1 ? ` x ${b.quantity}` : ""}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </td>
                           <td>{formatReceiptQty(item)}</td>
                           <td>{formatReceiptUnit(item)}</td>
                           <td></td>

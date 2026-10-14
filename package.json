@@ -10,9 +10,11 @@
   },
   "dependencies": {
     "@ai-sdk/react": "^3.0.193",
+    "@types/jsbarcode": "^3.11.4",
     "ai": "^6.0.191",
     "axios": "^1.13.2",
     "date-fns": "^4.1.0",
+    "jsbarcode": "^3.12.3",
     "lucide-react": "^0.554.0",
     "react": "19.2.6",
     "react-date-range": "^2.0.1",

@@ -7,10 +7,19 @@ import {
   getUnitPrice,
 } from "./uom";
 
+export interface ScannedBatchAllocation {
+  batchStockId: string;
+  batchNumber: string;
+  batchBarcode?: string;
+  expiryDate?: string | Date | null;
+  quantity: number;
+}
+
 export interface UomCartItem {
   stockItem: StorefrontStockItem;
   qty: number;
   selectedUnit: string;
+  scannedBatches?: ScannedBatchAllocation[];
 }
 
 export function getInventoryUomFromStock(stockItem: StorefrontStockItem) {
@@ -70,12 +79,16 @@ export function getCartLineMaxQty(item: UomCartItem): number {
 
 export function cartLineToOrderProduct(item: UomCartItem) {
   const { baseUnit } = getInventoryUomFromStock(item.stockItem);
-  return buildOrderProductLine(
+  const line = buildOrderProductLine(
     item.stockItem.inventoryId._id,
     item.qty,
     baseUnit,
     item.selectedUnit,
   );
+  if (item.scannedBatches && item.scannedBatches.length > 0) {
+    (line as any).batches = item.scannedBatches;
+  }
+  return line;
 }
 
 export function cartLineSubtotal(item: UomCartItem): number {

@@ -4,6 +4,7 @@ import { GRNData } from "../../services/Purchase/fetchGRNs";
 import { fetchGRNById } from "../../services/Purchase/fetchGRNById";
 import { updateGRNLineItems } from "../../services/Purchase/updateGRNLineItems";
 import { UpdateLineItemModal } from "./UpdateLineItemModal";
+import { BatchBarcodeStickerModal } from "../Common/BatchBarcodeStickerModal";
 import { toast } from "sonner";
 import {
   Package,
@@ -12,6 +13,7 @@ import {
   Hash,
   DollarSign,
   Edit2,
+  Printer,
 } from "lucide-react";
 
 interface GRNDetailModalProps {
@@ -32,6 +34,7 @@ export const GRNDetailModal: React.FC<GRNDetailModalProps> = ({
   const [updateModalOpen, setUpdateModalOpen] = useState(false);
   const [selectedLineItem, setSelectedLineItem] = useState<any>(null);
   const [updating, setUpdating] = useState(false);
+  const [stickerData, setStickerData] = useState<any>(null);
 
   useEffect(() => {
     if (isOpen && grnId) {
@@ -217,6 +220,8 @@ export const GRNDetailModal: React.FC<GRNDetailModalProps> = ({
                   <tr>
                     <th className="p-3 text-left">Product</th>
                     <th className="p-3 text-left">SKU</th>
+                    <th className="p-3 text-left">Batch / Barcode</th>
+                    <th className="p-3 text-left">Expiry</th>
                     <th className="p-3 text-center">Received</th>
                     <th className="p-3 text-center">Good</th>
                     <th className="p-3 text-center">Bad</th>
@@ -239,6 +244,27 @@ export const GRNDetailModal: React.FC<GRNDetailModalProps> = ({
                       </td>
                       <td className="p-3 text-slate-600">
                         {item.inventoryId?.SKU || "-"}
+                      </td>
+                      <td className="p-3">
+                        {item.batchNumber ? (
+                          <div>
+                            <span className="inline-block rounded bg-blue-50 px-2 py-0.5 font-mono text-xs font-bold text-blue-700">
+                              {item.batchNumber}
+                            </span>
+                            {item.batchBarcode && (
+                              <div className="font-mono text-[10px] text-slate-400">
+                                {item.batchBarcode}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-xs text-slate-400">-</span>
+                        )}
+                      </td>
+                      <td className="p-3 text-xs text-slate-600">
+                        {item.expiryDate
+                          ? new Date(item.expiryDate).toLocaleDateString("en-GB")
+                          : "-"}
                       </td>
                       <td className="p-3 text-center font-medium">
                         {item.receivedQuantity}
@@ -265,13 +291,38 @@ export const GRNDetailModal: React.FC<GRNDetailModalProps> = ({
                         {item.totalPrice.toLocaleString()}
                       </td>
                       <td className="p-3 text-center">
-                        <button
-                          onClick={() => handleUpdateLineItem(item)}
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                          title="Update Line Item"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center justify-center gap-1">
+                          {item.batchNumber && (
+                            <button
+                              onClick={() =>
+                                setStickerData({
+                                  productName:
+                                    item.inventoryId?.productName || "Product",
+                                  productCode: item.inventoryId?.productCode,
+                                  batchNumber: item.batchNumber,
+                                  batchBarcode:
+                                    item.batchBarcode || item.batchNumber,
+                                  expiryDate: item.expiryDate,
+                                  sellingPrice:
+                                    item.inventoryId?.sellingPrice ||
+                                    item.unitPrice,
+                                  quantity: item.goodQuantity,
+                                })
+                              }
+                              className="rounded-lg p-2 text-indigo-600 transition-colors hover:bg-indigo-50"
+                              title="Sticker ပရင့်ထုတ်မည်"
+                            >
+                              <Printer className="h-4 w-4" />
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleUpdateLineItem(item)}
+                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            title="Update Line Item"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -299,6 +350,13 @@ export const GRNDetailModal: React.FC<GRNDetailModalProps> = ({
         lineItem={selectedLineItem}
         onSave={handleSaveLineItem}
         updating={updating}
+      />
+
+      {/* Barcode Sticker Print Modal */}
+      <BatchBarcodeStickerModal
+        isOpen={!!stickerData}
+        onClose={() => setStickerData(null)}
+        batchData={stickerData}
       />
     </Modal>
   );

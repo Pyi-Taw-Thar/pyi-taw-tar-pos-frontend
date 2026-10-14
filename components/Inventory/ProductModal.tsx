@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Plus, X } from "lucide-react";
 import { Product } from "../../types";
 import { UomConversion } from "../../types/uom";
 import { useLanguage } from "../../context/LanguageContext";
@@ -40,6 +40,7 @@ export interface ProductFormData {
   category: string;
   subCategory?: string;
   brand?: string;
+  chemicalNames?: string[];
   description?: string;
   buyingPrice: number;
   sellingPrice: number;
@@ -66,6 +67,7 @@ export interface ApiProduct {
   category: string;
   subCategory?: string;
   brand?: string;
+  chemicalNames?: string[];
   description?: string;
   buyingPrice: number;
   sellingPrice: number;
@@ -116,6 +118,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   const [categoryShowDropdown, setCategoryShowDropdown] = useState(false);
   const [subCategoryInput, setSubCategoryInput] = useState("");
   const [subCategoryShowDropdown, setSubCategoryShowDropdown] = useState(false);
+  const [chemicalInput, setChemicalInput] = useState("");
 
   const categoryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const subCategoryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -148,6 +151,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   useEffect(() => {
     setCategoryInput("");
     setSubCategoryInput("");
+    setChemicalInput("");
     return () => {
       if (categoryTimeoutRef.current) clearTimeout(categoryTimeoutRef.current);
       if (subCategoryTimeoutRef.current)
@@ -157,6 +161,31 @@ export const ProductModal: React.FC<ProductModalProps> = ({
 
   const updateFormData = (updates: Partial<ProductFormData>) => {
     onFormDataChange({ ...formData, ...updates });
+  };
+
+  const handleAddChemicalName = () => {
+    const raw = chemicalInput.trim();
+    if (!raw) return;
+    const newNames = raw
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const existing = formData.chemicalNames || [];
+    const merged = [...existing];
+    for (const name of newNames) {
+      if (!merged.some((item) => item.toLowerCase() === name.toLowerCase())) {
+        merged.push(name);
+      }
+    }
+    updateFormData({ chemicalNames: merged });
+    setChemicalInput("");
+  };
+
+  const handleRemoveChemicalName = (indexToRemove: number) => {
+    const existing = formData.chemicalNames || [];
+    updateFormData({
+      chemicalNames: existing.filter((_, idx) => idx !== indexToRemove),
+    });
   };
 
   // Unique categories & subcategories
@@ -440,6 +469,60 @@ export const ProductModal: React.FC<ProductModalProps> = ({
               placeholder={t("inventory.unitOfMeasurePlaceholder")}
               required
             />
+          </div>
+
+          {/* Chemical Names — full width */}
+          <div className="col-span-1 sm:col-span-2">
+            <label
+              htmlFor="product-chemical-input"
+              className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1"
+            >
+              {t("inventory.chemicalNames")}
+            </label>
+            <div className="flex gap-2">
+              <input
+                id="product-chemical-input"
+                type="text"
+                className="flex-1 border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                value={chemicalInput}
+                onChange={(e) => setChemicalInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleAddChemicalName();
+                  }
+                }}
+                placeholder={t("inventory.chemicalNamePlaceholder")}
+              />
+              <button
+                type="button"
+                onClick={handleAddChemicalName}
+                className="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-lg transition-colors shrink-0"
+              >
+                <Plus className="w-4 h-4" />
+                {t("inventory.addChemicalName")}
+              </button>
+            </div>
+            {formData.chemicalNames && formData.chemicalNames.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {formData.chemicalNames.map((chem, idx) => (
+                  <span
+                    key={`${chem}-${idx}`}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200"
+                  >
+                    {chem}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveChemicalName(idx)}
+                      className="text-blue-500 hover:text-blue-800 rounded-full p-0.5 transition-colors"
+                      aria-label={`Remove ${chem}`}
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Buying Price */}

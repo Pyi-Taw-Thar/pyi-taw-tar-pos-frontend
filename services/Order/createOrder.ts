@@ -1,9 +1,18 @@
 import axios from "../axios";
 
-interface OrderProduct {
+export interface OrderBatchAllocation {
+  batchStockId: string;
+  batchNumber: string;
+  batchBarcode?: string;
+  expiryDate?: string | Date | null;
+  quantity: number;
+}
+
+export interface OrderProduct {
   inventoryId: string;
   quantity: number;
   unit?: string;
+  batches?: OrderBatchAllocation[];
 }
 
 interface CreateOrderRequest {

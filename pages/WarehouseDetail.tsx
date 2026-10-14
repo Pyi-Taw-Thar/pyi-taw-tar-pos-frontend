@@ -216,13 +216,17 @@ export const WarehouseDetail: React.FC = () => {
   // Transfer Modal Functions
   const openTransferModal = (item?: WarehouseStockItem) => {
     if (item) {
+      const maxQuantity = Math.max(
+        item.availableQuantity || 0,
+        item.quantity || 0,
+      );
       // Pre-populate with clicked item
       setTransferItems([
         {
           productCode: item.inventoryId.productCode,
           productName: item.inventoryId.productName,
-          quantity: 1,
-          maxQuantity: item.availableQuantity,
+          quantity: maxQuantity > 0 ? 1 : 0,
+          maxQuantity: maxQuantity,
           notes: "",
         },
       ]);
@@ -267,7 +271,7 @@ export const WarehouseDetail: React.FC = () => {
       {
         productCode: firstAvailable.inventoryId.productCode,
         productName: firstAvailable.inventoryId.productName,
-        quantity: 1,
+        quantity: maxQuantity > 0 ? 1 : 0,
         maxQuantity: maxQuantity,
         notes: "",
       },
@@ -304,11 +308,14 @@ export const WarehouseDetail: React.FC = () => {
         };
       }
     } else if (field === "quantity") {
-      const qty = Math.max(
-        1,
-        Math.min(Number(value), updated[index].maxQuantity),
-      );
-      updated[index] = { ...updated[index], quantity: qty };
+      const maxQty = updated[index].maxQuantity || 0;
+      if (value === "" || isNaN(Number(value))) {
+        updated[index] = { ...updated[index], quantity: "" as any };
+      } else {
+        const num = Number(value);
+        const qty = maxQty > 0 ? Math.min(num, maxQty) : num;
+        updated[index] = { ...updated[index], quantity: qty };
+      }
     } else {
       updated[index] = { ...updated[index], [field]: value };
     }
@@ -329,11 +336,12 @@ export const WarehouseDetail: React.FC = () => {
 
     // Validate quantities
     for (const item of transferItems) {
-      if (item.quantity <= 0) {
+      const numQty = Number(item.quantity);
+      if (!numQty || numQty <= 0) {
         toast.error(`Quantity for ${item.productName} must be greater than 0`);
         return;
       }
-      if (item.quantity > item.maxQuantity) {
+      if (numQty > item.maxQuantity) {
         toast.error(
           `Quantity for ${item.productName} exceeds available stock (${item.maxQuantity})`,
         );
@@ -345,7 +353,7 @@ export const WarehouseDetail: React.FC = () => {
     try {
       const lineItems: TransferLineItem[] = transferItems.map((item) => ({
         productCode: item.productCode,
-        quantity: item.quantity,
+        quantity: Number(item.quantity),
         ...(item.notes && { notes: item.notes }),
       }));
 
@@ -984,14 +992,14 @@ export const WarehouseDetail: React.FC = () => {
                           </div>
                           <div className="col-span-2">
                             <label className="block text-xs text-slate-500 mb-1">
-                              Qty (max: {item.maxQuantity})
+                              Qty (max: {item.maxQuantity ?? 0})
                             </label>
                             <input
                               type="number"
                               min="1"
                               max={item.maxQuantity}
                               className="w-full border rounded p-2 text-sm"
-                              value={item.quantity}
+                              value={item.quantity === 0 ? 0 : item.quantity || ""}
                               onChange={(e) =>
                                 updateTransferItem(
                                   index,

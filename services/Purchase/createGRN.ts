@@ -4,6 +4,10 @@ interface GRNLineItem {
   productCode: string;
   goodQuantity: number;
   badQuantity: number;
+  batchNumber?: string;
+  batchBarcode?: string;
+  expiryDate?: string;
+  manufacturingDate?: string;
 }
 
 interface CreateGRNRequest {

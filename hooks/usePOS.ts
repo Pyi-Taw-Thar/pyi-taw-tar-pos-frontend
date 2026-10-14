@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import axios from "../services/axios";
 import { useLanguage } from "../context/LanguageContext";
 import { getSavedPrintPaperSize } from "../utils/printPaperSize";
 import { detectDevice } from "../utils/deviceDetect";
@@ -268,14 +269,130 @@ export function usePOS() {
   };
 
   const handleBarcodeScan = async (searchValue: string) => {
-    if (!searchValue.trim()) return;
+    const cleanCode = searchValue.trim();
+    if (!cleanCode) return;
+
     try {
+      // 1. Try scanning as Batch Barcode first
+      try {
+        const batchRes = await axios.get(
+          `/batches/scan/${encodeURIComponent(cleanCode)}${
+            selectedStorefrontId ? `?locationId=${selectedStorefrontId}` : ""
+          }`
+        );
+
+        if (batchRes.data?.success && batchRes.data?.data) {
+          const batch = batchRes.data.data;
+
+          if (batch.isExpired) {
+            toast.error(
+              `⚠ ဤကုန်ပစ္စည်းသည် သက်တမ်းကုန်ဆုံးနေပါသည် (Expired: ${new Date(
+                batch.expiryDate
+              ).toLocaleDateString("en-GB")})! ရောင်းချခွင့်မပြုပါ။`
+            );
+            setSearch("");
+            return;
+          }
+
+          if (batch.quantity <= 0) {
+            toast.error(
+              `Batch (${batch.batchNumber}) လက်ကျန်ကုန်နေပါသည် (Out of Stock)!`
+            );
+            setSearch("");
+            return;
+          }
+
+          // Find product in cart or allStockItems
+          const inventoryIdStr =
+            typeof batch.inventoryId === "object"
+              ? batch.inventoryId._id
+              : batch.inventoryId;
+
+          const existingCartIndex = cart.findIndex(
+            (item) => item.stockItem.inventoryId._id === inventoryIdStr
+          );
+
+          if (existingCartIndex !== -1) {
+            // Product already in cart - increment quantity and allocate this batch
+            setCart((prev) => {
+              const updated = [...prev];
+              const item = { ...updated[existingCartIndex] };
+              const currentBatches = item.scannedBatches
+                ? [...item.scannedBatches]
+                : [];
+
+              const existingBatchIndex = currentBatches.findIndex(
+                (b) => b.batchNumber === batch.batchNumber
+              );
+
+              if (existingBatchIndex !== -1) {
+                currentBatches[existingBatchIndex] = {
+                  ...currentBatches[existingBatchIndex],
+                  quantity: currentBatches[existingBatchIndex].quantity + 1,
+                };
+              } else {
+                currentBatches.push({
+                  batchStockId: batch._id,
+                  batchNumber: batch.batchNumber,
+                  batchBarcode: batch.batchBarcode,
+                  expiryDate: batch.expiryDate,
+                  quantity: 1,
+                });
+              }
+
+              item.qty = item.qty + 1;
+              item.scannedBatches = currentBatches;
+              updated[existingCartIndex] = item;
+              return updated;
+            });
+
+            toast.success(
+              `[အသုတ်: ${batch.batchNumber}] စကင်ဖတ်ပြီးပါပြီ (စုစုပေါင်း: ${
+                cart[existingCartIndex].qty + 1
+              })`
+            );
+            setSearch("");
+            return;
+          } else {
+            // Product not yet in cart - find matching stock item
+            const matchingStock = allStockItems.find(
+              (s) => s.inventoryId._id === inventoryIdStr
+            );
+
+            if (matchingStock) {
+              const newLine = createCartLine(matchingStock, 1);
+              newLine.scannedBatches = [
+                {
+                  batchStockId: batch._id,
+                  batchNumber: batch.batchNumber,
+                  batchBarcode: batch.batchBarcode,
+                  expiryDate: batch.expiryDate,
+                  quantity: 1,
+                },
+              ];
+              setCart((prev) => [...prev, newLine]);
+              toast.success(
+                `[အသုတ်: ${batch.batchNumber}] ${matchingStock.inventoryId.productName} ခြင်းထဲထည့်ပြီးပါပြီ`
+              );
+              setSearch("");
+              return;
+            }
+          }
+        }
+      } catch (batchErr: any) {
+        // If 404, not a batch barcode; fall through to product code scan
+        if (batchErr.response?.status !== 404) {
+          console.warn("Batch scan error:", batchErr);
+        }
+      }
+
+      // 2. Fallback: Search by productCode
       const response = await fetchStorefrontStock(
         selectedStorefrontId,
         1,
         1,
         undefined,
-        searchValue.trim(),
+        cleanCode,
       );
       if (response.success && response.data && response.data.length > 0) {
         const matchingProduct = response.data[0];
@@ -286,7 +403,9 @@ export function usePOS() {
         }
         addToCart(matchingProduct);
         toast.success(
-          `${matchingProduct.inventoryId.productName} ${t("pos.addedToCart") || "added to cart"}`,
+          `${matchingProduct.inventoryId.productName} ${
+            t("pos.addedToCart") || "added to cart"
+          }`,
         );
         setSearch("");
       } else {
@@ -401,6 +520,7 @@ export function usePOS() {
             qty: i.qty,
             unit: i.selectedUnit,
             price: getCartLineEffectivePrice(i),
+            batches: i.scannedBatches || [],
           })),
           subtotal,
           discountPercent: discount,

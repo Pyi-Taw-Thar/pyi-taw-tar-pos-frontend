@@ -14,6 +14,8 @@ interface ExtendedGRNItem {
   qtyBad: number;
   costPrice: number;
   isSelected: boolean;
+  batchNumber?: string;
+  expiryDate?: string;
 }
 
 interface CreateGRNModalProps {
@@ -57,13 +59,6 @@ export const CreateGRNModal: React.FC<CreateGRNModalProps> = ({
 
   const selectedPO = purchaseOrders.find((p) => p._id === selectedPOId);
 
-  // const getSupplierName = (supplierId: string) => {
-  //   const supplier = suppliers.find(
-  //     (s) => s.id === supplierId || s._id === supplierId
-  //   );
-  //   return supplier ? supplier.supplierName : "Unknown Supplier";
-  // };
-
   const loadPOItems = () => {
     if (!selectedPOId) return;
     const po = purchaseOrders.find((p) => p._id === selectedPOId);
@@ -81,6 +76,8 @@ export const CreateGRNModal: React.FC<CreateGRNModalProps> = ({
         qtyBad: 0,
         costPrice: item.buyingPrice,
         isSelected: true,
+        batchNumber: "",
+        expiryDate: "",
       }));
 
     setGRNItems(grnItemsForPO);
@@ -89,7 +86,7 @@ export const CreateGRNModal: React.FC<CreateGRNModalProps> = ({
   const updateGRNItem = (
     index: number,
     field: keyof ExtendedGRNItem,
-    value: number | boolean,
+    value: number | boolean | string,
   ) => {
     setGRNItems((prev) => {
       const updated = [...prev];
@@ -109,6 +106,10 @@ export const CreateGRNModal: React.FC<CreateGRNModalProps> = ({
       } else if (field === "qtyBad") {
         item.qtyBad = Math.min(value as number, item.qtyReceived);
         item.qtyGood = item.qtyReceived - item.qtyBad;
+      } else if (field === "batchNumber") {
+        item.batchNumber = value as string;
+      } else if (field === "expiryDate") {
+        item.expiryDate = value as string;
       }
 
       updated[index] = item;
@@ -168,6 +169,8 @@ export const CreateGRNModal: React.FC<CreateGRNModalProps> = ({
           productCode: item.productCode,
           goodQuantity: item.qtyGood,
           badQuantity: item.qtyBad,
+          batchNumber: item.batchNumber ? item.batchNumber.trim() : undefined,
+          expiryDate: item.expiryDate || undefined,
         })),
         grnDate: grnDate,
         notes: grnNote,
@@ -415,6 +418,37 @@ export const CreateGRNModal: React.FC<CreateGRNModalProps> = ({
                             />
                           </div>
                         </div>
+
+                        <div className="grid grid-cols-2 gap-3 pt-1">
+                          <div>
+                            <label className="text-xs text-slate-500 block mb-1">
+                              အသုတ်နံပါတ် (Batch No):
+                            </label>
+                            <input
+                              type="text"
+                              placeholder="ဥပမာ - B2026-001"
+                              className="w-full border rounded-lg p-2 text-sm"
+                              value={item.batchNumber || ""}
+                              onChange={(e) =>
+                                updateGRNItem(index, "batchNumber", e.target.value)
+                              }
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs text-slate-500 block mb-1">
+                              သက်တမ်းကုန်ရက် (Expiry):
+                            </label>
+                            <input
+                              type="date"
+                              className="w-full border rounded-lg p-2 text-sm"
+                              value={item.expiryDate || ""}
+                              onChange={(e) =>
+                                updateGRNItem(index, "expiryDate", e.target.value)
+                              }
+                            />
+                          </div>
+                        </div>
+
                         {item.qtyReceived !== item.qtyGood + item.qtyBad && (
                           <div className="text-xs text-red-600 bg-red-50 p-2 rounded">
                             ⚠ Received must equal Good + Bad

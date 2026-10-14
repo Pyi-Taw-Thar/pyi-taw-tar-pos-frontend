@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Receipt, RefreshCw } from "lucide-react";
+import { Receipt, RefreshCw, PackageOpen, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useLanguage } from "../context/LanguageContext";
 import {
@@ -72,6 +72,7 @@ export const EcommerceOrders: React.FC = () => {
     null,
   );
   const [loading, setLoading] = useState(false);
+  const [hasError, setHasError] = useState(false);
 
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<StatusFilter>("all");
@@ -114,6 +115,7 @@ export const EcommerceOrders: React.FC = () => {
 
   const loadOrders = async () => {
     setLoading(true);
+    setHasError(false);
     try {
       const startDateStr = formatDateForAPI(startDate);
       const endDateStr = formatDateForAPI(endDate);
@@ -141,10 +143,12 @@ export const EcommerceOrders: React.FC = () => {
       } else {
         setOrders([]);
         setPagination(null);
+        setHasError(true);
         toast.error(response.message || t("ecommerceOrders.failedToLoad"));
       }
     } catch (error) {
       console.error("Error fetching ecommerce orders:", error);
+      setHasError(true);
       toast.error(t("ecommerceOrders.failedToLoad"));
     } finally {
       setLoading(false);
@@ -369,14 +373,37 @@ export const EcommerceOrders: React.FC = () => {
           <tbody className="divide-y">
             {loading ? (
               <tr>
-                <td colSpan={8} className="py-10 text-center text-slate-500">
-                  {t("common.loading")}
+                <td colSpan={8} className="py-12 text-center text-slate-500">
+                  <div className="flex flex-col items-center justify-center gap-2">
+                    <RefreshCw className="w-6 h-6 animate-spin text-primary" />
+                    <span>{t("common.loading")}</span>
+                  </div>
+                </td>
+              </tr>
+            ) : hasError ? (
+              <tr>
+                <td colSpan={8} className="py-12 text-center text-rose-500">
+                  <div className="flex flex-col items-center justify-center gap-2">
+                    <AlertCircle className="w-8 h-8 text-rose-400" />
+                    <p className="font-medium">{t("ecommerceOrders.failedToLoad")}</p>
+                    <button
+                      onClick={loadOrders}
+                      className="text-xs text-slate-600 underline hover:text-slate-900 mt-1 cursor-pointer"
+                    >
+                      {t("common.refresh")}
+                    </button>
+                  </div>
                 </td>
               </tr>
             ) : orders.length === 0 ? (
               <tr>
-                <td colSpan={8} className="py-10 text-center text-slate-500">
-                  {t("ecommerceOrders.failedToLoad")}
+                <td colSpan={8} className="py-12 text-center text-slate-500">
+                  <div className="flex flex-col items-center justify-center gap-2">
+                    <PackageOpen className="w-10 h-10 text-slate-300" />
+                    <p className="font-medium text-slate-600">
+                      {t("ecommerceOrders.noOrders")}
+                    </p>
+                  </div>
                 </td>
               </tr>
             ) : (

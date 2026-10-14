@@ -688,7 +688,14 @@ export const printThermalReceipt = async (
             (item: any, index: number) => `
           <div class="item-row">
             <div>${index + 1}</div>
-            <div>${item.name.substring(0, 30)}${item.name.length > 30 ? "..." : ""}</div>
+            <div>
+              ${item.name.substring(0, 30)}${item.name.length > 30 ? "..." : ""}
+              ${item.batches && item.batches.length > 0 ? `
+                <div style="font-size: 8px; color: #555;">
+                  ${item.batches.map((b: any) => `↳ B: ${b.batchNumber}${b.expiryDate ? ` (Exp: ${new Date(b.expiryDate).toLocaleDateString()})` : ""} x ${b.quantity}`).join("<br>")}
+                </div>
+              ` : ""}
+            </div>
             <div>${item.price.toLocaleString()}</div>
             <div>${item.qty}</div>
             <div>${(item.price * item.qty).toLocaleString()}</div>

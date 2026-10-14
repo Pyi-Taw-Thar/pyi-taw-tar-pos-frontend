@@ -1,17 +1,42 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Image as ImageIcon,
   X,
   Package,
+  Barcode,
+  Calendar,
+  AlertCircle,
+  RefreshCw,
+  Building2,
+  Store,
 } from "lucide-react";
 import { ProductDetail } from "../../services/Inventory/fetchProductById";
 import { useLanguage } from "../../context/LanguageContext";
+import { fetchBatchesByProduct, BatchItem } from "../../services/Batch/fetchBatchesByProduct";
+import { BatchBarcodeModal } from "./BatchBarcodeModal";
 
 interface ProductDetailModalProps {
   isOpen: boolean;
   loading: boolean;
   product: ProductDetail | null;
   onClose: () => void;
+}
+
+interface GroupedBatch {
+  key: string;
+  batchBarcode: string;
+  batchNumber: string;
+  expiryDate: string | null;
+  isExpired: boolean;
+  daysUntilExpiry: number | null;
+  totalQuantity: number;
+  status: "active" | "expired" | "depleted";
+  locations: {
+    locationId: string;
+    locationName: string;
+    locationType: string;
+    quantity: number;
+  }[];
 }
 
 export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
@@ -21,7 +46,82 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   onClose,
 }) => {
   const { t } = useLanguage();
-  const [activeTab, setActiveTab] = useState<"about" | "quantity">("about");
+  const [activeTab, setActiveTab] = useState<"about" | "quantity" | "batches">("about");
+  const [batches, setBatches] = useState<BatchItem[]>([]);
+  const [loadingBatches, setLoadingBatches] = useState(false);
+  const [selectedBatchForModal, setSelectedBatchForModal] = useState<GroupedBatch | null>(null);
+
+  useEffect(() => {
+    if (isOpen && product?._id && activeTab === "batches") {
+      loadBatches();
+    }
+  }, [isOpen, product?._id, activeTab]);
+
+  const loadBatches = async () => {
+    if (!product?._id) return;
+    setLoadingBatches(true);
+    try {
+      const res = await fetchBatchesByProduct(product._id, { includeDepleted: true });
+      if (res.success) {
+        setBatches(res.data);
+      } else {
+        setBatches([]);
+      }
+    } catch (err) {
+      console.error("Error loading product batches:", err);
+      setBatches([]);
+    } finally {
+      setLoadingBatches(false);
+    }
+  };
+
+  const groupedBatches = useMemo<GroupedBatch[]>(() => {
+    const map = new Map<string, GroupedBatch>();
+
+    for (const b of batches) {
+      const key = b.batchBarcode || `${b.batchNumber}_${b.expiryDate || "no_exp"}`;
+
+      if (!map.has(key)) {
+        map.set(key, {
+          key,
+          batchBarcode: b.batchBarcode,
+          batchNumber: b.batchNumber,
+          expiryDate: b.expiryDate,
+          isExpired: b.isExpired || false,
+          daysUntilExpiry: b.daysUntilExpiry ?? null,
+          totalQuantity: 0,
+          status: "active",
+          locations: [],
+        });
+      }
+
+      const group = map.get(key)!;
+      group.totalQuantity += b.quantity;
+      group.locations.push({
+        locationId: b.locationId?._id || "",
+        locationName: b.locationId?.locationName || "Unknown Location",
+        locationType: b.locationType,
+        quantity: b.quantity,
+      });
+    }
+
+    const result = Array.from(map.values());
+
+    for (const group of result) {
+      if (group.totalQuantity <= 0) {
+        group.status = "depleted";
+      } else if (group.isExpired) {
+        group.status = "expired";
+      } else {
+        group.status = "active";
+      }
+
+      // Sort locations: positive quantities first
+      group.locations.sort((a, b) => b.quantity - a.quantity);
+    }
+
+    return result;
+  }, [batches]);
 
   if (!isOpen) return null;
 
@@ -77,6 +177,16 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               }`}
           >
             {t("inventory.productQuantity")}
+          </button>
+          <button
+            onClick={() => setActiveTab("batches")}
+            className={`px-4 py-3 text-sm font-medium transition-colors flex items-center gap-1.5 ${activeTab === "batches"
+                ? "bg-[#E8F5E9] text-slate-800 rounded-2xl"
+                : "text-slate-600 hover:text-slate-800"
+              }`}
+          >
+            <Barcode className="w-4 h-4 text-emerald-600" />
+            {t("inventory.productBatches")}
           </button>
         </div>
 
@@ -136,6 +246,23 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       <div className="flex justify-between">
                         <span className="text-slate-500">Created</span>
                         <span className="font-medium text-slate-800 text-right">{formatDate(product.createdAt)}</span>
+                      </div>
+                      <div className="col-span-2 flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 pt-2 border-t border-slate-100">
+                        <span className="text-slate-500 shrink-0">{t("inventory.chemicalNames")}</span>
+                        {product.chemicalNames && product.chemicalNames.length > 0 ? (
+                          <div className="flex flex-wrap gap-1.5 sm:justify-end">
+                            {product.chemicalNames.map((chem, idx) => (
+                              <span
+                                key={`${chem}-${idx}`}
+                                className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200"
+                              >
+                                {chem}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="font-medium text-slate-800 text-right">—</span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -253,7 +380,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     </div>
                   )}
                 </div>
-              ) : (
+              ) : activeTab === "quantity" ? (
                 <div className="space-y-5">
                   {/* ── Total Quantity ── */}
                   <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
@@ -336,6 +463,151 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     )}
                   </div>
                 </div>
+              ) : (
+                <div className="space-y-5">
+                  <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+                    <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+                      <h4 className="font-semibold text-slate-700 text-sm flex items-center gap-2">
+                        <Barcode className="w-4 h-4 text-emerald-600" />
+                        {t("inventory.productBatches")}
+                      </h4>
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs font-medium text-slate-500">
+                          {groupedBatches.length} batch(es)
+                        </span>
+                        <button
+                          type="button"
+                          onClick={loadBatches}
+                          disabled={loadingBatches}
+                          className="p-1 hover:bg-slate-200 rounded-lg text-slate-500 hover:text-slate-700 transition-colors disabled:opacity-50 cursor-pointer"
+                          title={t("common.refresh")}
+                        >
+                          <RefreshCw className={`w-3.5 h-3.5 ${loadingBatches ? "animate-spin" : ""}`} />
+                        </button>
+                      </div>
+                    </div>
+
+                    {loadingBatches ? (
+                      <div className="flex flex-col items-center justify-center py-12">
+                        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mb-3" />
+                        <p className="text-slate-500 text-sm">{t("inventory.loadingBatches")}</p>
+                      </div>
+                    ) : groupedBatches.length === 0 ? (
+                      <div className="p-8 text-center text-slate-400 text-sm">
+                        <Barcode className="w-8 h-8 mx-auto mb-2 text-slate-300" />
+                        <p className="font-medium text-slate-600">{t("inventory.noBatchesFound")}</p>
+                        <p className="text-xs text-slate-400 mt-1">
+                          {t("inventory.noBatchesHelp")}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead className="bg-slate-50">
+                            <tr>
+                              <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">
+                                {t("inventory.batchBarcode")}
+                              </th>
+                              <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">
+                                {t("inventory.batchNumber")}
+                              </th>
+                              <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500">
+                                {t("inventory.totalBatchQuantity")}
+                              </th>
+                              <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">
+                                {t("inventory.expiryDate")}
+                              </th>
+                              <th className="px-4 py-2.5 text-center text-xs font-semibold text-slate-500">
+                                {t("inventory.batchStatus")}
+                              </th>
+                              <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500">
+                                {t("inventory.batchAction")}
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100">
+                            {groupedBatches.map((g) => {
+                              const isExp = g.isExpired;
+                              const isNearExp = !isExp && g.daysUntilExpiry != null && g.daysUntilExpiry <= 30;
+                              return (
+                                <tr key={g.key} className="hover:bg-slate-50">
+                                  <td className="px-4 py-2.5">
+                                    <button
+                                      type="button"
+                                      onClick={() => setSelectedBatchForModal(g)}
+                                      className="font-mono font-bold text-xs px-2.5 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-md hover:bg-emerald-100 hover:border-emerald-300 transition-colors cursor-pointer inline-flex items-center gap-1.5"
+                                      title={t("inventory.viewBarcode")}
+                                    >
+                                      <Barcode className="w-3.5 h-3.5 text-emerald-600" />
+                                      {g.batchBarcode}
+                                    </button>
+                                  </td>
+                                  <td className="px-4 py-2.5 font-medium text-slate-800">
+                                    {g.batchNumber}
+                                  </td>
+                                  <td className="px-4 py-2.5 text-right font-bold text-slate-800">
+                                    <span>{g.totalQuantity.toLocaleString()}</span>{" "}
+                                    <span className="text-xs text-slate-500 font-normal">
+                                      {product.unitOfMeasure || ""}
+                                    </span>
+                                  </td>
+                                  <td className="px-4 py-2.5 text-xs">
+                                    {g.expiryDate ? (
+                                      <div>
+                                        <div className="font-medium text-slate-700">
+                                          {new Date(g.expiryDate).toLocaleDateString("en-GB", {
+                                            day: "2-digit",
+                                            month: "short",
+                                            year: "numeric",
+                                          })}
+                                        </div>
+                                        {isExp ? (
+                                          <span className="text-[11px] text-rose-600 font-semibold">{t("inventory.batchExpired")}</span>
+                                        ) : isNearExp ? (
+                                          <span className="text-[11px] text-amber-600 font-semibold">
+                                            {t("inventory.batchDaysLeft").replace("{days}", String(g.daysUntilExpiry))}
+                                          </span>
+                                        ) : null}
+                                      </div>
+                                    ) : (
+                                      <span className="text-slate-400">—</span>
+                                    )}
+                                  </td>
+                                  <td className="px-4 py-2.5 text-center">
+                                    {g.status === "depleted" || g.totalQuantity <= 0 ? (
+                                      <span className="px-2 py-0.5 text-[11px] font-medium rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                                        {t("inventory.batchDepleted")}
+                                      </span>
+                                    ) : isExp ? (
+                                      <span className="px-2 py-0.5 text-[11px] font-medium rounded-full bg-rose-50 text-rose-700 border border-rose-200">
+                                        {t("inventory.batchExpired")}
+                                      </span>
+                                    ) : (
+                                      <span className="px-2 py-0.5 text-[11px] font-medium rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                        {t("inventory.batchActive")}
+                                      </span>
+                                    )}
+                                  </td>
+                                  <td className="px-4 py-2.5 text-right">
+                                    <button
+                                      type="button"
+                                      onClick={() => setSelectedBatchForModal(g)}
+                                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 transition-colors cursor-pointer"
+                                      title={t("inventory.viewBarcode")}
+                                    >
+                                      <Barcode className="w-3.5 h-3.5 text-emerald-600" />
+                                      {t("inventory.viewBarcode")}
+                                    </button>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                </div>
               )}
             </>
           ) : (
@@ -347,6 +619,23 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             </div>
           )}
         </div>
+
+        {/* Batch Barcode View Modal */}
+        {selectedBatchForModal && product && (
+          <BatchBarcodeModal
+            isOpen={!!selectedBatchForModal}
+            onClose={() => setSelectedBatchForModal(null)}
+            batchData={{
+              productName: product.productName,
+              productCode: product.productCode,
+              batchNumber: selectedBatchForModal.batchNumber,
+              batchBarcode: selectedBatchForModal.batchBarcode,
+              expiryDate: selectedBatchForModal.expiryDate,
+              quantity: selectedBatchForModal.totalQuantity,
+              unitOfMeasure: product.unitOfMeasure,
+            }}
+          />
+        )}
       </div>
     </div>
   );

@@ -120,6 +120,32 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
                     </button>
                   </div>
                 </div>
+
+                {/* Scanned Batches / Multi-batch indicator */}
+                {item.scannedBatches && item.scannedBatches.length > 0 && (
+                  <div className="mt-1 flex flex-col gap-1 rounded bg-slate-50 p-1.5 border border-slate-200 text-[11px]">
+                    <div className="flex items-center justify-between text-slate-500 font-semibold text-[10px]">
+                      <span>စကင်ဖတ်ထားသော အသုတ်များ:</span>
+                      <span className="text-blue-600 font-bold">
+                        {item.scannedBatches.reduce((s, b) => s + b.quantity, 0)}/{item.qty}
+                      </span>
+                    </div>
+                    {item.scannedBatches.map((b, bIdx) => (
+                      <div
+                        key={bIdx}
+                        className="flex items-center justify-between font-mono text-[10px] text-slate-700 bg-white px-1.5 py-0.5 rounded border border-slate-100"
+                      >
+                        <span className="font-semibold text-primary">{b.batchNumber}</span>
+                        {b.expiryDate && (
+                          <span className="text-slate-400">
+                            Exp: {new Date(b.expiryDate).toLocaleDateString("en-GB")}
+                          </span>
+                        )}
+                        <span className="font-bold text-slate-900">x{b.quantity}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             );
           })
