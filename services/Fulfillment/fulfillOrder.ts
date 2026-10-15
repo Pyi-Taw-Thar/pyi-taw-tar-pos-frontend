@@ -17,6 +17,7 @@ export interface FulfilledProductPayload {
 
 export interface FulfillOrderPayload {
   fulfilledProducts: FulfilledProductPayload[];
+  items?: FulfilledProductPayload[];
 }
 
 export interface FulfillOrderResponse {

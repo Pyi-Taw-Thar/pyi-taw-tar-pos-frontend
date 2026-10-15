@@ -162,20 +162,57 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
             {selectedStorefrontId ? t("pos.noProductsInStorefront") : t("pos.pleaseSelectStorefront")}
           </div>
         ) : (
-          filteredProducts.map((item) => (
-            <div key={item._id} onClick={() => onAddToCart(item)}
-              className={`bg-white p-4 rounded-xl shadow-sm border border-dark-200 cursor-pointer transition-all hover:shadow-lg hover:border-primary hover:scale-[1.02] flex flex-col ${item.availableQuantity === 0 ? "opacity-50 grayscale pointer-events-none" : ""}`}
-            >
-              <div>
-                <h3 className="font-medium text-gray-800 text-sm line-clamp-2">{item.inventoryId.productName}</h3>
-                <p className="text-xs text-gray-400 mt-1 font-mono">{item.inventoryId.productCode}</p>
-                <p className="text-xs text-gray-500 mt-1">{item.inventoryId.category}</p>
+          filteredProducts.map((item) => {
+            const hasWholesale = Boolean(
+              item.inventoryId.wholesalePrices && item.inventoryId.wholesalePrices.length > 0,
+            );
+            const validTiers = hasWholesale
+              ? item.inventoryId.wholesalePrices!.filter((w) => w.price > 0)
+              : [];
+            const minWholesalePrice =
+              validTiers.length > 0 ? Math.min(...validTiers.map((w) => w.price)) : null;
+
+            return (
+              <div
+                key={item._id}
+                onClick={() => onAddToCart(item)}
+                className={`bg-white p-4 rounded-xl shadow-sm border border-dark-200 cursor-pointer transition-all hover:shadow-lg hover:border-primary hover:scale-[1.02] flex flex-col justify-between ${
+                  item.availableQuantity === 0
+                    ? "opacity-50 grayscale pointer-events-none"
+                    : ""
+                }`}
+              >
+                <div>
+                  <h3 className="font-medium text-gray-800 text-sm line-clamp-2">
+                    {item.inventoryId.productName}
+                  </h3>
+                  <p className="text-xs text-gray-400 mt-1 font-mono">
+                    {item.inventoryId.productCode}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {item.inventoryId.category}
+                  </p>
+                </div>
+                <div className="mt-4 flex flex-col gap-1">
+                  <div className="flex justify-between items-center">
+                    <span className="font-bold text-[#212529]">
+                      {(item.inventoryId.sellingPrice || 0).toLocaleString()} MMK
+                    </span>
+                    {hasWholesale && (
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        {t("pos.wholesale") || "လက်ကား"}
+                      </span>
+                    )}
+                  </div>
+                  {hasWholesale && minWholesalePrice !== null && (
+                    <p className="text-[11px] text-emerald-600 font-medium">
+                      {t("pos.wholesaleFrom") || "လက်ကား"}: {minWholesalePrice.toLocaleString()} MMK {t("pos.from") || "မှစ၍"}
+                    </p>
+                  )}
+                </div>
               </div>
-              <div className="mt-4 flex justify-between items-end">
-                <span className="font-bold text-[#212529]">{item.inventoryId.sellingPrice.toLocaleString()} MMK</span>
-              </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>

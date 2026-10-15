@@ -268,17 +268,20 @@ export const OrderFulfillmentModal: React.FC<OrderFulfillmentModalProps> = ({
 
     setIsFulfilling(true);
     try {
-      const payload: FulfillOrderPayload = {
-        items: productStates.map((p) => ({
-          inventoryId: p.inventoryId,
-          batches: p.scannedBatches.map((b) => ({
-            batchStockId: b.batchStockId,
-            batchNumber: b.batchNumber,
-            batchBarcode: b.batchBarcode,
-            expiryDate: b.expiryDate,
-            quantity: b.quantity,
-          })),
+      const productPayload = productStates.map((p) => ({
+        inventoryId: p.inventoryId,
+        batches: p.scannedBatches.map((b) => ({
+          batchStockId: b.batchStockId,
+          batchNumber: b.batchNumber,
+          batchBarcode: b.batchBarcode,
+          expiryDate: b.expiryDate,
+          quantity: b.quantity,
         })),
+      }));
+
+      const payload: FulfillOrderPayload = {
+        fulfilledProducts: productPayload,
+        items: productPayload,
       };
 
       const res = await fulfillOrder(order._id, payload);

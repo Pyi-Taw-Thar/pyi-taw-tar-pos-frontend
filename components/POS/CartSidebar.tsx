@@ -5,11 +5,12 @@ import { CartUnitSelector } from "../UOM/CartUnitSelector";
 import {
   getCartLineId,
   getCartLineUnitPrice,
+  getCartLineEffectivePrice,
+  getMatchingWholesaleTiers,
   getCartLineMaxQty,
   getInventoryUomFromStock,
 } from "../../utils/posCartUom";
 import type { UomCartItem } from "../../utils/posCartUom";
-import { ca } from "date-fns/locale";
 
 interface CartSidebarProps {
   cart: UomCartItem[];
@@ -55,7 +56,15 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
             const { baseUnit, conversions } = getInventoryUomFromStock(
               item.stockItem,
             );
-            const unitPrice = getCartLineUnitPrice(item);
+            const regularUnitPrice = getCartLineUnitPrice(item);
+            const effectivePrice = getCartLineEffectivePrice(item);
+            const isWholesale = effectivePrice < regularUnitPrice;
+            const lineSubtotal = effectivePrice * item.qty;
+            const matchingTiers = getMatchingWholesaleTiers(item);
+            const nextTier =
+              !isWholesale && matchingTiers.length > 0
+                ? matchingTiers.find((t) => item.qty < t.quantity)
+                : null;
             const maxQty = getCartLineMaxQty(item);
             return (
               <div
@@ -64,13 +73,43 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
               >
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-800">
-                      {item.stockItem.inventoryId.productName}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {unitPrice.toLocaleString()} MMK / {item.selectedUnit} ·{" "}
-                      {(unitPrice * item.qty).toLocaleString()} MMK
-                    </p>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <p className="text-sm font-medium text-gray-800">
+                        {item.stockItem.inventoryId.productName}
+                      </p>
+                      {isWholesale && (
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                          {t("pos.wholesale") || "လက်ကား"}
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-xs text-gray-500 mt-0.5">
+                      {isWholesale ? (
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="line-through text-gray-400">
+                            {regularUnitPrice.toLocaleString()} MMK
+                          </span>
+                          <span className="font-bold text-emerald-600">
+                            {effectivePrice.toLocaleString()} MMK
+                          </span>
+                          <span>/ {item.selectedUnit}</span>
+                          <span>·</span>
+                          <span className="font-bold text-gray-800">
+                            {lineSubtotal.toLocaleString()} MMK
+                          </span>
+                        </div>
+                      ) : (
+                        <p>
+                          {regularUnitPrice.toLocaleString()} MMK / {item.selectedUnit} ·{" "}
+                          {lineSubtotal.toLocaleString()} MMK
+                        </p>
+                      )}
+                    </div>
+                    {nextTier && (
+                      <p className="text-[11px] text-amber-600 mt-1">
+                        💡 {nextTier.quantity} {item.selectedUnit} ပြည့်ပါက လက်ကားဈေး {nextTier.price.toLocaleString()} MMK
+                      </p>
+                    )}
                   </div>
                   <button
                     onClick={() => onRemoveFromCart(lineId)}
