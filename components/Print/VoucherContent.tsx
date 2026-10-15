@@ -84,9 +84,10 @@ export const VoucherContent: React.FC<VoucherContentProps> = ({
   const printedByName = adminData.name || "";
   const printedByRole = adminData.role || "";
 
-  const formatToImageDate = (dateString: string) => {
+  const formatToImageDate = (dateString?: string | Date | null) => {
     if (!dateString) return "";
     const d = new Date(dateString);
+    if (isNaN(d.getTime())) return "";
     const day = String(d.getDate()).padStart(2, "0");
     const month = String(d.getMonth() + 1).padStart(2, "0");
     const year = d.getFullYear();
@@ -116,192 +117,213 @@ export const VoucherContent: React.FC<VoucherContentProps> = ({
   if (isThermal) {
     return (
       <div className="voucher-container" data-paper={paperSize}>
-        <div className="text-center mb-4 sm:mb-8">
+        {/* Header Section */}
+        <div className="text-center mb-2 pb-2 border-b border-slate-300">
           {shopBranding.logo ? (
             <img
               src={shopBranding.logo}
               alt={shopBranding.shopName}
-              className="voucher-logo mx-auto object-contain"
+              className="voucher-logo mx-auto object-contain mb-1"
             />
           ) : (
-            <div className="voucher-logo mx-auto flex items-center justify-center rounded-xl bg-slate-100 text-slate-600 font-bold">
+            <div className="voucher-logo mx-auto flex items-center justify-center rounded-lg bg-slate-100 text-slate-700 font-bold mb-1">
               {shopBranding.shopName.charAt(0)}
             </div>
           )}
-          <h2 className="voucher-shop-name font-bold text-slate-800 mt-3">
+          <p className="text-[8.5px] text-slate-600 font-medium italic mb-1 leading-tight">
+            လုပ်ရပ်တိုင်းသည်၊ ရည်စူးချက် ရည်ရွယ်ချက်ပေါ် မူတည်၏။
+          </p>
+          <h2 className="voucher-shop-name font-bold text-slate-800 leading-tight">
             {shopBranding.shopName}
           </h2>
           {shopBranding.address && (
-            <p className="voucher-address text-slate-600 mt-1">
+            <p className="voucher-address text-slate-700 font-medium mt-0.5 leading-snug">
               {shopBranding.address}
+            </p>
+          )}
+          {shopBranding.phone && (
+            <p className="text-[8.5px] text-slate-700 font-medium mt-0.5">
+              Phone : {shopBranding.phone}
+            </p>
+          )}
+          <p className="text-[8.5px] text-slate-700 font-medium mt-0.5">
+            Viber Phone : {shopBranding.website || "09-960889290, 09-973989877"}
+          </p>
+        </div>
+
+        {/* Customer & Invoice Details */}
+        <div className="text-[9.5px] text-slate-800 mb-2 space-y-1 border-b border-slate-300 pb-2">
+          <div className="flex justify-between items-center">
+            <span className="font-semibold">Vr.No :</span>
+            <span className="font-bold">{receiptData.invoiceNumber}</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="font-semibold">မြို့နယ် :</span>
+            <span>{receiptData.creditPersonTownship || "—"}</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="font-semibold">အမည် :</span>
+            <span className="font-bold">
+              {receiptData.creditPersonName || receiptData.storefrontName || "—"}
+            </span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="font-semibold">ရက်စွဲ :</span>
+            <span>{formatToImageDate(receiptData.date)}</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="font-semibold">ငွေချေပုံ :</span>
+            <span>{receiptData.paymentMethod}</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="font-semibold">Printed Date :</span>
+            <span>{formatToImageDate(new Date().toISOString())}</span>
+          </div>
+          {receiptData.note && (
+            <div className="flex justify-between items-start pt-0.5">
+              <span className="font-semibold flex-shrink-0">မှတ်ချက် :</span>
+              <span className="italic text-right break-words pl-2">{receiptData.note}</span>
+            </div>
+          )}
+          {isQuotation && (
+            <p className="text-[8.5px] text-slate-500 italic text-center pt-1">
+              Prices are estimates. Not a final invoice.
             </p>
           )}
         </div>
 
-        <div
-          className={`flex justify-between items-start mb-4 sm:mb-6 voucher-invoice-row flex-col gap-1`}
-        >
-          <div>
-            <p className="font-bold mb-0.5">
-              {isQuotation ? "QUOTATION NO" : "INVOICE NO"} :{" "}
-              {receiptData.invoiceNumber}
-            </p>
-            <p className="font-bold">DATE: {formatDate(receiptData.date)}</p>
-          </div>
-        </div>
-
-        <div className="mb-4 voucher-thermal-table">
-          <div className="voucher-thermal-header">
-            <div>NO</div>
-            <div>ITEM</div>
-            <div className="voucher-thermal-col-price">PRICE</div>
-            <div className="voucher-thermal-col-qty">QTY</div>
-            <div>UNIT</div>
-            <div className="voucher-thermal-col-total">TOTAL</div>
-          </div>
-          {displayItems.map((item, index) => (
-            <div key={index} className="voucher-thermal-item">
-              <div>{index + 1}</div>
-              <div
-                className={`voucher-thermal-col-item ${item.name.length > THERMAL_ITEM_LONG_CHARS ? "is-long" : ""
-                  }`}
-                title={item.name}
-              >
-                <div>{item.name}</div>
-                {item.batches && item.batches.length > 0 && (
-                  <div className="text-[9px] text-slate-500 font-mono mt-0.5 leading-tight">
-                    {item.batches.map((b, bIdx) => (
-                      <div key={bIdx}>
-                        ↳ B: {b.batchNumber}
-                        {b.expiryDate ? ` (Exp: ${new Date(b.expiryDate).toLocaleDateString()})` : ""}
-                        {item.batches!.length > 1 ? ` x ${b.quantity}` : ""}
+        {/* Product Table with Batches and Expiry Date */}
+        <div className="mb-2">
+          <table className="voucher-table">
+            <thead>
+              <tr>
+                <th style={{ width: "8%" }}>စဉ်</th>
+                <th style={{ width: "42%" }}>အမျိုးအမည်</th>
+                <th style={{ width: "11%" }}>ခုရေ</th>
+                <th style={{ width: "11%" }}>ယူနစ်</th>
+                <th style={{ width: "14%" }}>ဈေးနှုန်း</th>
+                <th style={{ width: "14%" }}>သင့်ငွေ</th>
+              </tr>
+            </thead>
+            <tbody>
+              {displayItems.map((item, index) => (
+                <tr key={index}>
+                  <td className="text-center">{index + 1}</td>
+                  <td className="text-left">
+                    <div className="font-semibold text-slate-900 leading-tight">
+                      {item.name}
+                    </div>
+                    {item.batches && item.batches.length > 0 && (
+                      <div className="text-[8.5px] text-slate-600 font-mono mt-0.5 space-y-0.5 leading-snug">
+                        {item.batches.map((b, bIdx) => (
+                          <div key={bIdx}>
+                            ↳ Batch: {b.batchNumber}
+                            {b.expiryDate ? ` (Exp: ${formatToImageDate(b.expiryDate)})` : ""}
+                            {item.batches!.length > 1 ? ` x ${b.quantity}` : ""}
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <div className="voucher-thermal-col-price">
-                {item.price.toLocaleString()}
-              </div>
-              <div className="voucher-thermal-col-qty">
-                {formatReceiptQty(item)}
-              </div>
-              <div className="break-words">{formatReceiptUnit(item)}</div>
-              <div className="voucher-thermal-col-total">
-                {(item.price * item.qty).toLocaleString()}
-              </div>
-            </div>
-          ))}
+                    )}
+                  </td>
+                  <td className="text-center">{formatReceiptQty(item)}</td>
+                  <td className="text-center">{formatReceiptUnit(item)}</td>
+                  <td className="text-right">{item.price.toLocaleString()}</td>
+                  <td className="text-right font-semibold">
+                    {(item.price * item.qty).toLocaleString()}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
 
-        <div
-          className={`voucher-summary-grid`}
-        >
-          <div>
-            <div className="mb-3">
-              {isQuotation ? (
-                <>
-                  <p className="font-bold mb-1">Document:</p>
-                  <p>{receiptData.paymentMethod}</p>
-                  <p className="text-xs text-slate-600 mt-1">
-                    Prices are estimates. Not a final invoice.
-                  </p>
-                </>
-              ) : (
-                <>
-                  <p className="font-bold mb-1">Payment Info:</p>
-                  <p>Method: {receiptData.paymentMethod}</p>
-                  {receiptData.creditPersonName && (
-                    <>
-                      <p className="mt-1 font-medium text-orange-700">
-                        Credit Person: {receiptData.creditPersonName}
-                      </p>
-                      {receiptData.creditPersonOutstanding != null && receiptData.creditPersonOutstanding > 0 && (
-                        <p className="text-orange-600 text-sm">
-                          Total Outstanding: {receiptData.creditPersonOutstanding.toLocaleString()} MMK
-                        </p>
-                      )}
-                    </>
-                  )}
-                  {receiptData.paidAmount != null && (
-                    <p>
-                      Paid: {receiptData.paidAmount.toLocaleString()}{" "}
-                      {shopBranding.currency}
-                    </p>
-                  )}
-                  {receiptData.change != null && receiptData.change > 0 && (
-                    <p>
-                      Change: {receiptData.change.toLocaleString()}{" "}
-                      {shopBranding.currency}
-                    </p>
-                  )}
-                </>
-              )}
-            </div>
-            {receiptData.note && (
-              <p className="italic">Note: {receiptData.note}</p>
-            )}
+        {/* Financial Summary (Myanmar) */}
+        <div className="w-full space-y-1 text-[9.5px] text-slate-800 mb-2 border-b border-slate-300 pb-2">
+          <div className="flex justify-between">
+            <span className="font-semibold">ကျသင့်ငွေ:</span>
+            <span>{receiptData.subtotal.toLocaleString()}</span>
           </div>
-
-          <div>
-            <div className="flex justify-between mb-1">
-              <span>SUB TOTAL:</span>
-              <span>{receiptData.subtotal.toLocaleString()}</span>
-            </div>
-            {(receiptData.tax ?? 0) > 0 && (
-              <div className="flex justify-between mb-1">
-                <span>TAX:</span>
-                <span>+{(receiptData.tax ?? 0).toLocaleString()}</span>
-              </div>
-            )}
-            {(receiptData.discountAmount ?? 0) > 0 && (
-              <div className="flex justify-between mb-1">
-                <span>DISCOUNT:</span>
-                <span>-{(receiptData.discountAmount ?? 0).toLocaleString()}</span>
-              </div>
-            )}
-            {receiptData.discountPercent > 0 && (
-              <div className="flex justify-between mb-1">
-                <span>DISCOUNT ({receiptData.discountPercent}%):</span>
-                <span>
-                  -
-                  {(
-                    (receiptData.subtotal * receiptData.discountPercent) /
-                    100
-                  ).toLocaleString()}
-                </span>
-              </div>
-            )}
-            <div
-              className="voucher-total-bar flex justify-between font-bold text-white p-2"
-              style={{ backgroundColor: "#4CAF50" }}
-            >
-              <span>TOTAL:</span>
+          {((receiptData.discountAmount ?? 0) > 0 || receiptData.discountPercent > 0) && (
+            <div className="flex justify-between text-red-600">
+              <span className="font-semibold">လျှော့ပေးငွေ:</span>
               <span>
-                {receiptData.total.toLocaleString()} {shopBranding.currency}
+                -
+                {((receiptData.discountAmount ?? 0) +
+                  (receiptData.subtotal * (receiptData.discountPercent ?? 0)) / 100).toLocaleString()}
               </span>
             </div>
+          )}
+          <div className="flex justify-between">
+            <span className="font-semibold">ပေးငွေ:</span>
+            <span>{(receiptData.paidAmount ?? 0).toLocaleString()}</span>
           </div>
+          <div className="flex justify-between border-t border-slate-300 pt-1 font-semibold">
+            <span>ကျန်ငွေ:</span>
+            <span>
+              {(receiptData.total - (receiptData.paidAmount ?? 0)).toLocaleString()} {shopBranding.currency}
+            </span>
+          </div>
+          {receiptData.creditPersonName && (
+            <>
+              <div className="flex justify-between text-slate-700 pt-0.5">
+                <span className="font-semibold">ယခင်ကျန်ငွေ:</span>
+                <span>
+                  {((receiptData.creditPersonOutstanding ?? 0) - (receiptData.total - (receiptData.paidAmount ?? 0))).toLocaleString()} {shopBranding.currency}
+                </span>
+              </div>
+              <div className="flex justify-between border-t border-slate-400 pt-1 font-bold text-[10.5px] text-red-700">
+                <span>စုစုပေါင်းကျန်ငွေ:</span>
+                <span>
+                  {(receiptData.creditPersonOutstanding ?? 0).toLocaleString()} {shopBranding.currency}
+                </span>
+              </div>
+            </>
+          )}
         </div>
 
-        <div className="mt-4 text-center">
-          <p className="voucher-footer-title font-bold italic mb-1 text-xs">
-            {isQuotation
-              ? "Thank you — please confirm before ordering."
-              : "Thank you for your business!"}
+        {/* Warehouse Checklist Table */}
+        <div className="mb-2 text-left">
+          <p className="text-[8.5px] font-semibold text-slate-700 mb-1 leading-tight">
+            စာရင်းဇယား၊ ပစ္စည်းအစုံ၊ အလိုများရှိပါက (7)ရက်အတွင်း ကျေးဇူးပြု၍ အကြောင်းကြားပေးပါရန်။
           </p>
+          <table className="voucher-checklist-table">
+            <thead>
+              <tr>
+                <th style={{ width: "16%" }}>ပုံး</th>
+                <th style={{ width: "16%" }}>အိတ်</th>
+                <th style={{ width: "16%" }}>ဆွဲ</th>
+                <th style={{ width: "26%" }}>CCTV Time</th>
+                <th style={{ width: "26%" }}>စစ်ဆေးသူ</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style={{ height: "30px" }}>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
-        <div
-          className="voucher-contact-bar mt-4 py-2 px-3 flex flex-col gap-1 text-white text-xs text-center"
-          style={{ backgroundColor: "#000" }}
-        >
-          <span>
-            {contactParts.length > 0
-              ? `Contact: ${contactParts.join(" | ")}`
-              : shopBranding.address || ""}
-          </span>
-          <span>{shopBranding.shopName}</span>
+        {/* Footer Section */}
+        <div className="pt-2 border-t border-slate-300 text-center">
+          <p className="text-[9.5px] font-bold text-slate-800">
+            အဆင်မပြေမှုများရှိပါက 09-955255972 သို့ တိုင်ကြားနိုင်ပါသည်။
+          </p>
+          <p className="text-[9.5px] font-bold text-slate-800 mt-0.5">
+            ဝယ်ယူအားပေးမှုကို ကျေးဇူးတင်ပါသည်။
+          </p>
+          <div className="flex justify-between items-center text-[8.5px] text-slate-500 mt-2 border-t border-dashed border-slate-300 pt-1">
+            <span>Vr.No - {receiptData.invoiceNumber}</span>
+            {printedByName && (
+              <span>
+                Printed by: {printedByName} ({printedByRole})
+              </span>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -482,7 +504,7 @@ export const VoucherContent: React.FC<VoucherContentProps> = ({
                                 {item.batches.map((b, bIdx) => (
                                   <div key={bIdx}>
                                     ↳ Batch: {b.batchNumber}
-                                    {b.expiryDate ? ` (Exp: ${new Date(b.expiryDate).toLocaleDateString()})` : ""}
+                                    {b.expiryDate ? ` (Exp: ${formatToImageDate(b.expiryDate)})` : ""}
                                     {item.batches!.length > 1 ? ` x ${b.quantity}` : ""}
                                   </div>
                                 ))}
