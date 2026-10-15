@@ -561,6 +561,11 @@ export const my = {
     },
     failedToLoad: "အီးကော်မတ် အော်ဒါများ မရနိုင်ပါ",
     noOrders: "အွန်လိုင်း အော်ဒါများ မရှိသေးပါ",
+    sendToFulfillment: "ဂိုဒေါင်သို့ ပို့မည်",
+    inFulfillment: "ဂိုဒေါင်သို့ လွှဲပြီး",
+    sendToFulfillmentConfirm: "ဤအော်ဒါအား ဂိုဒေါင်မှ ပစ္စည်းစစ်ဆေးထုတ်ပိုးရန် ပို့ဆောင်မှာ သေချာပါသလား?",
+    sendToFulfillmentSuccess: "အော်ဒါကို ဂိုဒေါင်သို့ အောင်မြင်စွာ လွှဲပြောင်းပေးပို့လိုက်ပါပြီ",
+    sendToFulfillmentFailed: "ဂိုဒေါင်သို့ လွှဲပြောင်းရာတွင် မအောင်မြင်ပါ",
   },
   customers: {
     title: "ဖောက်သည်များ",

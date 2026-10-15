@@ -9,8 +9,11 @@ import {
   CreditCard,
   Plus,
   Minus,
+  Truck,
 } from "lucide-react";
+import { toast } from "sonner";
 import type { EcommerceOrder } from "../../services/Ecommerce/fetchEcommerceOrders";
+import { sendOrderToFulfillment } from "../../services/Ecommerce/sendOrderToFulfillment";
 import { useLanguage } from "../../context/LanguageContext";
 import { AddItemsToEcommerceOrderModal } from "./AddItemsToEcommerceOrderModal";
 import { RemoveItemsFromEcommerceOrderModal } from "./RemoveItemsFromEcommerceOrderModal";
@@ -30,8 +33,37 @@ export const EcommerceOrderDetailModal: React.FC<
   const { t } = useLanguage();
   const [showAddItemsModal, setShowAddItemsModal] = useState(false);
   const [showRemoveItemsModal, setShowRemoveItemsModal] = useState(false);
+  const [isSendingFulfillment, setIsSendingFulfillment] = useState(false);
 
   if (!isOpen) return null;
+
+  const handleSendToFulfillment = async () => {
+    if (!order) return;
+    setIsSendingFulfillment(true);
+    try {
+      const res = await sendOrderToFulfillment(order._id);
+      if (res.success) {
+        toast.success(
+          t("ecommerceOrders.sendToFulfillmentSuccess") ||
+            "အော်ဒါကို ဂိုဒေါင်သို့ အောင်မြင်စွာ လွှဲပြောင်းပေးပို့လိုက်ပါပြီ",
+        );
+        if (onOrderUpdate) onOrderUpdate();
+      } else {
+        toast.error(
+          res.message ||
+            t("ecommerceOrders.sendToFulfillmentFailed") ||
+            "ဂိုဒေါင်သို့ လွှဲပြောင်းရာတွင် မအောင်မြင်ပါ",
+        );
+      }
+    } catch (err: any) {
+      toast.error(
+        t("ecommerceOrders.sendToFulfillmentFailed") ||
+          "ဂိုဒေါင်သို့ လွှဲပြောင်းရာတွင် မအောင်မြင်ပါ",
+      );
+    } finally {
+      setIsSendingFulfillment(false);
+    }
+  };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -69,6 +101,28 @@ export const EcommerceOrderDetailModal: React.FC<
           <div className="flex items-center gap-2">
             {order && (
               <>
+                {!order.isSentToFulfillment && order.status !== "cancelled" ? (
+                  <button
+                    onClick={handleSendToFulfillment}
+                    disabled={isSendingFulfillment}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-semibold disabled:opacity-50 cursor-pointer shadow-sm"
+                  >
+                    {isSendingFulfillment ? (
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Truck className="w-4 h-4" />
+                    )}
+                    <span className="hidden sm:inline">
+                      {t("ecommerceOrders.sendToFulfillment") || "ဂိုဒေါင်သို့ ပို့မည်"}
+                    </span>
+                  </button>
+                ) : order.isSentToFulfillment ? (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                    <Truck className="w-4 h-4" />
+                    <span>{t("ecommerceOrders.inFulfillment") || "ဂိုဒေါင်သို့ လွှဲပြီး"}</span>
+                  </span>
+                ) : null}
+
                 <button
                   onClick={() => setShowRemoveItemsModal(true)}
                   className="flex items-center gap-2 px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
@@ -107,6 +161,24 @@ export const EcommerceOrderDetailModal: React.FC<
             </div>
           ) : (
             <>
+              {/* Fulfillment Status Banner */}
+              {order.isSentToFulfillment && (
+                <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-3.5 mb-6 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <Truck className="w-5 h-5 text-indigo-600 shrink-0" />
+                    <div>
+                      <p className="text-xs font-bold text-indigo-900">
+                        ဂိုဒေါင်မှ ပစ္စည်းစစ်ဆေးထုတ်ပိုးရန် လွှဲပြောင်းပေးပို့ထားပါသည် (In Fulfillment)
+                      </p>
+                      {typeof order.fulfillmentOrderId === "object" && order.fulfillmentOrderId?.orderNumber && (
+                        <p className="text-[11px] text-indigo-700 font-mono mt-0.5">
+                          Fulfillment Order No: {order.fulfillmentOrderId.orderNumber}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
               {/* Order Info */}
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">

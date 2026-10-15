@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Receipt, RefreshCw, PackageOpen, AlertCircle } from "lucide-react";
+import { Receipt, RefreshCw, PackageOpen, AlertCircle, Truck } from "lucide-react";
 import { toast } from "sonner";
 import { useLanguage } from "../context/LanguageContext";
 import {
@@ -9,6 +9,7 @@ import {
   fetchEcommerceOrders,
 } from "../services/Ecommerce/fetchEcommerceOrders";
 import { updateEcommerceOrderStatus } from "../services/Ecommerce/updateEcommerceOrderStatus";
+import { sendOrderToFulfillment } from "../services/Ecommerce/sendOrderToFulfillment";
 import { EcommerceOrderDetailModal } from "../components/Ecommerce/EcommerceOrderDetailModal";
 import { fetchEcommerceOrderById } from "../services/Ecommerce/fetchEcommerceOrderById";
 import { ConfirmModal } from "../components/Common/ConfirmModal";
@@ -93,6 +94,9 @@ export const EcommerceOrders: React.FC = () => {
     order: EcommerceOrder;
     nextStatus: EcommerceOrderStatus;
   } | null>(null);
+  const [sendingFulfillmentOrder, setSendingFulfillmentOrder] =
+    useState<EcommerceOrder | null>(null);
+  const [isSendingFulfillment, setIsSendingFulfillment] = useState(false);
 
   const totalItems = pagination?.totalItems ?? orders.length;
 
@@ -214,6 +218,39 @@ export const EcommerceOrders: React.FC = () => {
       toast.error(t("ecommerceOrders.updateStatus.failed"));
     } finally {
       setUpdatingStatusId(null);
+    }
+  };
+
+  const handleConfirmSendToFulfillment = async () => {
+    if (!sendingFulfillmentOrder) return;
+    setIsSendingFulfillment(true);
+    try {
+      const response = await sendOrderToFulfillment(sendingFulfillmentOrder._id);
+      if (response.success) {
+        toast.success(
+          t("ecommerceOrders.sendToFulfillmentSuccess") ||
+            "အော်ဒါကို ဂိုဒေါင်သို့ အောင်မြင်စွာ လွှဲပြောင်းပေးပို့လိုက်ပါပြီ",
+        );
+        await loadOrders();
+        if (selectedOrder?._id === sendingFulfillmentOrder._id) {
+          await refreshSelectedOrder();
+        }
+        setSendingFulfillmentOrder(null);
+      } else {
+        toast.error(
+          response.message ||
+            t("ecommerceOrders.sendToFulfillmentFailed") ||
+            "ဂိုဒေါင်သို့ လွှဲပြောင်းရာတွင် မအောင်မြင်ပါ",
+        );
+      }
+    } catch (error: any) {
+      console.error("Error sending order to fulfillment:", error);
+      toast.error(
+        t("ecommerceOrders.sendToFulfillmentFailed") ||
+          "ဂိုဒေါင်သို့ လွှဲပြောင်းရာတွင် မအောင်မြင်ပါ",
+      );
+    } finally {
+      setIsSendingFulfillment(false);
     }
   };
 
@@ -474,7 +511,30 @@ export const EcommerceOrders: React.FC = () => {
                       {formatDate(order.createdAt)}
                     </td>
                     <td className="px-3 py-2 text-right">
-                      <div className="flex flex-col sm:flex-row gap-1 justify-end">
+                      <div className="flex flex-col sm:flex-row gap-1 justify-end items-end sm:items-center">
+                        {order.isSentToFulfillment ? (
+                          <span
+                            className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200"
+                            title={
+                              typeof order.fulfillmentOrderId === "object" && order.fulfillmentOrderId?.orderNumber
+                                ? `Fulfillment Vr: ${order.fulfillmentOrderId.orderNumber}`
+                                : "Sent to warehouse fulfillment"
+                            }
+                          >
+                            <Truck className="w-3.5 h-3.5" />
+                            <span>{t("ecommerceOrders.inFulfillment") || "ဂိုဒေါင်သို့ လွှဲပြီး"}</span>
+                          </span>
+                        ) : order.status !== "cancelled" ? (
+                          <button
+                            onClick={() => setSendingFulfillmentOrder(order)}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-sm cursor-pointer"
+                            title="ဂိုဒေါင်သို့ ပစ္စည်းစစ်ဆေးထုတ်ပိုးရန် ပို့မည်"
+                          >
+                            <Truck className="w-3.5 h-3.5" />
+                            <span>{t("ecommerceOrders.sendToFulfillment") || "ဂိုဒေါင်သို့ ပို့မည်"}</span>
+                          </button>
+                        ) : null}
+
                         <button
                           onClick={() => handleOpenDetail(order)}
                           className="px-2 py-1 text-xs rounded border border-slate-200 text-slate-700 hover:bg-slate-50"
@@ -591,6 +651,22 @@ export const EcommerceOrders: React.FC = () => {
           setConfirmStatusOpen(false);
           setPendingStatusChange(null);
         }}
+      />
+
+      <ConfirmModal
+        isOpen={!!sendingFulfillmentOrder}
+        title={t("ecommerceOrders.sendToFulfillment") || "ဂိုဒေါင်သို့ ပို့မည်"}
+        message={
+          sendingFulfillmentOrder
+            ? `အော်ဒါ (${sendingFulfillmentOrder.orderNumber}) အား ဂိုဒေါင်မှ ပစ္စည်းစစ်ဆေးထုတ်ပိုးရန် ပို့ဆောင်မှာ သေချာပါသလား?`
+            : ""
+        }
+        confirmText={t("common.confirm") || "အတည်ပြုသည်"}
+        cancelText={t("common.cancel") || "မလုပ်တော့ပါ"}
+        confirmButtonColor="primary"
+        isLoading={isSendingFulfillment}
+        onCancel={() => setSendingFulfillmentOrder(null)}
+        onConfirm={handleConfirmSendToFulfillment}
       />
     </div>
   );

@@ -52,6 +52,13 @@ export interface EcommerceOrder {
   paymentStatus: "paid" | "unpaid" | string;
   shippingAddress: EcommerceOrderShippingAddress | null;
   note?: string;
+  fulfillmentOrderId?: {
+    _id: string;
+    orderNumber: string;
+    orderStatus: string;
+  } | string | null;
+  isSentToFulfillment?: boolean;
+  sentToFulfillmentAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }

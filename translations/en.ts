@@ -554,6 +554,11 @@ export const en = {
     },
     failedToLoad: "Failed to load ecommerce orders",
     noOrders: "No ecommerce orders found",
+    sendToFulfillment: "Send to Fulfillment",
+    inFulfillment: "In Fulfillment",
+    sendToFulfillmentConfirm: "Are you sure you want to send this order to warehouse fulfillment?",
+    sendToFulfillmentSuccess: "Order successfully sent to warehouse fulfillment",
+    sendToFulfillmentFailed: "Failed to send order to warehouse fulfillment",
   },
   customers: {
     title: "Customers",
