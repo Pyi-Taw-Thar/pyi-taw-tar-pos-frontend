@@ -291,7 +291,7 @@ export const OrderFulfillmentModal: React.FC<OrderFulfillmentModalProps> = ({
         return;
       }
 
-      toast.success(t("fulfillment.fulfillmentSuccess"));
+      toast.dismiss();
 
       // Prepare voucher print data
       const creditPersonObj =
@@ -386,7 +386,7 @@ export const OrderFulfillmentModal: React.FC<OrderFulfillmentModalProps> = ({
               <span className="text-slate-500 block">{t("fulfillment.locBranch")}</span>
               <span className="font-semibold text-slate-800">
                 {typeof order.storefrontId === "object"
-                  ? order.storefrontId?.storefrontName
+                  ? (order.storefrontId as any)?.locationName || (order.storefrontId as any)?.storefrontName || "Store"
                   : "Warehouse"}
               </span>
             </div>

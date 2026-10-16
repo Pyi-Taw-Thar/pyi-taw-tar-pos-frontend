@@ -56,7 +56,8 @@ export function usePOS() {
   const [selectedStorefrontId, setSelectedStorefrontId] = useState<string>("");
   const [allStockItems, setAllStockItems] = useState<StorefrontStockItem[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -104,7 +105,7 @@ export function usePOS() {
   }, []);
 
   const loadInitialData = async () => {
-    setLoading(true);
+    setInitialLoading(true);
     try {
       const [sfResponse, catResponse] = await Promise.all([
         fetchStorefrontProfiles(),
@@ -118,11 +119,7 @@ export function usePOS() {
         setStorefronts(activeStorefronts);
         if (activeStorefronts.length > 0) {
           setSelectedStorefrontId(activeStorefronts[0]._id);
-        } else {
-          setLoading(false);
         }
-      } else {
-        setLoading(false);
       }
 
       if (catResponse.success && catResponse.data) {
@@ -130,8 +127,8 @@ export function usePOS() {
       }
     } catch (error) {
       toast.error(t("pos.failedToLoadData"));
-      setLoading(false);
     } finally {
+      setInitialLoading(false);
       setIsProcessing(false);
     }
     loadCreditPersonas();
@@ -162,7 +159,7 @@ export function usePOS() {
         currentPage,
         itemsPerPage,
         selectedCategory === "All" ? undefined : selectedCategory,
-        search,
+        debouncedSearch,
       );
       if (response.success && response.data) {
         setAllStockItems(response.data);
@@ -668,6 +665,7 @@ export function usePOS() {
     selectedStorefrontId,
     allStockItems,
     categories,
+    initialLoading,
     loading,
     currentPage,
     setCurrentPage,

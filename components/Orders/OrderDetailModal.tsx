@@ -76,12 +76,18 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
       storefrontName: "HONGCHI Myanmar",
       date: order.createdAt,
       items:
-        order.ordersProducts?.map((item) => ({
+        order.ordersProducts?.map((item: any) => ({
           name: item.inventoryId?.productName || "Unknown Product",
           code: item.inventoryId?.productCode,
           qty: item.quantity,
           unit: item.unit?.trim() || undefined,
           price: item.unitPrice || 0,
+          batches: item.batches?.map((b: any) => ({
+            batchNumber: b.batchNumber,
+            batchBarcode: b.batchBarcode,
+            expiryDate: b.expiryDate,
+            quantity: b.quantity,
+          })) || [],
         })) || [],
       subtotal: order.subTotal || 0,
       discountPercent: order.discount

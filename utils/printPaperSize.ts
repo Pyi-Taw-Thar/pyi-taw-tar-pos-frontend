@@ -1,4 +1,4 @@
-export type PrintPaperSize = "A4" | "A5" | "thermal-80mm";
+export type PrintPaperSize = "A4" | "A5" | "thermal-80mm" | "thermal-72mm";
 
 export const PRINT_PAPER_SIZE_KEY = "voucherPrintPaperSize";
 
@@ -13,14 +13,49 @@ export const PRINT_PAPER_OPTIONS: PrintPaperOption[] = [
   { id: "A5", label: "A5", description: "Compact invoice (148 × 210 mm)" },
   {
     id: "thermal-80mm",
-    label: "Thermal 80mm",
-    description: "Receipt printer roll (80 mm wide)",
+    label: "Thermal 72mm",
+    description: "Receipt printer roll (72 mm wide)",
   },
 ];
 
+export type ThermalLayout = "list" | "table";
+
+export const THERMAL_LAYOUT_KEY = "voucherThermalLayout";
+
+export interface ThermalLayoutOption {
+  id: ThermalLayout;
+  label: string;
+  description: string;
+}
+
+export const THERMAL_LAYOUT_OPTIONS: ThermalLayoutOption[] = [
+  {
+    id: "list",
+    label: "POS စာရင်းပုံစံ (List)",
+    description: "စာလုံးကြီးပြီး သန့်ရှင်းသော POS ပြေစာပုံစံ",
+  },
+  {
+    id: "table",
+    label: "ဇယားကွက်ပုံစံ (Table)",
+    description: "ကုန်ပစ္စည်း၊ အရေအတွက်၊ ဈေးနှုန်း ဇယားကွက်ပုံစံ (၄ ကော်လံ)",
+  },
+];
+
+export const getSavedThermalLayout = (): ThermalLayout => {
+  const saved = localStorage.getItem(THERMAL_LAYOUT_KEY);
+  if (saved === "table" || saved === "list") {
+    return saved;
+  }
+  return "list";
+};
+
+export const saveThermalLayout = (layout: ThermalLayout) => {
+  localStorage.setItem(THERMAL_LAYOUT_KEY, layout);
+};
+
 export const getSavedPrintPaperSize = (): PrintPaperSize => {
   const saved = localStorage.getItem(PRINT_PAPER_SIZE_KEY);
-  if (saved === "thermal-88mm") {
+  if (saved === "thermal-88mm" || saved === "thermal-72mm") {
     localStorage.setItem(PRINT_PAPER_SIZE_KEY, "thermal-80mm");
     return "thermal-80mm";
   }
@@ -37,8 +72,10 @@ export const savePrintPaperSize = (size: PrintPaperSize) => {
 export const parsePrintPaperSize = (
   value: string | null,
 ): PrintPaperSize | null => {
-  if (value === "thermal-88mm") return "thermal-80mm";
-  if (value === "A4" || value === "A5" || value === "thermal-80mm") {
+  if (value === "thermal-88mm" || value === "thermal-72mm" || value === "thermal-80mm") {
+    return "thermal-80mm";
+  }
+  if (value === "A4" || value === "A5") {
     return value;
   }
   return null;
@@ -55,7 +92,10 @@ export const getPrintPaperStyles = (paperSize: PrintPaperSize): string => {
       margin: 0;
       padding: 0;
     }
-    .no-print {
+    .no-print,
+    [data-sonner-toaster],
+    [data-sonner-toast],
+    .toaster {
       display: none !important;
     }
     .voucher-container {
@@ -91,74 +131,82 @@ export const getPrintPaperStyles = (paperSize: PrintPaperSize): string => {
         .voucher-summary-grid { gap: 1rem !important; }
       `;
     case "thermal-80mm":
+    case "thermal-72mm":
       return `
         ${base}
         @media print {
-          @page { size: 80mm auto; margin: 2mm; }
+          @page {
+            size: 72mm auto;
+            margin: 0 !important;
+          }
+          html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 72mm !important;
+          }
           .voucher-container {
-            width: 76mm !important;
-            max-width: 76mm !important;
-            padding: 1.5mm !important;
+            width: 72mm !important;
+            max-width: 72mm !important;
+            padding: 1.5mm 2mm !important;
             margin: 0 auto !important;
+            box-sizing: border-box !important;
           }
         }
         @media screen {
           .voucher-container {
-            width: 80mm !important;
-            min-width: 80mm !important;
-            max-width: 80mm !important;
+            width: 72mm !important;
+            min-width: 72mm !important;
+            max-width: 72mm !important;
             padding: 3mm !important;
             box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+            box-sizing: border-box !important;
           }
         }
         .voucher-container {
           font-family: Arial, "Myanmar Text", "Padauk", sans-serif;
-          font-size: 10px;
+          font-size: 12px;
           line-height: 1.35;
           overflow-x: hidden;
           color: #000;
         }
-        .voucher-logo { width: 44px !important; height: 44px !important; }
-        .voucher-shop-name { font-size: 13px !important; font-weight: 800 !important; }
-        .voucher-address { font-size: 9px !important; }
-        .voucher-table {
+        .voucher-logo { width: 48px !important; height: 48px !important; }
+        .voucher-shop-name { font-size: 17px !important; font-weight: 800 !important; }
+        .voucher-address { font-size: 11px !important; }
+        .voucher-fame-table {
+          width: 100% !important;
+          border-collapse: collapse !important;
+          margin: 8px 0 !important;
+          border: 1px solid #000 !important;
+          letter-spacing: 0.35px !important;
+        }
+        .voucher-fame-table th,
+        .voucher-fame-table td {
+          border: 1px solid #000 !important;
+          padding: 6px 3.5px !important;
+          font-size: 10.5px !important;
+          line-height: 1.4 !important;
+          color: #000 !important;
+          word-break: break-word !important;
+          letter-spacing: 0.35px !important;
+        }
+        .voucher-fame-table th {
+          background-color: transparent !important;
+          font-weight: 700 !important;
+          color: #000 !important;
+          padding: 6px 3.5px !important;
+          letter-spacing: 0.5px !important;
+        }
+        .voucher-checklist-table {
           width: 100% !important;
           border-collapse: collapse !important;
           margin: 6px 0 !important;
           border: 1px solid #000 !important;
         }
-        .voucher-table th,
-        .voucher-table td {
-          border: 1px solid #000 !important;
-          padding: 3px 2px !important;
-          font-size: 8.5px !important;
-          line-height: 1.25 !important;
-          word-break: break-word !important;
-          color: #000 !important;
-        }
-        .voucher-table th {
-          background-color: transparent !important;
-          color: #000 !important;
-          text-align: center !important;
-          font-weight: 700 !important;
-        }
-        .voucher-container[data-paper="thermal-80mm"] .voucher-table td:nth-child(1) { text-align: center !important; width: 8% !important; }
-        .voucher-container[data-paper="thermal-80mm"] .voucher-table td:nth-child(2) { text-align: left !important; width: 42% !important; }
-        .voucher-container[data-paper="thermal-80mm"] .voucher-table td:nth-child(3) { text-align: center !important; width: 11% !important; }
-        .voucher-container[data-paper="thermal-80mm"] .voucher-table td:nth-child(4) { text-align: center !important; width: 11% !important; }
-        .voucher-container[data-paper="thermal-80mm"] .voucher-table td:nth-child(5) { text-align: right !important; width: 14% !important; }
-        .voucher-container[data-paper="thermal-80mm"] .voucher-table td:nth-child(6) { text-align: right !important; width: 14% !important; font-weight: 600 !important; }
-        .voucher-checklist-table {
-          width: 100% !important;
-          border-collapse: collapse !important;
-          margin: 5px 0 !important;
-          border: 1px solid #000 !important;
-        }
         .voucher-checklist-table th,
         .voucher-checklist-table td {
           border: 1px solid #000 !important;
-          padding: 2px !important;
-          font-size: 8px !important;
+          padding: 3px 2px !important;
+          font-size: 10px !important;
           color: #000 !important;
           text-align: center !important;
         }

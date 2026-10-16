@@ -122,8 +122,15 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
         </div>
       </div>
 
-      <div className="mb-2 text-sm text-gray-600">
-        {t("pos.showingProducts").replace("{count}", filteredProducts.length.toString())}
+      <div className="mb-2 text-sm text-gray-600 flex items-center gap-2 min-h-[24px]">
+        {loading ? (
+          <>
+            <div className="w-3.5 h-3.5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            <span className="text-gray-500">{t("pos.loading") || "ရှာဖွေနေပါသည်..."}</span>
+          </>
+        ) : (
+          <span>{t("pos.showingProducts").replace("{count}", filteredProducts.length.toString())}</span>
+        )}
       </div>
 
       {!loading && totalPages > 1 && (
@@ -157,7 +164,24 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
       )}
 
       <div className="flex overflow-y-auto grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4 pb-20">
-        {filteredProducts.length === 0 ? (
+        {loading ? (
+          Array.from({ length: 8 }).map((_, idx) => (
+            <div
+              key={idx}
+              className="bg-white p-4 rounded-xl shadow-sm border border-dark-200 animate-pulse flex flex-col justify-between h-40"
+            >
+              <div>
+                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                <div className="h-3 bg-gray-100 rounded w-1/2 mb-1.5"></div>
+                <div className="h-3 bg-gray-100 rounded w-1/3"></div>
+              </div>
+              <div className="mt-4 flex justify-between items-center pt-2 border-t border-gray-100">
+                <div className="h-5 bg-gray-200 rounded w-24"></div>
+                <div className="h-4 bg-gray-100 rounded w-12"></div>
+              </div>
+            </div>
+          ))
+        ) : filteredProducts.length === 0 ? (
           <div className="col-span-full text-center py-12 text-gray-400">
             {selectedStorefrontId ? t("pos.noProductsInStorefront") : t("pos.pleaseSelectStorefront")}
           </div>

@@ -1,6 +1,10 @@
 import React from "react";
 import { PrintShopBranding } from "../../utils/printShopBranding";
-import { PrintPaperSize } from "../../utils/printPaperSize";
+import {
+  PrintPaperSize,
+  ThermalLayout,
+  getSavedThermalLayout,
+} from "../../utils/printPaperSize";
 
 export interface VoucherBatchItem {
   batchStockId?: string;
@@ -60,6 +64,7 @@ interface VoucherContentProps {
   receiptData: VoucherReceiptData;
   shopBranding: PrintShopBranding;
   paperSize: PrintPaperSize;
+  thermalLayout?: ThermalLayout;
   formatDate: (dateString: string) => string;
 }
 
@@ -67,10 +72,12 @@ export const VoucherContent: React.FC<VoucherContentProps> = ({
   receiptData,
   shopBranding,
   paperSize,
+  thermalLayout,
   formatDate,
 }) => {
   console.log("receiptData:", receiptData);
-  const isThermal = paperSize === "thermal-80mm";
+  const isThermal = paperSize === "thermal-80mm" || (paperSize as any) === "thermal-72mm";
+  const activeThermalLayout = thermalLayout || getSavedThermalLayout();
   const isQuotation = receiptData.documentType === "quotation";
   const contactParts = [
     shopBranding.phone && `Tel: ${shopBranding.phone}`,
@@ -94,31 +101,228 @@ export const VoucherContent: React.FC<VoucherContentProps> = ({
     return `${day}/${month}/${year}`;
   };
 
-  // Expand items: If a product has multiple batches, display each as a distinct row on the voucher
+  // Keep items as single rows with total quantity (do not split by batch)
   const displayItems = React.useMemo(() => {
-    const raw = receiptData.items || [];
-    const list: VoucherReceiptItem[] = [];
-    for (const it of raw) {
-      if (it.batches && it.batches.length > 1) {
-        for (const b of it.batches) {
-          list.push({
-            ...it,
-            qty: b.quantity,
-            batches: [b],
-          });
-        }
-      } else {
-        list.push(it);
-      }
-    }
-    return list;
+    return receiptData.items || [];
   }, [receiptData.items]);
 
+  const totalQty = React.useMemo(() => {
+    return displayItems.reduce((acc, it) => acc + (it.qty || 0), 0);
+  }, [displayItems]);
+
   if (isThermal) {
+    if (activeThermalLayout === "table") {
+      // 4-Column Table Format matching user's reference voucher image
+      return (
+        <div className="voucher-container" data-paper={paperSize}>
+          {/* Header Section */}
+          <div className="text-center mb-2 pb-1.5 border-b border-black">
+            {shopBranding.logo ? (
+              <img
+                src={shopBranding.logo}
+                alt={shopBranding.shopName}
+                className="voucher-logo mx-auto object-contain mb-1"
+              />
+            ) : (
+              <div className="voucher-logo mx-auto flex items-center justify-center rounded-lg bg-slate-100 text-slate-800 font-bold mb-1">
+                {shopBranding.shopName.charAt(0)}
+              </div>
+            )}
+            <p className="text-[10.5px] text-gray-700 font-medium italic mb-1 leading-snug">
+              လုပ်ရပ်တိုင်းသည်၊ ရည်စူးချက် ရည်ရွယ်ချက်ပေါ် မူတည်၏။
+            </p>
+            <h2 className="voucher-shop-name font-black text-black leading-tight text-center">
+              {shopBranding.shopName}
+            </h2>
+            {shopBranding.address && (
+              <p className="voucher-address text-black font-medium mt-0.5 leading-snug text-center">
+                {shopBranding.address}
+              </p>
+            )}
+            <div className="text-[10.5px] text-black font-medium mt-0.5 space-y-0.5 text-center">
+              {shopBranding.phone && <p>Phone : {shopBranding.phone}</p>}
+              <p>Viber Phone : {shopBranding.website || "09-960889290, 09-973989877"}</p>
+            </div>
+          </div>
+
+          {/* Customer & Invoice Details (Boxed style like Fame reference image) */}
+          <div className="border border-black p-1.5 mb-2 text-[11px] text-black space-y-1">
+            <div className="flex justify-between items-center font-bold">
+              <span>Order No: {receiptData.invoiceNumber}</span>
+              <span>Salesman: {printedByName || "Sale 1"}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span>Date: {formatToImageDate(receiptData.date)}</span>
+              <span>Payment: {receiptData.paymentMethod}</span>
+            </div>
+            <div className="pt-0.5">
+              <span className="font-semibold">Customer: </span>
+              <span className="font-bold">
+                {receiptData.creditPersonName || receiptData.storefrontName || "—"}
+              </span>
+            </div>
+            {(receiptData.creditPersonAddress || receiptData.creditPersonTownship) && (
+              <div>
+                <span className="font-semibold">Address: </span>
+                <span>
+                  {[receiptData.creditPersonAddress, receiptData.creditPersonTownship]
+                    .filter(Boolean)
+                    .join(", ")}
+                </span>
+              </div>
+            )}
+            {receiptData.note && (
+              <div className="italic pt-0.5">
+                <span className="font-semibold not-italic">Note: </span>
+                {receiptData.note}
+              </div>
+            )}
+          </div>
+
+          {/* 4-Column Table matching reference voucher */}
+          <div className="mb-2">
+            <table className="voucher-fame-table">
+              <thead>
+                <tr className="tracking-wide">
+                  <th style={{ width: "48%" }} className="text-left"># Product</th>
+                  <th style={{ width: "16%" }} className="text-center">Qty</th>
+                  <th style={{ width: "18%" }} className="text-right">Price</th>
+                  <th style={{ width: "18%" }} className="text-right">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                {displayItems.map((item, index) => (
+                  <tr key={index} className="tracking-wide">
+                    <td className="text-left font-medium">
+                      <div className="leading-snug">
+                        {index + 1} {item.name}
+                      </div>
+                      {item.batches && item.batches.length > 0 && item.batches.some((b) => b.expiryDate) && (
+                        <div className="text-[9.5px] font-mono text-gray-700 mt-1 space-y-0.5 tracking-normal">
+                          {Array.from(
+                            new Set(
+                              item.batches
+                                .filter((b) => b.expiryDate)
+                                .map((b) => formatToImageDate(b.expiryDate))
+                            )
+                          ).map((exp, expIdx) => (
+                            <div key={expIdx}>↳ Exp: {exp}</div>
+                          ))}
+                        </div>
+                      )}
+                    </td>
+                    <td className="text-center font-medium whitespace-nowrap">
+                      {formatReceiptQty(item)} {formatReceiptUnit(item)}
+                    </td>
+                    <td className="text-right whitespace-nowrap">{item.price.toLocaleString()}</td>
+                    <td className="text-right font-bold whitespace-nowrap">
+                      {(item.price * item.qty).toLocaleString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Financial Summary (Table style matching reference) */}
+          <div className="border-t border-black pt-1 space-y-1 text-[11.5px] text-black mb-2">
+            <div className="flex justify-between font-semibold">
+              <span style={{ width: "45%" }}>Subtotal</span>
+              <span style={{ width: "20%" }} className="text-center">{totalQty}</span>
+              <span style={{ width: "35%" }} className="text-right">{receiptData.subtotal.toLocaleString()}</span>
+            </div>
+            {((receiptData.discountAmount ?? 0) > 0 || receiptData.discountPercent > 0) && (
+              <div className="flex justify-between text-red-600 font-semibold">
+                <span style={{ width: "45%" }}>Discount</span>
+                <span style={{ width: "20%" }}></span>
+                <span style={{ width: "35%" }} className="text-right">
+                  -
+                  {((receiptData.discountAmount ?? 0) +
+                    (receiptData.subtotal * (receiptData.discountPercent ?? 0)) / 100).toLocaleString()}
+                </span>
+              </div>
+            )}
+            <div className="flex justify-between font-black text-[13px] border-t border-black pt-1">
+              <span>Total</span>
+              <span>{receiptData.total.toLocaleString()} MMK</span>
+            </div>
+            {receiptData.creditPersonName && (
+              <div className="pt-1 border-t border-dashed border-gray-400 space-y-0.5 text-[11px]">
+                <div className="flex justify-between">
+                  <span>ပေးငွေ (Paid):</span>
+                  <span>{(receiptData.paidAmount ?? 0).toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between font-semibold">
+                  <span>ကျန်ငွေ (Remaining):</span>
+                  <span>{(receiptData.total - (receiptData.paidAmount ?? 0)).toLocaleString()} MMK</span>
+                </div>
+                <div className="flex justify-between text-gray-700">
+                  <span>ယခင်ကျန်ငွေ (Previous):</span>
+                  <span>
+                    {((receiptData.creditPersonOutstanding ?? 0) - (receiptData.total - (receiptData.paidAmount ?? 0))).toLocaleString()} MMK
+                  </span>
+                </div>
+                <div className="flex justify-between font-bold text-red-700 border-t border-black pt-0.5">
+                  <span>စုစုပေါင်းကျန်ငွေ:</span>
+                  <span>{(receiptData.creditPersonOutstanding ?? 0).toLocaleString()} MMK</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Warehouse Checklist Table */}
+          <div className="mb-2 text-left">
+            <p className="text-[10px] font-semibold text-black mb-1 leading-tight">
+              စာရင်းဇယား၊ ပစ္စည်းအစုံ၊ အလိုများရှိပါက (7)ရက်အတွင်း ကျေးဇူးပြု၍ အကြောင်းကြားပေးပါရန်။
+            </p>
+            <table className="voucher-checklist-table">
+              <thead>
+                <tr>
+                  <th style={{ width: "16%" }}>ပုံး</th>
+                  <th style={{ width: "16%" }}>အိတ်</th>
+                  <th style={{ width: "16%" }}>ဆွဲ</th>
+                  <th style={{ width: "26%" }}>CCTV Time</th>
+                  <th style={{ width: "26%" }}>စစ်ဆေးသူ</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style={{ height: "30px" }}>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* Footer Section */}
+          <div className="pt-2 border-t border-black text-center">
+            <p className="text-[11px] font-bold text-black">
+              အဆင်မပြေမှုများရှိပါက 09-955255972 သို့ တိုင်ကြားနိုင်ပါသည်။
+            </p>
+            <p className="text-[11px] font-bold text-black mt-0.5">
+              ဝယ်ယူအားပေးမှုကို ကျေးဇူးတင်ပါသည်။
+            </p>
+            <div className="flex justify-between items-center text-[10px] text-gray-700 mt-1 border-t border-dashed border-gray-400 pt-1">
+              <span>Vr.No - {receiptData.invoiceNumber}</span>
+              {printedByName && (
+                <span>
+                  Printed by: {printedByName} ({printedByRole})
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Default: POS List Layout (activeThermalLayout === "list")
     return (
       <div className="voucher-container" data-paper={paperSize}>
         {/* Header Section */}
-        <div className="text-center mb-2 pb-2 border-b border-slate-300">
+        <div className="text-center mb-2 pb-2 border-b border-black">
           {shopBranding.logo ? (
             <img
               src={shopBranding.logo}
@@ -126,36 +330,36 @@ export const VoucherContent: React.FC<VoucherContentProps> = ({
               className="voucher-logo mx-auto object-contain mb-1"
             />
           ) : (
-            <div className="voucher-logo mx-auto flex items-center justify-center rounded-lg bg-slate-100 text-slate-700 font-bold mb-1">
+            <div className="voucher-logo mx-auto flex items-center justify-center rounded-lg bg-slate-100 text-slate-800 font-bold mb-1">
               {shopBranding.shopName.charAt(0)}
             </div>
           )}
-          <p className="text-[8.5px] text-slate-600 font-medium italic mb-1 leading-tight">
+          <p className="text-[11px] text-gray-700 font-medium italic mb-1 leading-snug">
             လုပ်ရပ်တိုင်းသည်၊ ရည်စူးချက် ရည်ရွယ်ချက်ပေါ် မူတည်၏။
           </p>
-          <h2 className="voucher-shop-name font-bold text-slate-800 leading-tight">
+          <h2 className="voucher-shop-name font-black text-black leading-tight">
             {shopBranding.shopName}
           </h2>
           {shopBranding.address && (
-            <p className="voucher-address text-slate-700 font-medium mt-0.5 leading-snug">
+            <p className="voucher-address text-black font-medium mt-0.5 leading-snug">
               {shopBranding.address}
             </p>
           )}
           {shopBranding.phone && (
-            <p className="text-[8.5px] text-slate-700 font-medium mt-0.5">
+            <p className="text-[11.5px] text-black font-medium mt-0.5">
               Phone : {shopBranding.phone}
             </p>
           )}
-          <p className="text-[8.5px] text-slate-700 font-medium mt-0.5">
+          <p className="text-[11.5px] text-black font-medium mt-0.5">
             Viber Phone : {shopBranding.website || "09-960889290, 09-973989877"}
           </p>
         </div>
 
         {/* Customer & Invoice Details */}
-        <div className="text-[9.5px] text-slate-800 mb-2 space-y-1 border-b border-slate-300 pb-2">
+        <div className="text-[12px] text-black mb-2 space-y-1 border-b border-black pb-2">
           <div className="flex justify-between items-center">
-            <span className="font-semibold">Vr.No :</span>
-            <span className="font-bold">{receiptData.invoiceNumber}</span>
+            <span className="font-bold">Vr.No :</span>
+            <span className="font-black text-[13px]">{receiptData.invoiceNumber}</span>
           </div>
           <div className="flex justify-between items-center">
             <span className="font-semibold">မြို့နယ် :</span>
@@ -163,7 +367,7 @@ export const VoucherContent: React.FC<VoucherContentProps> = ({
           </div>
           <div className="flex justify-between items-center">
             <span className="font-semibold">အမည် :</span>
-            <span className="font-bold">
+            <span className="font-bold text-[13px]">
               {receiptData.creditPersonName || receiptData.storefrontName || "—"}
             </span>
           </div>
@@ -186,67 +390,68 @@ export const VoucherContent: React.FC<VoucherContentProps> = ({
             </div>
           )}
           {isQuotation && (
-            <p className="text-[8.5px] text-slate-500 italic text-center pt-1">
+            <p className="text-[10px] text-gray-600 italic text-center pt-1">
               Prices are estimates. Not a final invoice.
             </p>
           )}
         </div>
 
-        {/* Product Table with Batches and Expiry Date */}
+        {/* Product List Section (Clean POS Style - No cramped table) */}
         <div className="mb-2">
-          <table className="voucher-table">
-            <thead>
-              <tr>
-                <th style={{ width: "8%" }}>စဉ်</th>
-                <th style={{ width: "42%" }}>အမျိုးအမည်</th>
-                <th style={{ width: "11%" }}>ခုရေ</th>
-                <th style={{ width: "11%" }}>ယူနစ်</th>
-                <th style={{ width: "14%" }}>ဈေးနှုန်း</th>
-                <th style={{ width: "14%" }}>သင့်ငွေ</th>
-              </tr>
-            </thead>
-            <tbody>
-              {displayItems.map((item, index) => (
-                <tr key={index}>
-                  <td className="text-center">{index + 1}</td>
-                  <td className="text-left">
-                    <div className="font-semibold text-slate-900 leading-tight">
-                      {item.name}
-                    </div>
-                    {item.batches && item.batches.length > 0 && (
-                      <div className="text-[8.5px] text-slate-600 font-mono mt-0.5 space-y-0.5 leading-snug">
-                        {item.batches.map((b, bIdx) => (
-                          <div key={bIdx}>
-                            ↳ Batch: {b.batchNumber}
-                            {b.expiryDate ? ` (Exp: ${formatToImageDate(b.expiryDate)})` : ""}
-                            {item.batches!.length > 1 ? ` x ${b.quantity}` : ""}
-                          </div>
-                        ))}
+          <div className="flex justify-between items-center text-[12px] font-bold text-black border-y border-black py-1 mb-1">
+            <span>အမျိုးအမည် (Items)</span>
+            <span>သင့်ငွေ (Total)</span>
+          </div>
+
+          <div className="divide-y divide-dashed divide-gray-400">
+            {displayItems.map((item, index) => (
+              <div key={index} className="py-1.5">
+                {/* Item Name */}
+                <div className="text-[13px] font-bold text-black leading-snug">
+                  {index + 1}. {item.name}
+                </div>
+
+                {/* Expiry Date (Batch number removed) */}
+                {item.batches && item.batches.length > 0 && item.batches.some((b) => b.expiryDate) && (
+                  <div className="text-[11px] font-semibold text-gray-800 font-mono mt-0.5 pl-3 space-y-0.5">
+                    {Array.from(
+                      new Set(
+                        item.batches
+                          .filter((b) => b.expiryDate)
+                          .map((b) => formatToImageDate(b.expiryDate))
+                      )
+                    ).map((exp, expIdx) => (
+                      <div key={expIdx}>
+                        ↳ Exp: {exp}
                       </div>
-                    )}
-                  </td>
-                  <td className="text-center">{formatReceiptQty(item)}</td>
-                  <td className="text-center">{formatReceiptUnit(item)}</td>
-                  <td className="text-right">{item.price.toLocaleString()}</td>
-                  <td className="text-right font-semibold">
+                    ))}
+                  </div>
+                )}
+
+                {/* Quantity, Unit, Price & Total Line */}
+                <div className="flex justify-between items-center text-[12px] text-black pl-3 pt-0.5 font-medium">
+                  <span>
+                    {formatReceiptQty(item)} {formatReceiptUnit(item)} × {item.price.toLocaleString()}
+                  </span>
+                  <span className="font-bold text-[13px]">
                     {(item.price * item.qty).toLocaleString()}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Financial Summary (Myanmar) */}
-        <div className="w-full space-y-1 text-[9.5px] text-slate-800 mb-2 border-b border-slate-300 pb-2">
+        <div className="w-full space-y-1 text-[12.5px] text-black mb-2 border-y border-black py-2">
           <div className="flex justify-between">
             <span className="font-semibold">ကျသင့်ငွေ:</span>
-            <span>{receiptData.subtotal.toLocaleString()}</span>
+            <span className="font-bold">{receiptData.subtotal.toLocaleString()}</span>
           </div>
           {((receiptData.discountAmount ?? 0) > 0 || receiptData.discountPercent > 0) && (
             <div className="flex justify-between text-red-600">
               <span className="font-semibold">လျှော့ပေးငွေ:</span>
-              <span>
+              <span className="font-bold">
                 -
                 {((receiptData.discountAmount ?? 0) +
                   (receiptData.subtotal * (receiptData.discountPercent ?? 0)) / 100).toLocaleString()}
@@ -255,9 +460,9 @@ export const VoucherContent: React.FC<VoucherContentProps> = ({
           )}
           <div className="flex justify-between">
             <span className="font-semibold">ပေးငွေ:</span>
-            <span>{(receiptData.paidAmount ?? 0).toLocaleString()}</span>
+            <span className="font-bold">{(receiptData.paidAmount ?? 0).toLocaleString()}</span>
           </div>
-          <div className="flex justify-between border-t border-slate-300 pt-1 font-semibold">
+          <div className="flex justify-between border-t border-dashed border-gray-400 pt-1 font-bold text-[13.5px]">
             <span>ကျန်ငွေ:</span>
             <span>
               {(receiptData.total - (receiptData.paidAmount ?? 0)).toLocaleString()} {shopBranding.currency}
@@ -265,13 +470,13 @@ export const VoucherContent: React.FC<VoucherContentProps> = ({
           </div>
           {receiptData.creditPersonName && (
             <>
-              <div className="flex justify-between text-slate-700 pt-0.5">
+              <div className="flex justify-between text-gray-800 pt-0.5">
                 <span className="font-semibold">ယခင်ကျန်ငွေ:</span>
                 <span>
                   {((receiptData.creditPersonOutstanding ?? 0) - (receiptData.total - (receiptData.paidAmount ?? 0))).toLocaleString()} {shopBranding.currency}
                 </span>
               </div>
-              <div className="flex justify-between border-t border-slate-400 pt-1 font-bold text-[10.5px] text-red-700">
+              <div className="flex justify-between border-t border-black pt-1 font-black text-[14.5px] text-red-700">
                 <span>စုစုပေါင်းကျန်ငွေ:</span>
                 <span>
                   {(receiptData.creditPersonOutstanding ?? 0).toLocaleString()} {shopBranding.currency}
@@ -283,7 +488,7 @@ export const VoucherContent: React.FC<VoucherContentProps> = ({
 
         {/* Warehouse Checklist Table */}
         <div className="mb-2 text-left">
-          <p className="text-[8.5px] font-semibold text-slate-700 mb-1 leading-tight">
+          <p className="text-[11px] font-semibold text-black mb-1 leading-tight">
             စာရင်းဇယား၊ ပစ္စည်းအစုံ၊ အလိုများရှိပါက (7)ရက်အတွင်း ကျေးဇူးပြု၍ အကြောင်းကြားပေးပါရန်။
           </p>
           <table className="voucher-checklist-table">
@@ -297,7 +502,7 @@ export const VoucherContent: React.FC<VoucherContentProps> = ({
               </tr>
             </thead>
             <tbody>
-              <tr style={{ height: "30px" }}>
+              <tr style={{ height: "34px" }}>
                 <td></td>
                 <td></td>
                 <td></td>
@@ -309,14 +514,14 @@ export const VoucherContent: React.FC<VoucherContentProps> = ({
         </div>
 
         {/* Footer Section */}
-        <div className="pt-2 border-t border-slate-300 text-center">
-          <p className="text-[9.5px] font-bold text-slate-800">
+        <div className="pt-2 border-t border-black text-center">
+          <p className="text-[11.5px] font-bold text-black">
             အဆင်မပြေမှုများရှိပါက 09-955255972 သို့ တိုင်ကြားနိုင်ပါသည်။
           </p>
-          <p className="text-[9.5px] font-bold text-slate-800 mt-0.5">
+          <p className="text-[11.5px] font-bold text-black mt-0.5">
             ဝယ်ယူအားပေးမှုကို ကျေးဇူးတင်ပါသည်။
           </p>
-          <div className="flex justify-between items-center text-[8.5px] text-slate-500 mt-2 border-t border-dashed border-slate-300 pt-1">
+          <div className="flex justify-between items-center text-[10.5px] text-gray-700 mt-2 border-t border-dashed border-gray-400 pt-1">
             <span>Vr.No - {receiptData.invoiceNumber}</span>
             {printedByName && (
               <span>
@@ -499,13 +704,11 @@ export const VoucherContent: React.FC<VoucherContentProps> = ({
                           <td>{absoluteIndex}</td>
                           <td>
                             <div className="font-medium">{item.name}</div>
-                            {item.batches && item.batches.length > 0 && (
+                            {item.batches && item.batches.length > 0 && item.batches.some(b => b.expiryDate) && (
                               <div className="text-xs text-slate-500 font-mono mt-0.5 space-y-0.5">
-                                {item.batches.map((b, bIdx) => (
-                                  <div key={bIdx}>
-                                    ↳ Batch: {b.batchNumber}
-                                    {b.expiryDate ? ` (Exp: ${formatToImageDate(b.expiryDate)})` : ""}
-                                    {item.batches!.length > 1 ? ` x ${b.quantity}` : ""}
+                                {Array.from(new Set(item.batches.filter(b => b.expiryDate).map(b => formatToImageDate(b.expiryDate)))).map((exp, expIdx) => (
+                                  <div key={expIdx}>
+                                    ↳ Exp: {exp}
                                   </div>
                                 ))}
                               </div>

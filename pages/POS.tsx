@@ -11,7 +11,7 @@ export const POS: React.FC = () => {
   const { t } = useLanguage();
   const pos = usePOS();
 
-  if (pos.loading) {
+  if (pos.initialLoading && pos.storefronts.length === 0) {
     return (
       <div className="flex items-center justify-center h-screen bg-dark-100">
         <div className="text-center">

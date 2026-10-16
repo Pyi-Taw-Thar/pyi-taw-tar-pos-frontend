@@ -484,6 +484,7 @@ export function useQuickSale() {
             qty: i.qty,
             unit: i.selectedUnit,
             price: getCartLineEffectivePrice(i),
+            batches: (i as any).scannedBatches || [],
           })),
           subtotal,
           discountPercent: discount,

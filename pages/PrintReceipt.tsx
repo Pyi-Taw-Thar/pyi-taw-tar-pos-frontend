@@ -14,6 +14,10 @@ import {
   parsePrintPaperSize,
   PrintPaperSize,
   savePrintPaperSize,
+  ThermalLayout,
+  getSavedThermalLayout,
+  saveThermalLayout,
+  THERMAL_LAYOUT_OPTIONS,
 } from "../utils/printPaperSize";
 import { PrintPaperSizeSelector } from "../components/Print/PrintPaperSizeSelector";
 import {
@@ -61,6 +65,11 @@ const PrintReceipt: React.FC = () => {
     const fromUrl = parsePrintPaperSize(searchParams.get("size"));
     return fromUrl ?? getSavedPrintPaperSize();
   });
+  const [thermalLayout, setThermalLayout] = useState<ThermalLayout>(() => {
+    const fromUrl = searchParams.get("layout") as ThermalLayout;
+    if (fromUrl === "table" || fromUrl === "list") return fromUrl;
+    return getSavedThermalLayout();
+  });
   console.log(paperSize);
   const [loadingMessage, setLoadingMessage] = useState("Loading receipt...");
   const [isReady, setIsReady] = useState(false);
@@ -78,11 +87,17 @@ const PrintReceipt: React.FC = () => {
     savePrintPaperSize(size);
   };
 
+  const handleThermalLayoutChange = (layout: ThermalLayout) => {
+    setThermalLayout(layout);
+    saveThermalLayout(layout);
+  };
+
   const handlePrint = () => {
     window.print();
   };
 
   useEffect(() => {
+    toast.dismiss();
     let cancelled = false;
 
     const preparePrint = async () => {
@@ -211,6 +226,11 @@ const PrintReceipt: React.FC = () => {
       <style>{`
         ${getPrintPaperStyles(paperSize)}
         ${getSharedTableStyles()}
+        [data-sonner-toaster],
+        [data-sonner-toast],
+        .toaster {
+          display: none !important;
+        }
       `}</style>
 
       {!shouldAutoPrint && (
@@ -239,8 +259,33 @@ const PrintReceipt: React.FC = () => {
               value={paperSize}
               onChange={handlePaperSizeChange}
             />
+
+            {(paperSize === "thermal-80mm" || (paperSize as any) === "thermal-72mm") && (
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 pt-1 border-t border-slate-100">
+                <span className="text-sm font-semibold text-slate-700 whitespace-nowrap">
+                  Thermal Format:
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {THERMAL_LAYOUT_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => handleThermalLayoutChange(opt.id)}
+                      className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
+                        thermalLayout === opt.id
+                          ? "bg-blue-600 text-white border-blue-600"
+                          : "bg-white text-slate-700 border-slate-300 hover:border-blue-400 hover:bg-blue-50"
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <p className="text-xs text-slate-500">
-              Change default size in Shop Settings. Click Print when ready.
+              Change default size and format in Shop Settings. Click Print when ready.
             </p>
           </div>
         </div>
@@ -251,6 +296,7 @@ const PrintReceipt: React.FC = () => {
           receiptData={receiptData}
           shopBranding={shopBranding}
           paperSize={paperSize}
+          thermalLayout={thermalLayout}
           formatDate={formatDate}
         />
       </div>
