@@ -350,13 +350,19 @@ export function usePOS() {
               ? batch.inventoryId._id
               : batch.inventoryId;
 
+          // Unit barcode (B000001-10) — cart line unit = scan လုပ်သော unit, batch qty = base unit
+          const scanFactor: number = batch.scanFactor || 1;
+          const normUnit = (u?: string | null) => (u || "").trim().toLowerCase();
+          const scannedUnitNorm = normUnit(batch.scannedUnit);
+          const isSameLine = (item: UomCartItem) =>
+            getCartLineStockId(item.stockItem) === inventoryIdStr &&
+            (!scannedUnitNorm || normUnit(item.selectedUnit) === scannedUnitNorm);
+
           let updatedQty = 0;
           let productFoundInCart = false;
 
           setCart((prev) => {
-            const existingCartIndex = prev.findIndex(
-              (item) => getCartLineStockId(item.stockItem) === inventoryIdStr
-            );
+            const existingCartIndex = prev.findIndex(isSameLine);
 
             if (existingCartIndex !== -1) {
               productFoundInCart = true;
@@ -373,7 +379,7 @@ export function usePOS() {
               if (existingBatchIndex !== -1) {
                 currentBatches[existingBatchIndex] = {
                   ...currentBatches[existingBatchIndex],
-                  quantity: currentBatches[existingBatchIndex].quantity + 1,
+                  quantity: currentBatches[existingBatchIndex].quantity + scanFactor,
                 };
               } else {
                 currentBatches.push({
@@ -381,7 +387,7 @@ export function usePOS() {
                   batchNumber: batch.batchNumber,
                   batchBarcode: batch.batchBarcode,
                   expiryDate: batch.expiryDate,
-                  quantity: 1,
+                  quantity: scanFactor,
                 });
               }
 
@@ -425,19 +431,19 @@ export function usePOS() {
 
             if (matchingStock) {
               const newLine = createCartLine(matchingStock, 1);
+              // Scan လုပ်သော unit ဖြင့် line ဖန်တီး (ပုံး barcode → ပုံး line)
+              if (batch.scannedUnit) newLine.selectedUnit = batch.scannedUnit;
               newLine.scannedBatches = [
                 {
                   batchStockId: batch._id,
                   batchNumber: batch.batchNumber,
                   batchBarcode: batch.batchBarcode,
                   expiryDate: batch.expiryDate,
-                  quantity: 1,
+                  quantity: scanFactor,
                 },
               ];
               setCart((prev) => {
-                const existingIdx = prev.findIndex(
-                  (item) => getCartLineStockId(item.stockItem) === inventoryIdStr
-                );
+                const existingIdx = prev.findIndex(isSameLine);
                 if (existingIdx !== -1) {
                   return prev.map((item, idx) =>
                     idx === existingIdx ? { ...item, qty: item.qty + 1 } : item
@@ -454,6 +460,12 @@ export function usePOS() {
           }
         }
       } catch (batchErr: any) {
+        // 400 = batch တွေ့သော်လည်း unit barcode မမှန် (ဥပမာ conversion ပြောင်းသွား) — product code ဖြင့် ဆက်မရှာ
+        if (batchErr.response?.status === 400) {
+          toast.error(batchErr.response?.data?.message || "Invalid batch barcode");
+          setSearch("");
+          return;
+        }
         // If 404, not a batch barcode; fall through to product code scan
         if (batchErr.response?.status !== 404) {
           console.warn("Batch scan error:", batchErr);

@@ -307,6 +307,13 @@ export const GRNDetailModal: React.FC<GRNDetailModalProps> = ({
                                     item.inventoryId?.sellingPrice ||
                                     item.unitPrice,
                                   quantity: item.goodQuantity,
+                                  baseUnit: (item.inventoryId as any)?.unitOfMeasure,
+                                  uomConversions: (item.inventoryId as any)?.uomConversions,
+                                  // PO တွင် မှာသော unit (ဥပမာ ဖာ) ကို sticker default အဖြစ်
+                                  defaultUnit: (grn as any).purchasingId?.products?.find(
+                                    (p: any) =>
+                                      String(p._id) === String((item as any).poProductId),
+                                  )?.unit,
                                 })
                               }
                               className="rounded-lg p-2 text-indigo-600 transition-colors hover:bg-indigo-50"

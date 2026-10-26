@@ -4,6 +4,7 @@ import type { EcommerceOrder } from "./fetchEcommerceOrders";
 export interface EcommerceAddProductItem {
   inventoryId: string;
   quantity: number;
+  unit?: string;
   unitPrice?: number;
 }
 

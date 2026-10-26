@@ -13,7 +13,7 @@ import {
 import { ProductDetail } from "../../services/Inventory/fetchProductById";
 import { useLanguage } from "../../context/LanguageContext";
 import { fetchBatchesByProduct, BatchItem } from "../../services/Batch/fetchBatchesByProduct";
-import { BatchBarcodeModal } from "./BatchBarcodeModal";
+import { BatchBarcodeStickerModal } from "../Common/BatchBarcodeStickerModal";
 
 interface ProductDetailModalProps {
   isOpen: boolean;
@@ -620,9 +620,9 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
           )}
         </div>
 
-        {/* Batch Barcode View Modal */}
+        {/* Batch Barcode Sticker — ဖာ/ပုံး ဖောက်ပြီး unit အလိုက် sticker ထပ်ထုတ်ရန် */}
         {selectedBatchForModal && product && (
-          <BatchBarcodeModal
+          <BatchBarcodeStickerModal
             isOpen={!!selectedBatchForModal}
             onClose={() => setSelectedBatchForModal(null)}
             batchData={{
@@ -631,8 +631,10 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               batchNumber: selectedBatchForModal.batchNumber,
               batchBarcode: selectedBatchForModal.batchBarcode,
               expiryDate: selectedBatchForModal.expiryDate,
+              sellingPrice: product.sellingPrice,
               quantity: selectedBatchForModal.totalQuantity,
-              unitOfMeasure: product.unitOfMeasure,
+              baseUnit: product.unitOfMeasure,
+              uomConversions: product.uomConversions,
             }}
           />
         )}

@@ -4,6 +4,7 @@ import {
   Barcode,
   CheckCircle2,
   AlertCircle,
+  AlertTriangle,
   Package,
   Calendar,
   Layers,
@@ -11,6 +12,7 @@ import {
   Loader2,
   Printer,
   Sparkles,
+  Save,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -18,6 +20,7 @@ import { Order } from "../../services/Order/fetchOrders";
 import { scanBatchBarcode } from "../../services/Batch/scanBatchBarcode";
 import {
   fulfillOrder,
+  savePartialFulfillmentOrder,
   FulfillOrderPayload,
 } from "../../services/Fulfillment/fulfillOrder";
 import { getSavedPrintPaperSize } from "../../utils/printPaperSize";
@@ -39,6 +42,8 @@ interface ProductFulfillmentState {
   SKU: string;
   unit?: string;
   price: number;
+  // price သည် unit တစ်ခု၏စျေး၊ scan qty သည် base unit ဖြစ်၍ factor ဖြင့် ပြန်တွက်ရန်
+  factor: number;
   requiredQty: number;
   scannedBatches: ScannedBatchEntry[];
 }
@@ -61,6 +66,8 @@ export const OrderFulfillmentModal: React.FC<OrderFulfillmentModalProps> = ({
   const [barcodeInput, setBarcodeInput] = useState("");
   const [isScanning, setIsScanning] = useState(false);
   const [isFulfilling, setIsFulfilling] = useState(false);
+  const [isSavingPartial, setIsSavingPartial] = useState(false);
+  const [showShortShipConfirmModal, setShowShortShipConfirmModal] = useState(false);
   const [productStates, setProductStates] = useState<ProductFulfillmentState[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -91,12 +98,35 @@ export const OrderFulfillmentModal: React.FC<OrderFulfillmentModalProps> = ({
     }
   };
 
+  const focusScannerInput = () => {
+    setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+        inputRef.current.select();
+      }
+    }, 50);
+  };
+
+  // Re-focus scanner input whenever scanning completes or modal opens
+  useEffect(() => {
+    if (!isScanning && show) {
+      focusScannerInput();
+    }
+  }, [isScanning, show]);
+
   // Initialize product states from order
   useEffect(() => {
     if (order && show) {
       const initial: ProductFulfillmentState[] = (order.ordersProducts || []).map((op) => {
         const inv = op.inventoryId;
         const requiredQty = op.baseQuantity || op.quantity;
+        const existingBatches: ScannedBatchEntry[] = (op.batches || []).map((b: any) => ({
+          batchStockId: b.batchStockId?._id || b.batchStockId,
+          batchNumber: b.batchNumber,
+          batchBarcode: b.batchBarcode || "",
+          expiryDate: b.expiryDate,
+          quantity: b.quantity || 1,
+        }));
         return {
           inventoryId: inv._id || (inv as any).id,
           productName: inv.productName || "Unknown Product",
@@ -104,15 +134,14 @@ export const OrderFulfillmentModal: React.FC<OrderFulfillmentModalProps> = ({
           SKU: inv.SKU || "",
           unit: op.unit || "",
           price: op.unitPrice || 0,
+          factor: op.factor || 1,
           requiredQty,
-          scannedBatches: [],
+          scannedBatches: existingBatches,
         };
       });
       setProductStates(initial);
       setBarcodeInput("");
-      setTimeout(() => {
-        inputRef.current?.focus();
-      }, 150);
+      focusScannerInput();
     }
   }, [order, show]);
 
@@ -123,6 +152,32 @@ export const OrderFulfillmentModal: React.FC<OrderFulfillmentModalProps> = ({
   const totalScanned = productStates.reduce(
     (acc, p) => acc + p.scannedBatches.reduce((bAcc, b) => bAcc + b.quantity, 0),
     0
+  );
+
+  const packedProducts = productStates
+    .map((p) => {
+      const scanned = p.scannedBatches.reduce((sum, b) => sum + b.quantity, 0);
+      return { ...p, scannedQty: scanned };
+    })
+    .filter((p) => p.scannedQty > 0);
+
+  const missingProducts = productStates
+    .map((p) => {
+      const scanned = p.scannedBatches.reduce((sum, b) => sum + b.quantity, 0);
+      const missing = p.requiredQty - scanned;
+      return { ...p, missingQty: missing, scannedQty: scanned };
+    })
+    .filter((p) => p.missingQty > 0);
+
+  // Backend (rescaleLineToBaseQty) နှင့် တူညီ — scan qty ကို factor ဖြင့် ပြတ်ပြတ်စား၍ရလျှင် unit အလိုက်၊ မရလျှင် base unit စျေးဖြင့်
+  // (scanned × price / factor နှင့် ရလဒ်တူ၍ တစ်ကြောင်းတည်းဖြင့် တွက်)
+  const estimatedNewSubtotal = packedProducts.reduce(
+    (sum, p) => sum + (p.scannedQty * p.price) / (p.factor || 1),
+    0
+  );
+  const estimatedNewFinal = Math.max(
+    0,
+    estimatedNewSubtotal + (order?.tax || 0) - (order?.discount || 0)
   );
   const isAllComplete =
     totalRequired > 0 &&
@@ -188,6 +243,20 @@ export const OrderFulfillmentModal: React.FC<OrderFulfillmentModalProps> = ({
         return;
       }
 
+      // Unit barcode (ပုံး/ဖာ) ဆိုလျှင် scan တစ်ကြိမ်ဖြင့် base unit အများ ဝင်သည်
+      const scanFactor = scannedBatch.scanFactor || 1;
+      const baseUnitLabel = scannedBatch.baseUnit || "";
+      if (currentScannedQty + scanFactor > targetProd.requiredQty) {
+        playAudioCue(false);
+        toast.warning(
+          `${scannedBatch.scannedUnit || ""} barcode (${scanFactor} ${baseUnitLabel}) သည် ကျန်ရှိသော လိုအပ်ချက် (${
+            targetProd.requiredQty - currentScannedQty
+          } ${baseUnitLabel}) ထက် ကျော်နေပါသည်`
+        );
+        setBarcodeInput("");
+        return;
+      }
+
       // Check if batch is expired and warn
       if (scannedBatch.isExpired) {
         toast.warning(
@@ -208,7 +277,7 @@ export const OrderFulfillmentModal: React.FC<OrderFulfillmentModalProps> = ({
         if (existingBatchIdx > -1) {
           batches[existingBatchIdx] = {
             ...batches[existingBatchIdx],
-            quantity: batches[existingBatchIdx].quantity + 1,
+            quantity: batches[existingBatchIdx].quantity + scanFactor,
           };
         } else {
           batches.push({
@@ -216,7 +285,7 @@ export const OrderFulfillmentModal: React.FC<OrderFulfillmentModalProps> = ({
             batchNumber: scannedBatch.batchNumber,
             batchBarcode: scannedBatch.batchBarcode,
             expiryDate: scannedBatch.expiryDate,
-            quantity: 1,
+            quantity: scanFactor,
           });
         }
 
@@ -229,17 +298,17 @@ export const OrderFulfillmentModal: React.FC<OrderFulfillmentModalProps> = ({
       toast.success(
         t("fulfillment.batchAdded", {
           batch: scannedBatch.batchNumber,
-          scanned: currentScannedQty + 1,
+          scanned: currentScannedQty + scanFactor,
           required: targetProd.requiredQty,
         })
       );
-      setBarcodeInput("");
     } catch (err: any) {
       playAudioCue(false);
       toast.error(err?.message || t("fulfillment.scanError"));
     } finally {
       setIsScanning(false);
-      inputRef.current?.focus();
+      setBarcodeInput("");
+      focusScannerInput();
     }
   };
 
@@ -263,10 +332,10 @@ export const OrderFulfillmentModal: React.FC<OrderFulfillmentModalProps> = ({
     inputRef.current?.focus();
   };
 
-  const handleFulfillOrder = async () => {
-    if (!isAllComplete || isFulfilling) return;
+  const handleSavePartialOrder = async () => {
+    if (isSavingPartial || isFulfilling || totalScanned === 0) return;
 
-    setIsFulfilling(true);
+    setIsSavingPartial(true);
     try {
       const productPayload = productStates.map((p) => ({
         inventoryId: p.inventoryId,
@@ -284,6 +353,55 @@ export const OrderFulfillmentModal: React.FC<OrderFulfillmentModalProps> = ({
         items: productPayload,
       };
 
+      const res = await savePartialFulfillmentOrder(order._id, payload);
+
+      if (!res.success) {
+        toast.error(res.message || t("fulfillment.savePartialFailed") || "Failed to save partial progress");
+        return;
+      }
+
+      toast.success(
+        t("fulfillment.savePartialSuccess") ||
+          `Order ${order.orderNumber} partial progress saved (${totalScanned}/${totalRequired} packed)`
+      );
+
+      onSuccess();
+      onClose();
+    } catch (err: any) {
+      toast.error(err?.message || t("fulfillment.savePartialFailed") || "Failed to save partial progress");
+    } finally {
+      setIsSavingPartial(false);
+    }
+  };
+
+  const handleFulfillOrder = async (autoAdjust = false) => {
+    if (isFulfilling || totalScanned === 0) return;
+
+    // If incomplete and user hasn't explicitly confirmed autoAdjust, show confirmation dialog
+    if (!isAllComplete && !autoAdjust) {
+      setShowShortShipConfirmModal(true);
+      return;
+    }
+
+    setIsFulfilling(true);
+    try {
+      const productPayload = productStates.map((p) => ({
+        inventoryId: p.inventoryId,
+        batches: p.scannedBatches.map((b) => ({
+          batchStockId: b.batchStockId,
+          batchNumber: b.batchNumber,
+          batchBarcode: b.batchBarcode,
+          expiryDate: b.expiryDate,
+          quantity: b.quantity,
+        })),
+      }));
+
+      const payload: FulfillOrderPayload = {
+        fulfilledProducts: productPayload,
+        items: productPayload,
+        autoAdjust,
+      };
+
       const res = await fulfillOrder(order._id, payload);
 
       if (!res.success) {
@@ -292,25 +410,32 @@ export const OrderFulfillmentModal: React.FC<OrderFulfillmentModalProps> = ({
       }
 
       toast.dismiss();
+      toast.success(
+        autoAdjust
+          ? t("fulfillment.shortShipSuccess") || "Order adjusted and completed successfully!"
+          : t("fulfillment.fulfillmentSuccess")
+      );
 
-      // Prepare voucher print data
+      // Prepare voucher print data with the updated/fulfilled items and amounts
       const creditPersonObj =
         typeof order.creditPersonId === "object" ? order.creditPersonId : null;
 
+      const finalOrder = res.data || order;
+
       const receiptData: VoucherReceiptData = {
-        date: order.orderDate || new Date().toISOString(),
+        date: finalOrder.orderDate || new Date().toISOString(),
         creditPersonName: creditPersonObj?.name,
         creditPersonAddress: creditPersonObj?.address,
         creditPersonTownship: creditPersonObj?.township,
-        invoiceNumber: order.orderNumber,
+        invoiceNumber: finalOrder.orderNumber,
         storefrontName:
-          typeof order.storefrontId === "object"
-            ? order.storefrontId?.storefrontName || "HONGCHI Myanmar"
+          typeof finalOrder.storefrontId === "object"
+            ? (finalOrder.storefrontId as any)?.storefrontName || (finalOrder.storefrontId as any)?.locationName || "HONGCHI Myanmar"
             : "HONGCHI Myanmar",
-        items: productStates.map((p) => ({
+        items: (autoAdjust ? packedProducts : productStates).map((p) => ({
           name: p.productName,
           code: p.productCode,
-          qty: p.requiredQty,
+          qty: autoAdjust ? (p as any).scannedQty : p.requiredQty,
           unit: p.unit,
           price: p.price,
           batches: p.scannedBatches.map((b) => ({
@@ -320,27 +445,28 @@ export const OrderFulfillmentModal: React.FC<OrderFulfillmentModalProps> = ({
             quantity: b.quantity,
           })),
         })),
-        subtotal: order.subTotal || 0,
+        subtotal: finalOrder.subTotal ?? (autoAdjust ? estimatedNewSubtotal : (order.subTotal || 0)),
         discountPercent:
-          order.subTotal > 0
+          (order.subTotal || 0) > 0
             ? Math.round(((order.discount || 0) / order.subTotal) * 100)
             : 0,
-        total: order.finalAmount || 0,
-        paidAmount: order.paidAmount || 0,
-        change: order.extraChange || 0,
-        paymentMethod: order.paymentMethod || "CASH",
-        note: order.note || undefined,
+        total: finalOrder.finalAmount ?? (autoAdjust ? estimatedNewFinal : (order.finalAmount || 0)),
+        paidAmount: finalOrder.paidAmount ?? (autoAdjust ? estimatedNewFinal : (order.paidAmount || 0)),
+        change: finalOrder.extraChange || 0,
+        paymentMethod: finalOrder.paymentMethod || "CASH",
+        note: finalOrder.note || undefined,
       };
 
-      const receiptKey = `receipt_${order.orderNumber}`;
+      const receiptKey = `receipt_${finalOrder.orderNumber}`;
       localStorage.setItem(receiptKey, JSON.stringify(receiptData));
 
+      setShowShortShipConfirmModal(false);
       onSuccess();
       onClose();
 
       // Open Voucher Print Preview
       navigate(
-        `/print-receipt/${order.orderNumber}?size=${getSavedPrintPaperSize()}&autoprint=1`
+        `/print-receipt/${finalOrder.orderNumber}?size=${getSavedPrintPaperSize()}&autoprint=1`
       );
     } catch (err: any) {
       toast.error(err?.message || t("fulfillment.fulfillmentFailed"));
@@ -428,10 +554,15 @@ export const OrderFulfillmentModal: React.FC<OrderFulfillmentModalProps> = ({
               type="text"
               value={barcodeInput}
               onChange={(e) => setBarcodeInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleScanSubmit();
+                }
+              }}
               placeholder={t("fulfillment.scanInputPlaceholder")}
               className="flex-1 bg-transparent px-2 py-1.5 text-sm font-medium outline-none text-slate-800 placeholder:text-slate-400 font-mono"
               autoFocus
-              disabled={isScanning}
             />
             <button
               type="submit"
@@ -530,6 +661,16 @@ export const OrderFulfillmentModal: React.FC<OrderFulfillmentModalProps> = ({
                       {isProdComplete && <CheckCircle2 className="w-3.5 h-3.5" />}
                       {scannedCount} / {prod.requiredQty} {t("fulfillment.itemsUnit")}
                     </span>
+                    {/* scan qty သည် base unit ဖြစ်၍ order line unit ဖြင့်ပါ ပြ (ဥပမာ 20 = ပုံး 2) */}
+                    {prod.factor > 1 && prod.unit && (
+                      <p className="text-[11px] text-slate-500 mt-1">
+                        = {prod.unit} {Math.floor(scannedCount / prod.factor)} /{" "}
+                        {Math.floor(prod.requiredQty / prod.factor)}
+                        {scannedCount % prod.factor > 0
+                          ? ` + ${scannedCount % prod.factor}`
+                          : ""}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -585,12 +726,7 @@ export const OrderFulfillmentModal: React.FC<OrderFulfillmentModalProps> = ({
         {/* Footer */}
         <div className="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-xs text-slate-600">
-            {!isAllComplete ? (
-              <span className="flex items-center gap-1 text-amber-600 font-medium">
-                <AlertCircle className="w-4 h-4" />
-                {t("fulfillment.incompleteWarning")}
-              </span>
-            ) : (
+            {isAllComplete && (
               <span className="flex items-center gap-1 text-emerald-600 font-medium">
                 <CheckCircle2 className="w-4 h-4" />
                 {t("fulfillment.allCompleteCheck")}
@@ -598,18 +734,45 @@ export const OrderFulfillmentModal: React.FC<OrderFulfillmentModalProps> = ({
             )}
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <button
               onClick={onClose}
-              disabled={isFulfilling}
+              disabled={isFulfilling || isSavingPartial}
               className="px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-700 hover:bg-slate-100 transition-colors font-medium disabled:opacity-50"
             >
               {t("fulfillment.close")}
             </button>
             <button
-              onClick={handleFulfillOrder}
-              disabled={!isAllComplete || isFulfilling}
-              className="px-5 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-all shadow-md bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={handleSavePartialOrder}
+              disabled={isFulfilling || isSavingPartial || totalScanned === 0 || isAllComplete}
+              className="px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-1.5 transition-all shadow-sm bg-amber-600 hover:bg-amber-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+              title={isAllComplete ? "All items packed - complete fulfillment" : "Save current scanned batches"}
+            >
+              {isSavingPartial ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  {t("fulfillment.saving") || "သိမ်းဆည်းနေသည်..."}
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4" />
+                  {t("fulfillment.saveProgress") || "Save Progress"}
+                </>
+              )}
+            </button>
+            <button
+              onClick={() => handleFulfillOrder(false)}
+              disabled={totalScanned === 0 || isFulfilling || isSavingPartial}
+              className={`px-5 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-all shadow-md text-white disabled:opacity-50 disabled:cursor-not-allowed ${
+                isAllComplete
+                  ? "bg-emerald-600 hover:bg-emerald-700"
+                  : "bg-blue-600 hover:bg-blue-700"
+              }`}
+              title={
+                isAllComplete
+                  ? "Complete & Print Voucher"
+                  : "Complete with available scanned items (Auto-adjust order)"
+              }
             >
               {isFulfilling ? (
                 <>
@@ -619,12 +782,87 @@ export const OrderFulfillmentModal: React.FC<OrderFulfillmentModalProps> = ({
               ) : (
                 <>
                   <Printer className="w-4 h-4" />
-                  {t("fulfillment.completeAndPrint")}
+                  {isAllComplete
+                    ? t("fulfillment.completeAndPrint")
+                    : (t("fulfillment.confirmShortShipBtn") || "ရရှိသလောက်ဖြင့် အပြီးသတ်မည်")}
                 </>
               )}
             </button>
           </div>
         </div>
+        {/* Short-Ship / Auto-Adjust Confirmation Dialog */}
+        {showShortShipConfirmModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4 border border-slate-200">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
+                  <AlertTriangle className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">
+                    {t("fulfillment.confirmShortShipTitle") || "ရရှိထားသော ပစ္စည်းများဖြင့်သာ အပြီးသတ်မည်လား?"}
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Order #{order.orderNumber}
+                  </p>
+                </div>
+              </div>
+
+              <p className="text-xs text-slate-600 leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-200">
+                {t("fulfillment.confirmShortShipDesc") ||
+                  "အချို့ပစ္စည်းများ မစုံသေးပါ။ ယခုအတိုင်း အပြီးသတ်ပါက မရရှိသော ပစ္စည်းများကို Order မှ အလိုအလျောက် ပယ်ဖျက်ပြီး ထည့်ပေးလိုက်သော ပစ္စည်းများအတိုင်း စုစုပေါင်းငွေပမာဏကို ပြန်လည်တွက်ချက်ပေးပါမည်။"}
+              </p>
+
+              {/* Adjust Summary */}
+              <div className="space-y-2 text-xs">
+                <div className="flex justify-between items-center py-1.5 px-3 rounded-lg bg-emerald-50 text-emerald-800 font-medium">
+                  <span>{t("fulfillment.packedItems") || "ထုတ်ပိုးပြီး ပစ္စည်းများ"}:</span>
+                  <span className="font-bold">{packedProducts.length} မျိုး ({totalScanned} ခု)</span>
+                </div>
+                <div className="flex justify-between items-center py-1.5 px-3 rounded-lg bg-rose-50 text-rose-800 font-medium">
+                  <span>{t("fulfillment.missingItems") || "မရရှိနိုင်သော ပစ္စည်းများ"}:</span>
+                  <span className="font-bold">{missingProducts.length} မျိုး ({totalRequired - totalScanned} ခု)</span>
+                </div>
+                <div className="flex justify-between items-center py-1.5 px-3 rounded-lg bg-slate-100 text-slate-800 font-semibold border border-slate-200">
+                  <span>{t("fulfillment.newTotal") || "ပြင်ဆင်ပြီး ကျသင့်ငွေ"}:</span>
+                  <span className="text-sm font-bold text-primary font-mono">
+                    {estimatedNewFinal.toLocaleString()} MMK
+                  </span>
+                </div>
+              </div>
+
+              {/* Modal Actions */}
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  disabled={isFulfilling}
+                  onClick={() => setShowShortShipConfirmModal(false)}
+                  className="px-4 py-2 border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-colors"
+                >
+                  {t("fulfillment.close") || "မလုပ်တော့ပါ"}
+                </button>
+                <button
+                  type="button"
+                  disabled={isFulfilling}
+                  onClick={() => handleFulfillOrder(true)}
+                  className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"
+                >
+                  {isFulfilling ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      {t("fulfillment.completing") || "လုပ်ဆောင်နေသည်..."}
+                    </>
+                  ) : (
+                    <>
+                      <Printer className="w-3.5 h-3.5" />
+                      {t("fulfillment.confirmShortShipBtn") || "အတည်ပြုပြီး အပြီးသတ်မည်"}
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

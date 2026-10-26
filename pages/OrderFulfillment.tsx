@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   AlertCircle,
   Filter,
+  PlayCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -30,6 +31,7 @@ export const OrderFulfillment: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selectedStorefrontId, setSelectedStorefrontId] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "partially_fulfilled">("all");
   const [storefronts, setStorefronts] = useState<StorefrontProfile[]>([]);
   const [selectedOrderForFulfill, setSelectedOrderForFulfill] = useState<Order | null>(null);
 
@@ -74,7 +76,9 @@ export const OrderFulfillment: React.FC = () => {
     return () => clearInterval(timer);
   }, [loadData]);
 
-  const totalPendingOrders = orders.length;
+  const pendingOrdersCount = orders.filter((o) => o.orderStatus === "pending").length;
+  const partialOrdersCount = orders.filter((o) => o.orderStatus === "partially_fulfilled").length;
+
   const totalItemsToPack = orders.reduce((sum, ord) => {
     return (
       sum +
@@ -84,6 +88,11 @@ export const OrderFulfillment: React.FC = () => {
       )
     );
   }, 0);
+
+  const filteredOrders = orders.filter((o) => {
+    if (statusFilter === "all") return true;
+    return o.orderStatus === statusFilter;
+  });
 
   const formatDateTime = (dateStr?: string) => {
     if (!dateStr) return "-";
@@ -130,7 +139,7 @@ export const OrderFulfillment: React.FC = () => {
       {/* Metrics Row */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold text-lg">
+          <div className="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center font-bold text-lg">
             <Clock className="w-6 h-6" />
           </div>
           <div>
@@ -138,7 +147,7 @@ export const OrderFulfillment: React.FC = () => {
               {t("fulfillment.pendingOrdersCount")}
             </span>
             <h3 className="text-2xl font-extrabold text-slate-800">
-              {totalPendingOrders}{" "}
+              {pendingOrdersCount}{" "}
               <span className="text-sm font-normal text-slate-500">
                 {t("fulfillment.ordersUnit")}
               </span>
@@ -147,17 +156,17 @@ export const OrderFulfillment: React.FC = () => {
         </div>
 
         <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center font-bold text-lg">
+          <div className="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold text-lg">
             <Layers className="w-6 h-6" />
           </div>
           <div>
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              {t("fulfillment.totalItemsToPack")}
+              {t("fulfillment.partiallyFulfilled")}
             </span>
             <h3 className="text-2xl font-extrabold text-slate-800">
-              {totalItemsToPack}{" "}
+              {partialOrdersCount}{" "}
               <span className="text-sm font-normal text-slate-500">
-                {t("fulfillment.itemsUnit")}
+                {t("fulfillment.ordersUnit")}
               </span>
             </h3>
           </div>
@@ -169,10 +178,13 @@ export const OrderFulfillment: React.FC = () => {
           </div>
           <div>
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              {t("fulfillment.scanStatus")}
+              {t("fulfillment.totalItemsToPack")}
             </span>
-            <h3 className="text-sm font-semibold text-emerald-700">
-              {t("fulfillment.scanStatusDesc")}
+            <h3 className="text-2xl font-extrabold text-slate-800">
+              {totalItemsToPack}{" "}
+              <span className="text-sm font-normal text-slate-500">
+                {t("fulfillment.itemsUnit")}
+              </span>
             </h3>
           </div>
         </div>
@@ -208,6 +220,42 @@ export const OrderFulfillment: React.FC = () => {
         </div>
       </div>
 
+      {/* Status Filter Tabs */}
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => setStatusFilter("all")}
+          className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+            statusFilter === "all"
+              ? "bg-slate-900 text-white shadow-sm"
+              : "bg-white text-slate-600 hover:bg-slate-50 border border-slate-200"
+          }`}
+        >
+          {t("fulfillment.all")} ({orders.length})
+        </button>
+        <button
+          onClick={() => setStatusFilter("pending")}
+          className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 ${
+            statusFilter === "pending"
+              ? "bg-blue-600 text-white shadow-sm"
+              : "bg-white text-slate-600 hover:bg-slate-50 border border-slate-200"
+          }`}
+        >
+          <span className="w-2 h-2 rounded-full bg-blue-400" />
+          {t("fulfillment.pending")} ({pendingOrdersCount})
+        </button>
+        <button
+          onClick={() => setStatusFilter("partially_fulfilled")}
+          className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 ${
+            statusFilter === "partially_fulfilled"
+              ? "bg-amber-600 text-white shadow-sm"
+              : "bg-white text-slate-600 hover:bg-slate-50 border border-slate-200"
+          }`}
+        >
+          <span className="w-2 h-2 rounded-full bg-amber-400" />
+          {t("fulfillment.partiallyFulfilled")} ({partialOrdersCount})
+        </button>
+      </div>
+
       {/* Orders List Table */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         {loading ? (
@@ -215,7 +263,7 @@ export const OrderFulfillment: React.FC = () => {
             <RefreshCw className="w-8 h-8 animate-spin mx-auto text-primary" />
             <p className="text-sm">{t("fulfillment.loadingPending")}</p>
           </div>
-        ) : orders.length === 0 ? (
+        ) : filteredOrders.length === 0 ? (
           <div className="p-12 text-center space-y-3">
             <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto text-slate-400">
               <CheckCircle2 className="w-8 h-8 text-emerald-500" />
@@ -233,23 +281,38 @@ export const OrderFulfillment: React.FC = () => {
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50/75 text-xs font-semibold text-slate-600 uppercase tracking-wider">
                   <th className="py-3.5 px-4">{t("fulfillment.colOrderNo")}</th>
+                  <th className="py-3.5 px-4">{t("fulfillment.colStatus")}</th>
                   <th className="py-3.5 px-4">{t("fulfillment.colDateTime")}</th>
                   <th className="py-3.5 px-4">{t("fulfillment.colStorefront")}</th>
                   <th className="py-3.5 px-4">{t("fulfillment.colCustomer")}</th>
                   <th className="py-3.5 px-4">{t("fulfillment.colItems")}</th>
                   <th className="py-3.5 px-4 text-right">{t("fulfillment.colTotal")}</th>
-                  <th className="py-3.5 px-4 text-center">{t("fulfillment.colAction")}</th>
+                  <th className="py-3.5 px-4 text-center whitespace-nowrap w-[1%]">{t("fulfillment.colAction")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {orders.map((ord) => {
+                {filteredOrders.map((ord) => {
                   const itemCount = (ord.ordersProducts || []).reduce(
                     (sum, p) => sum + (p.baseQuantity || p.quantity || 0),
                     0
                   );
+                  const scannedCount = (ord.ordersProducts || []).reduce(
+                    (sum, p) =>
+                      sum +
+                      (p.batches || []).reduce(
+                        (bSum: number, b: any) => bSum + (b.quantity || 0),
+                        0
+                      ),
+                    0
+                  );
+                  const progressPercent =
+                    itemCount > 0
+                      ? Math.min(100, Math.round((scannedCount / itemCount) * 100))
+                      : 0;
                   const speciesCount = ord.ordersProducts?.length || 0;
                   const creditPersonObj =
                     typeof ord.creditPersonId === "object" ? ord.creditPersonId : null;
+                  const isPartial = ord.orderStatus === "partially_fulfilled";
 
                   return (
                     <tr
@@ -258,6 +321,19 @@ export const OrderFulfillment: React.FC = () => {
                     >
                       <td className="py-4 px-4 font-mono font-bold text-primary">
                         {ord.orderNumber}
+                      </td>
+                      <td className="py-4 px-4 whitespace-nowrap">
+                        {isPartial ? (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                            {t("fulfillment.partiallyFulfilled")}
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                            <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                            {t("fulfillment.pending")}
+                          </span>
+                        )}
                       </td>
                       <td className="py-4 px-4 text-xs text-slate-600 whitespace-nowrap">
                         {formatDateTime(ord.orderDate || (ord as any).createdAt)}
@@ -281,13 +357,27 @@ export const OrderFulfillment: React.FC = () => {
                         </div>
                       </td>
                       <td className="py-4 px-4">
-                        <div className="text-xs space-y-0.5">
+                        <div className="text-xs space-y-1">
                           <span className="inline-block font-semibold text-slate-800">
                             {t("fulfillment.itemsSpeciesCount", {
                               count: itemCount,
                               species: speciesCount,
                             })}
                           </span>
+                          {isPartial && (
+                            <div className="space-y-1 max-w-[160px]">
+                              <div className="flex items-center justify-between text-[10px] text-amber-700 font-semibold">
+                                <span>{scannedCount} / {itemCount} packed</span>
+                                <span>{progressPercent}%</span>
+                              </div>
+                              <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                <div
+                                  className="h-full bg-amber-500 rounded-full transition-all duration-300"
+                                  style={{ width: `${progressPercent}%` }}
+                                />
+                              </div>
+                            </div>
+                          )}
                           <div className="text-[11px] text-slate-500 truncate max-w-xs">
                             {ord.ordersProducts
                               ?.map((p) => `${p.inventoryId?.productName} x ${p.baseQuantity || p.quantity}`)
@@ -298,13 +388,27 @@ export const OrderFulfillment: React.FC = () => {
                       <td className="py-4 px-4 text-right font-bold text-slate-900 whitespace-nowrap">
                         {ord.finalAmount?.toLocaleString()} MMK
                       </td>
-                      <td className="py-4 px-4 text-center">
+                      <td className="py-4 px-4 text-center whitespace-nowrap w-[1%]">
                         <button
                           onClick={() => setSelectedOrderForFulfill(ord)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary hover:bg-primary/90 text-white rounded-lg text-xs font-semibold shadow-sm transition-all"
+                          title={isPartial ? t("fulfillment.continuePacking") : t("fulfillment.btnFulfillPack")}
+                          className={`inline-flex items-center justify-center gap-1.5 p-2 sm:px-3 sm:py-2 sm:w-[160px] text-white rounded-xl text-xs font-semibold shadow-sm transition-all whitespace-nowrap ${
+                            isPartial
+                              ? "bg-amber-600 hover:bg-amber-700"
+                              : "bg-emerald-600 hover:bg-emerald-700"
+                          }`}
                         >
-                          <Barcode className="w-3.5 h-3.5" />
-                          {t("fulfillment.btnFulfillPack")}
+                          {isPartial ? (
+                            <>
+                              <PlayCircle className="w-4 h-4 shrink-0" />
+                              <span className="hidden sm:inline">{t("fulfillment.continuePacking")}</span>
+                            </>
+                          ) : (
+                            <>
+                              <Barcode className="w-4 h-4 shrink-0" />
+                              <span className="hidden sm:inline">{t("fulfillment.btnFulfillPack")}</span>
+                            </>
+                          )}
                         </button>
                       </td>
                     </tr>

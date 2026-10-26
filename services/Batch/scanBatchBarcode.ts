@@ -10,7 +10,12 @@ export interface ScanBatchResponse {
       productCode?: string;
       SKU?: string;
       sellingPrice?: number;
+      unitOfMeasure?: string;
     } | string;
+    // Unit barcode (B000001-10) ဖြင့် scan လျှင် scan တစ်ကြိမ် = base unit scanFactor ခု
+    scannedUnit?: string;
+    scanFactor?: number;
+    baseUnit?: string | null;
   };
   message?: string;
 }

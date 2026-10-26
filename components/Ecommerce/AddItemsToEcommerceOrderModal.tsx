@@ -6,12 +6,17 @@ import type { EcommerceOrder } from "../../services/Ecommerce/fetchEcommerceOrde
 import { addProductsToEcommerceOrder } from "../../services/Ecommerce/addProductsToEcommerceOrder";
 import axios from "../../services/axios";
 import { ConfirmModal } from "../Common/ConfirmModal";
+import type { UomConversion } from "../../types/uom";
+import { getConversionFactor, getUnitOptions, getUnitPrice } from "../../utils/uom";
 
 interface InventoryOption {
   _id: string;
   productName: string;
   productCode: string;
   sellingPrice: number;
+  baseUnit: string;
+  uomConversions: UomConversion[];
+  stockBaseQty: number;
 }
 
 interface SelectedItem {
@@ -19,8 +24,10 @@ interface SelectedItem {
   productName: string;
   productCode: string;
   quantity: number;
+  unit: string;
+  // Order ထဲ ရှိပြီးသား product ဖြစ်၍ unit ကို ထို line ၏ unit ဖြင့် lock ထားခြင်း
+  unitLocked: boolean;
   unitPriceInput: string;
-  defaultPrice: number;
 }
 
 interface AddItemsToEcommerceOrderModalProps {
@@ -42,7 +49,7 @@ export const AddItemsToEcommerceOrderModal: React.FC<
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingPayload, setPendingPayload] = useState<
     | {
-        products: Array<{ inventoryId: string; quantity: number; unitPrice?: number }>;
+        products: Array<{ inventoryId: string; quantity: number; unit: string; unitPrice?: number }>;
       }
     | null
   >(null);
@@ -59,13 +66,17 @@ export const AddItemsToEcommerceOrderModal: React.FC<
   const loadProducts = async () => {
     setLoadingProducts(true);
     try {
-      const response = await axios.get("inventory");
+      // Ecommerce storefront ရှိ product များသာ (stock နှင့် UOM ပါ)
+      const response = await axios.get("ecommerce/products");
       const rows: any[] = response?.data?.data || [];
       const mapped: InventoryOption[] = rows.map((row) => ({
-        _id: row._id || row.id,
-        productName: row.productName || "",
-        productCode: row.productCode || "",
-        sellingPrice: Number(row.sellingPrice || 0),
+        _id: row.product?._id,
+        productName: row.product?.productName || "",
+        productCode: row.product?.productCode || "",
+        sellingPrice: Number(row.product?.sellingPrice || 0),
+        baseUnit: row.product?.unitOfMeasure || "",
+        uomConversions: row.product?.uomConversions || [],
+        stockBaseQty: Number(row.quantity || 0),
       }));
       setProducts(mapped.filter((p) => !!p._id));
     } catch (error) {
@@ -87,6 +98,27 @@ export const AddItemsToEcommerceOrderModal: React.FC<
     );
   }, [products, search]);
 
+  const productMap = useMemo(
+    () => new Map(products.map((p) => [p._id, p])),
+    [products],
+  );
+
+  // Order ထဲ ရှိပြီးသား line ၏ unit (inventoryId → unit)
+  const existingLineUnits = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const p of order?.products || []) {
+      const inv: any = p.inventoryId;
+      const id = typeof inv === "string" ? inv : inv?._id;
+      if (id) map.set(id, p.unit);
+    }
+    return map;
+  }, [order]);
+
+  const getDefaultPrice = (product: InventoryOption | undefined, unit: string) =>
+    product
+      ? getUnitPrice(product.sellingPrice, product.baseUnit, unit, product.uomConversions)
+      : 0;
+
   const addItem = (product: InventoryOption) => {
     const existing = selectedItems.find((s) => s.inventoryId === product._id);
     if (existing) {
@@ -98,6 +130,9 @@ export const AddItemsToEcommerceOrderModal: React.FC<
       return;
     }
 
+    // Line ဟောင်းတွင် unit မပါလျှင် base unit ဖြင့် lock
+    const hasExistingLine = existingLineUnits.has(product._id);
+    const lockedUnit = existingLineUnits.get(product._id) || product.baseUnit;
     setSelectedItems((prev) => [
       ...prev,
       {
@@ -105,10 +140,21 @@ export const AddItemsToEcommerceOrderModal: React.FC<
         productName: product.productName,
         productCode: product.productCode,
         quantity: 1,
+        unit: hasExistingLine ? lockedUnit : product.baseUnit,
+        unitLocked: hasExistingLine,
         unitPriceInput: "",
-        defaultPrice: product.sellingPrice,
       },
     ]);
+  };
+
+  const updateUnit = (inventoryId: string, unit: string) => {
+    setSelectedItems((prev) =>
+      prev.map((s) =>
+        s.inventoryId === inventoryId && !s.unitLocked
+          ? { ...s, unit, unitPriceInput: "" }
+          : s,
+      ),
+    );
   };
 
   const removeItem = (inventoryId: string) => {
@@ -154,6 +200,7 @@ export const AddItemsToEcommerceOrderModal: React.FC<
       return {
         inventoryId: item.inventoryId,
         quantity: item.quantity,
+        unit: item.unit,
         ...(parsedPrice !== undefined ? { unitPrice: parsedPrice } : {}),
       };
     });
@@ -161,6 +208,7 @@ export const AddItemsToEcommerceOrderModal: React.FC<
     const cleaned = productsPayload.filter(Boolean) as Array<{
       inventoryId: string;
       quantity: number;
+      unit: string;
       unitPrice?: number;
     }>;
     if (cleaned.length !== selectedItems.length) return;
@@ -261,7 +309,10 @@ export const AddItemsToEcommerceOrderModal: React.FC<
                       </p>
                       <p className="text-xs text-slate-500">{product.productCode}</p>
                       <p className="text-sm font-semibold text-primary mt-1">
-                        {product.sellingPrice.toLocaleString()} MMK
+                        {product.sellingPrice.toLocaleString()} MMK / {product.baseUnit}
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        Stock: {product.stockBaseQty.toLocaleString()} {product.baseUnit}
                       </p>
                     </button>
                   ))}
@@ -282,7 +333,14 @@ export const AddItemsToEcommerceOrderModal: React.FC<
               </p>
             ) : (
               <div className="space-y-2">
-                {selectedItems.map((item) => (
+                {selectedItems.map((item) => {
+                  const product = productMap.get(item.inventoryId);
+                  const defaultPrice = getDefaultPrice(product, item.unit);
+                  const factor = product
+                    ? getConversionFactor(product.baseUnit, item.unit, product.uomConversions)
+                    : 1;
+                  const stockInUnit = product ? Math.floor(product.stockBaseQty / factor) : 0;
+                  return (
                   <div
                     key={item.inventoryId}
                     className="bg-slate-50 p-3 rounded-lg border flex flex-col gap-2"
@@ -301,7 +359,27 @@ export const AddItemsToEcommerceOrderModal: React.FC<
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-3 gap-2">
+                      <div>
+                        <label className="block text-[11px] text-slate-500 mb-1">
+                          Unit
+                        </label>
+                        <select
+                          value={item.unit}
+                          disabled={item.unitLocked || !product}
+                          onChange={(e) => updateUnit(item.inventoryId, e.target.value)}
+                          className="w-full border rounded px-2 py-1.5 text-sm bg-white disabled:bg-slate-100"
+                        >
+                          {(product
+                            ? getUnitOptions(product.baseUnit, product.uomConversions)
+                            : [{ value: item.unit, label: item.unit }]
+                          ).map((opt) => (
+                            <option key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                       <div>
                         <label className="block text-[11px] text-slate-500 mb-1">
                           Qty
@@ -326,7 +404,7 @@ export const AddItemsToEcommerceOrderModal: React.FC<
                         <input
                           type="number"
                           min={0}
-                          placeholder={item.defaultPrice.toString()}
+                          placeholder={defaultPrice.toString()}
                           value={item.unitPriceInput}
                           onChange={(e) =>
                             updateUnitPriceInput(item.inventoryId, e.target.value)
@@ -335,8 +413,15 @@ export const AddItemsToEcommerceOrderModal: React.FC<
                         />
                       </div>
                     </div>
+                    <p className="text-[11px] text-slate-500">
+                      {item.unitLocked
+                        ? `Order ထဲတွင် ${item.unit} ဖြင့် မှာထားပြီးဖြစ်၍ ${item.unit} ဖြင့်သာ ထည့်နိုင်သည် · `
+                        : ""}
+                      Stock: {stockInUnit.toLocaleString()} {item.unit}
+                    </p>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

@@ -18,6 +18,7 @@ export interface FulfilledProductPayload {
 export interface FulfillOrderPayload {
   fulfilledProducts: FulfilledProductPayload[];
   items?: FulfilledProductPayload[];
+  autoAdjust?: boolean;
 }
 
 export interface FulfillOrderResponse {
@@ -32,6 +33,17 @@ export const fulfillOrder = async (
 ): Promise<FulfillOrderResponse> => {
   const response = await axios.post<FulfillOrderResponse>(
     `/fulfillment/${orderId}`,
+    payload
+  );
+  return response.data;
+};
+
+export const savePartialFulfillmentOrder = async (
+  orderId: string,
+  payload: FulfillOrderPayload
+): Promise<FulfillOrderResponse> => {
+  const response = await axios.post<FulfillOrderResponse>(
+    `/fulfillment/${orderId}/partial`,
     payload
   );
   return response.data;

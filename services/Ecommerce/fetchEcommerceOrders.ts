@@ -26,12 +26,21 @@ export interface EcommerceOrderProductInventory {
   }>;
 }
 
+export interface EcommerceOrderBatch {
+  batchStockId?: string;
+  batchNumber: string;
+  batchBarcode?: string;
+  expiryDate?: string | Date | null;
+  quantity: number;
+}
+
 export interface EcommerceOrderProduct {
   inventoryId: EcommerceOrderProductInventory;
   quantity: number;
   unit: string;
   unitPrice: number;
   subtotal: number;
+  batches?: EcommerceOrderBatch[];
 }
 
 export interface EcommerceOrderShippingAddress {
@@ -56,6 +65,11 @@ export interface EcommerceOrder {
     _id: string;
     orderNumber: string;
     orderStatus: string;
+    ordersProducts?: Array<{
+      inventoryId: string | { _id: string; productName?: string };
+      quantity: number;
+      batches: EcommerceOrderBatch[];
+    }>;
   } | string | null;
   isSentToFulfillment?: boolean;
   sentToFulfillmentAt?: string | null;

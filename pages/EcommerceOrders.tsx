@@ -1,5 +1,14 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Receipt, RefreshCw, PackageOpen, AlertCircle, Truck } from "lucide-react";
+import {
+  Receipt,
+  RefreshCw,
+  PackageOpen,
+  AlertCircle,
+  Truck,
+  Eye,
+  User,
+  CreditCard,
+} from "lucide-react";
 import { toast } from "sonner";
 import { useLanguage } from "../context/LanguageContext";
 import {
@@ -49,21 +58,18 @@ const formatStatusBadge = (status: EcommerceOrderStatus) => {
   }
 };
 
-const getNextStatuses = (current: EcommerceOrderStatus): EcommerceOrderStatus[] => {
-  const chain: EcommerceOrderStatus[] = [
-    "pending",
-    "confirmed",
-    "shipped",
-    "delivered",
-  ];
-  // Always allow cancelled
-  const next: EcommerceOrderStatus[] = ["cancelled"];
-  const idx = chain.indexOf(current);
-  if (idx >= 0 && idx < chain.length - 1) {
-    next.push(chain[idx + 1]);
-  }
-  return Array.from(new Set(next));
+// Backend (MANUAL_STATUS_TRANSITIONS) နှင့် တူ —
+// pending → confirmed = "ဂိုဒေါင်သို့ လွှဲမည်" သာ၊ confirmed → shipped = fulfillment complete သာ
+const MANUAL_NEXT_STATUSES: Record<EcommerceOrderStatus, EcommerceOrderStatus[]> = {
+  pending: ["cancelled"],
+  confirmed: ["cancelled"],
+  shipped: ["delivered"],
+  delivered: [],
+  cancelled: [],
 };
+
+const getNextStatuses = (current: EcommerceOrderStatus): EcommerceOrderStatus[] =>
+  MANUAL_NEXT_STATUSES[current] || [];
 
 export const EcommerceOrders: React.FC = () => {
   const { t } = useLanguage();
@@ -377,202 +383,226 @@ export const EcommerceOrders: React.FC = () => {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-x-auto">
-        <table className="min-w-full text-sm">
-          <thead className="bg-slate-50">
-            <tr>
-              <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500">
-                #
-              </th>
-              <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500">
-                {t("ecommerceOrders.orderNumber")}
-              </th>
-              <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500">
-                {t("ecommerceOrders.customer")}
-              </th>
-              <th className="px-3 py-2 text-right text-xs font-semibold text-slate-500">
-                {t("ecommerceOrders.total")}
-              </th>
-              <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500">
-                {t("ecommerceOrders.status")}
-              </th>
-              <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500">
-                {t("ecommerceOrders.payment")}
-              </th>
-              <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500">
-                {t("ecommerceOrders.date")}
-              </th>
-              <th className="px-3 py-2 text-right text-xs font-semibold text-slate-500">
-                {t("ecommerceOrders.actions")}
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y">
-            {loading ? (
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm text-left min-w-[850px]">
+            <thead className="bg-slate-50 border-b">
               <tr>
-                <td colSpan={8} className="py-12 text-center text-slate-500">
-                  <div className="flex flex-col items-center justify-center gap-2">
-                    <RefreshCw className="w-6 h-6 animate-spin text-primary" />
-                    <span>{t("common.loading")}</span>
-                  </div>
-                </td>
+                <th className="px-3 sm:px-4 py-3 text-left font-semibold text-slate-600 text-xs sm:text-sm">
+                  #
+                </th>
+                <th className="px-3 sm:px-4 py-3 text-left font-semibold text-slate-600 text-xs sm:text-sm">
+                  <span className="hidden sm:inline">Order Number</span>
+                  <span className="sm:hidden">Order #</span>
+                </th>
+                <th className="px-3 sm:px-4 py-3 text-left font-semibold text-slate-600 text-xs sm:text-sm">
+                  Customer
+                </th>
+                <th className="px-3 sm:px-4 py-3 text-right font-semibold text-slate-600 text-xs sm:text-sm">
+                  Total Amount
+                </th>
+                <th className="px-3 sm:px-4 py-3 text-left font-semibold text-slate-600 text-xs sm:text-sm">
+                  Status
+                </th>
+                <th className="px-3 sm:px-4 py-3 text-left font-semibold text-slate-600 text-xs sm:text-sm">
+                  Payment
+                </th>
+                <th className="px-3 sm:px-4 py-3 text-left font-semibold text-slate-600 text-xs sm:text-sm">
+                  Date
+                </th>
+                <th className="px-3 sm:px-4 py-3 text-right font-semibold text-slate-600 text-xs sm:text-sm">
+                  Actions
+                </th>
               </tr>
-            ) : hasError ? (
-              <tr>
-                <td colSpan={8} className="py-12 text-center text-rose-500">
-                  <div className="flex flex-col items-center justify-center gap-2">
-                    <AlertCircle className="w-8 h-8 text-rose-400" />
-                    <p className="font-medium">{t("ecommerceOrders.failedToLoad")}</p>
-                    <button
-                      onClick={loadOrders}
-                      className="text-xs text-slate-600 underline hover:text-slate-900 mt-1 cursor-pointer"
-                    >
-                      {t("common.refresh")}
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ) : orders.length === 0 ? (
-              <tr>
-                <td colSpan={8} className="py-12 text-center text-slate-500">
-                  <div className="flex flex-col items-center justify-center gap-2">
-                    <PackageOpen className="w-10 h-10 text-slate-300" />
-                    <p className="font-medium text-slate-600">
-                      {t("ecommerceOrders.noOrders")}
-                    </p>
-                  </div>
-                </td>
-              </tr>
-            ) : (
-              orders.map((order, index) => {
-                const displayIndex =
-                  ((pagination?.currentPage ?? 1) - 1) *
-                    (pagination?.itemsPerPage ?? limit) +
-                  index +
-                  1;
-
-                const statusLabelMm =
-                  t(`ecommerceOrders.statusLabelsMm.${order.status}`) ||
-                  t(`ecommerceOrders.statusLabels.${order.status}`);
-
-                const paymentLabel =
-                  t(
-                    `ecommerceOrders.paymentMethods.${order.paymentMethod}`,
-                  ) || order.paymentMethod;
-
-                const nextStatuses = getNextStatuses(order.status);
-
-                return (
-                  <tr key={order._id} className="hover:bg-slate-50">
-                    <td className="px-3 py-2 text-xs text-slate-500">
-                      {displayIndex}
-                    </td>
-                    <td className="px-3 py-2">
+            </thead>
+            <tbody className="divide-y">
+              {loading ? (
+                <tr>
+                  <td colSpan={8} className="py-12 text-center text-slate-500">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <RefreshCw className="w-6 h-6 animate-spin text-primary" />
+                      <span>{t("common.loading")}</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : hasError ? (
+                <tr>
+                  <td colSpan={8} className="py-12 text-center text-rose-500">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <AlertCircle className="w-8 h-8 text-rose-400" />
+                      <p className="font-medium">{t("ecommerceOrders.failedToLoad")}</p>
                       <button
-                        onClick={() => handleOpenDetail(order)}
-                        className="text-sm font-semibold text-primary hover:underline"
+                        onClick={loadOrders}
+                        className="text-xs text-slate-600 underline hover:text-slate-900 mt-1 cursor-pointer"
                       >
-                        {order.orderNumber}
+                        {t("common.refresh")}
                       </button>
-                    </td>
-                    <td className="px-3 py-2 text-sm">
-                      <div className="flex flex-col">
-                        <span className="font-medium">
-                          {order.customerId?.name || "-"}
-                        </span>
-                        <span className="text-xs text-slate-500">
-                          {order.customerId?.phone}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-3 py-2 text-right text-sm font-semibold">
-                      {order.totalAmount.toLocaleString()} MMK
-                    </td>
-                    <td className="px-3 py-2">
-                      <span
-                        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ${formatStatusBadge(
-                          order.status,
-                        )}`}
-                      >
-                        {statusLabelMm}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2 text-sm">
-                      <div className="flex flex-col">
-                        <span>{paymentLabel}</span>
-                        <span className="text-xs text-slate-500">
-                          {order.paymentStatus === "paid"
-                            ? t("common.paid")
-                            : t("common.remaining")}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-3 py-2 text-sm text-slate-700">
-                      {formatDate(order.createdAt)}
-                    </td>
-                    <td className="px-3 py-2 text-right">
-                      <div className="flex flex-col sm:flex-row gap-1 justify-end items-end sm:items-center">
-                        {order.isSentToFulfillment ? (
-                          <span
-                            className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200"
-                            title={
-                              typeof order.fulfillmentOrderId === "object" && order.fulfillmentOrderId?.orderNumber
-                                ? `Fulfillment Vr: ${order.fulfillmentOrderId.orderNumber}`
-                                : "Sent to warehouse fulfillment"
-                            }
-                          >
-                            <Truck className="w-3.5 h-3.5" />
-                            <span>{t("ecommerceOrders.inFulfillment") || "ဂိုဒေါင်သို့ လွှဲပြီး"}</span>
-                          </span>
-                        ) : order.status !== "cancelled" ? (
-                          <button
-                            onClick={() => setSendingFulfillmentOrder(order)}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-sm cursor-pointer"
-                            title="ဂိုဒေါင်သို့ ပစ္စည်းစစ်ဆေးထုတ်ပိုးရန် ပို့မည်"
-                          >
-                            <Truck className="w-3.5 h-3.5" />
-                            <span>{t("ecommerceOrders.sendToFulfillment") || "ဂိုဒေါင်သို့ ပို့မည်"}</span>
-                          </button>
-                        ) : null}
+                    </div>
+                  </td>
+                </tr>
+              ) : orders.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="py-12 text-center text-slate-500">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <PackageOpen className="w-10 h-10 text-slate-300" />
+                      <p className="font-medium text-slate-600">
+                        {t("ecommerceOrders.noOrders")}
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                orders.map((order, index) => {
+                  const displayIndex =
+                    ((pagination?.currentPage ?? 1) - 1) *
+                      (pagination?.itemsPerPage ?? limit) +
+                    index +
+                    1;
 
+                  const statusLabelMm =
+                    t(`ecommerceOrders.statusLabelsMm.${order.status}`) ||
+                    t(`ecommerceOrders.statusLabels.${order.status}`);
+
+                  const paymentLabel =
+                    t(
+                      `ecommerceOrders.paymentMethods.${order.paymentMethod}`,
+                    ) || order.paymentMethod;
+
+                  const nextStatuses = getNextStatuses(order.status);
+
+                  return (
+                    <tr key={order._id} className="hover:bg-slate-50 transition-colors">
+                      <td className="px-3 sm:px-4 py-3.5 text-xs text-slate-500 font-medium">
+                        {displayIndex}
+                      </td>
+                      <td className="px-3 sm:px-4 py-3.5">
                         <button
                           onClick={() => handleOpenDetail(order)}
-                          className="px-2 py-1 text-xs rounded border border-slate-200 text-slate-700 hover:bg-slate-50"
+                          className="font-medium text-blue-600 text-xs sm:text-sm hover:underline cursor-pointer"
                         >
-                          {t("ecommerceOrders.view")}
+                          {order.orderNumber}
                         </button>
-
-                        <div className="inline-flex items-center gap-1">
-                          <select
-                            className="px-2 py-1 text-xs rounded border border-slate-200 bg-white"
-                            disabled={updatingStatusId === order._id}
-                            defaultValue=""
-                            onChange={(e) => {
-                              const value = e.target.value as EcommerceOrderStatus;
-                              e.target.value = "";
-                              if (!value) return;
-                              setPendingStatusChange({ order, nextStatus: value });
-                              setConfirmStatusOpen(true);
-                            }}
-                          >
-                            <option value="">
-                              {t("ecommerceOrders.updateStatus.title")}
-                            </option>
-                            {nextStatuses.map((s) => (
-                              <option key={s} value={s}>
-                                {t(`ecommerceOrders.statusLabelsMm.${s}`)}
-                              </option>
-                            ))}
-                          </select>
+                      </td>
+                      <td className="px-3 sm:px-4 py-3.5">
+                        <div className="flex items-center gap-2">
+                          <User className="w-4 h-4 text-slate-400 shrink-0" />
+                          <div>
+                            <p className="font-medium text-slate-800 text-xs sm:text-sm">
+                              {order.customerId?.name || "-"}
+                            </p>
+                            {order.customerId?.phone && (
+                              <p className="text-xs text-slate-500">
+                                {order.customerId.phone}
+                              </p>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
+                      </td>
+                      <td className="px-3 sm:px-4 py-3.5 text-right font-bold text-slate-800 text-xs sm:text-sm">
+                        {order.totalAmount?.toLocaleString()}{" "}
+                        <span className="text-xs text-slate-500 font-normal">MMK</span>
+                      </td>
+                      <td className="px-3 sm:px-4 py-3.5">
+                        <span
+                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${formatStatusBadge(
+                            order.status,
+                          )}`}
+                        >
+                          {statusLabelMm}
+                        </span>
+                      </td>
+                      <td className="px-3 sm:px-4 py-3.5">
+                        <div className="flex items-center gap-2">
+                          <CreditCard className="w-4 h-4 text-slate-400 shrink-0" />
+                          <div>
+                            <p className="text-xs sm:text-sm font-medium text-slate-700">
+                              {paymentLabel}
+                            </p>
+                            <span
+                              className={`inline-block text-[11px] px-1.5 py-0.5 rounded font-medium ${
+                                order.paymentStatus === "paid"
+                                  ? "bg-green-50 text-green-700 border border-green-200"
+                                  : "bg-amber-50 text-amber-700 border border-amber-200"
+                              }`}
+                            >
+                              {order.paymentStatus === "paid"
+                                ? t("common.paid")
+                                : t("common.remaining")}
+                            </span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-3 sm:px-4 py-3.5 text-xs sm:text-sm text-slate-600 whitespace-nowrap">
+                        {formatDate(order.createdAt)}
+                      </td>
+                      <td className="px-3 sm:px-4 py-3.5 text-right">
+                        <div className="flex items-center justify-end gap-1.5 sm:gap-2">
+                          {order.isSentToFulfillment ? (
+                            <span
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200"
+                              title={
+                                typeof order.fulfillmentOrderId === "object" && order.fulfillmentOrderId?.orderNumber
+                                  ? `Fulfillment Vr: ${order.fulfillmentOrderId.orderNumber}`
+                                  : "Sent to warehouse fulfillment"
+                              }
+                            >
+                              <Truck className="w-3.5 h-3.5 shrink-0" />
+                              <span className="hidden lg:inline">{t("ecommerceOrders.inFulfillment") || "ဂိုဒေါင်သို့ လွှဲပြီး"}</span>
+                            </span>
+                          ) : order.status !== "cancelled" ? (
+                            <button
+                              onClick={() => setSendingFulfillmentOrder(order)}
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold rounded bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-sm cursor-pointer"
+                              title="ဂိုဒေါင်သို့ ပစ္စည်းစစ်ဆေးထုတ်ပိုးရန် ပို့မည်"
+                            >
+                              <Truck className="w-3.5 h-3.5 shrink-0" />
+                              <span className="hidden lg:inline">{t("ecommerceOrders.sendToFulfillment") || "ဂိုဒေါင်သို့ ပို့မည်"}</span>
+                            </button>
+                          ) : null}
+
+                          <button
+                            onClick={() => handleOpenDetail(order)}
+                            className="text-xs bg-primary/20 text-yellow-800 px-2.5 py-1.5 sm:px-3 sm:py-1.5 rounded hover:bg-primary/30 border border-primary/30 font-medium transition-colors flex items-center gap-1 cursor-pointer"
+                          >
+                            <Eye className="w-3.5 h-3.5 shrink-0" />
+                            <span className="hidden xl:inline">View</span>
+                          </button>
+
+                          {/* ပြောင်းခွင့်ရှိသော status မရှိလျှင် (delivered / cancelled) dropdown မပြ */}
+                          {nextStatuses.length > 0 && (
+                          <div className="inline-flex items-center">
+                            <select
+                              className="px-2 py-1.5 text-xs rounded border border-slate-200 bg-white hover:border-slate-300 text-slate-700 cursor-pointer"
+                              disabled={updatingStatusId === order._id}
+                              defaultValue=""
+                              onChange={(e) => {
+                                const value = e.target.value as EcommerceOrderStatus;
+                                e.target.value = "";
+                                if (!value) return;
+                                setPendingStatusChange({ order, nextStatus: value });
+                                setConfirmStatusOpen(true);
+                              }}
+                            >
+                              <option value="">
+                                {t("ecommerceOrders.updateStatus.title")}
+                              </option>
+                              {nextStatuses.map((s) => (
+                                <option key={s} value={s}>
+                                  {t(`ecommerceOrders.statusLabelsMm.${s}`)}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Pagination */}
@@ -628,10 +658,18 @@ export const EcommerceOrders: React.FC = () => {
           const label =
             t(`ecommerceOrders.statusLabelsMm.${pendingStatusChange.nextStatus}`) ||
             t(`ecommerceOrders.statusLabels.${pendingStatusChange.nextStatus}`);
-          return t("ecommerceOrders.updateStatus.confirmMessage").replace(
+          const base = t("ecommerceOrders.updateStatus.confirmMessage").replace(
             "{status}",
             label,
           );
+          // ဂိုဒေါင်သို့ လွှဲပြီးသား order ကို cancel လုပ်လျှင် fulfillment order ပါ ပယ်ဖျက်မည်ကို သတိပေး
+          const { order: o, nextStatus } = pendingStatusChange;
+          const fo = o.fulfillmentOrderId;
+          if (nextStatus === "cancelled" && fo) {
+            const foNumber = typeof fo === "object" ? fo.orderNumber : "";
+            return `${base} ဂိုဒေါင် fulfillment order ${foNumber} ကိုပါ ပယ်ဖျက်ပြီး scan ပြီးသား batch stock ကို ပြန်ထည့်ပါမည်။`;
+          }
+          return base;
         })()}
         confirmText={t("common.confirm")}
         cancelText={t("common.cancel")}

@@ -14,6 +14,7 @@ type OrderLine = {
   currentQuantity: number;
   removeQuantity: number;
   unitPrice: number;
+  unit: string;
 };
 
 interface RemoveItemsFromEcommerceOrderModalProps {
@@ -53,6 +54,7 @@ export const RemoveItemsFromEcommerceOrderModal: React.FC<
           currentQuantity: Number(p.quantity || 0),
           removeQuantity: 0,
           unitPrice: Number(p.unitPrice || 0),
+          unit: p.unit || "",
         };
       }) || [];
 
@@ -174,13 +176,13 @@ export const RemoveItemsFromEcommerceOrderModal: React.FC<
                           <p className="text-xs text-slate-500">
                             {t("orders.currentQuantity") || "Current Qty"}:{" "}
                             <span className="font-medium text-slate-700">
-                              {l.currentQuantity}
+                              {l.currentQuantity} {l.unit}
                             </span>
                           </p>
                           <p className="text-xs text-slate-500">
                             {t("orders.unitPrice") || "Unit Price"}:{" "}
                             <span className="font-medium text-slate-700">
-                              {l.unitPrice.toLocaleString()} MMK
+                              {l.unitPrice.toLocaleString()} MMK{l.unit ? ` / ${l.unit}` : ""}
                             </span>
                           </p>
                         </div>
@@ -258,7 +260,7 @@ export const RemoveItemsFromEcommerceOrderModal: React.FC<
                       <div className="flex items-center gap-2">
                         <div className="text-right min-w-[120px]">
                           <p className="font-medium text-red-600 text-sm">
-                            -{l.removeQuantity} x {l.unitPrice.toLocaleString()}
+                            -{l.removeQuantity} {l.unit} x {l.unitPrice.toLocaleString()}
                           </p>
                           <p className="font-medium text-red-600 text-sm">
                             -{(l.removeQuantity * l.unitPrice).toLocaleString()} MMK

@@ -11,6 +11,7 @@ import {
   getInventoryUomFromStock,
 } from "../../utils/posCartUom";
 import type { UomCartItem } from "../../utils/posCartUom";
+import { getConversionFactor } from "../../utils/uom";
 
 interface CartSidebarProps {
   cart: UomCartItem[];
@@ -165,8 +166,14 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
                   <div className="mt-1 flex flex-col gap-1 rounded bg-slate-50 p-1.5 border border-slate-200 text-[11px]">
                     <div className="flex items-center justify-between text-slate-500 font-semibold text-[10px]">
                       <span>စကင်ဖတ်ထားသော အသုတ်များ:</span>
+                      {/* Batch qty သည် base unit ဖြစ်၍ line qty ကို base unit သို့ ပြောင်းပြီး နှိုင်း (ပုံး 1 = 10 ဘူး) */}
                       <span className="text-blue-600 font-bold">
-                        {item.scannedBatches.reduce((s, b) => s + b.quantity, 0)}/{item.qty}
+                        {(() => {
+                          const { baseUnit, conversions } = getInventoryUomFromStock(item.stockItem);
+                          const factor = getConversionFactor(baseUnit, item.selectedUnit, conversions);
+                          const scanned = item.scannedBatches.reduce((s, b) => s + b.quantity, 0);
+                          return `${scanned}/${item.qty * factor}${factor > 1 ? ` ${baseUnit}` : ""}`;
+                        })()}
                       </span>
                     </div>
                     {item.scannedBatches.map((b, bIdx) => (

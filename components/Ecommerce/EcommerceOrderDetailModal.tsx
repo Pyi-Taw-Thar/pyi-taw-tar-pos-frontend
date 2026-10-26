@@ -10,11 +10,14 @@ import {
   Plus,
   Minus,
   Truck,
+  Printer,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { EcommerceOrder } from "../../services/Ecommerce/fetchEcommerceOrders";
 import { sendOrderToFulfillment } from "../../services/Ecommerce/sendOrderToFulfillment";
 import { useLanguage } from "../../context/LanguageContext";
+import { getSavedPrintPaperSize } from "../../utils/printPaperSize";
+import type { VoucherReceiptData } from "../Print/VoucherContent";
 import { AddItemsToEcommerceOrderModal } from "./AddItemsToEcommerceOrderModal";
 import { RemoveItemsFromEcommerceOrderModal } from "./RemoveItemsFromEcommerceOrderModal";
 
@@ -65,6 +68,71 @@ export const EcommerceOrderDetailModal: React.FC<
     }
   };
 
+  const handlePrint = () => {
+    if (!order) return;
+    const customer = typeof order.customerId === "object" ? order.customerId : null;
+    const customerAddress = order.shippingAddress
+      ? [order.shippingAddress.addressLine, order.shippingAddress.city]
+          .filter(Boolean)
+          .join(", ")
+      : customer?.address || "";
+
+    const receiptData: VoucherReceiptData = {
+      documentType: "invoice",
+      invoiceNumber: order.orderNumber,
+      storefrontName: customer?.name || "Ecommerce Order",
+      customerPhone: customer?.phone || "",
+      customerAddress: customerAddress || undefined,
+      date: order.createdAt || new Date().toISOString(),
+      items: (order.products || []).map((p) => {
+        let batches = p.batches;
+        if (
+          (!batches || batches.length === 0) &&
+          typeof order.fulfillmentOrderId === "object" &&
+          order.fulfillmentOrderId
+        ) {
+          const fulfillmentOp = (
+            order.fulfillmentOrderId as any
+          ).ordersProducts?.find(
+            (fop: any) =>
+              (fop.inventoryId?._id || fop.inventoryId)?.toString() ===
+              (p.inventoryId?._id || (p as any)._id || (p.inventoryId as any))?.toString()
+          );
+          if (fulfillmentOp?.batches?.length) {
+            batches = fulfillmentOp.batches;
+          }
+        }
+
+        return {
+          name: p.inventoryId?.productName || (p as any).productName || "Product",
+          code: p.inventoryId?.productCode || (p as any).productCode || "",
+          qty: p.quantity,
+          unit: p.unit || "ခု",
+          price: p.unitPrice,
+          batches: batches && batches.length > 0 ? batches : undefined,
+        };
+      }),
+      subtotal: order.totalAmount,
+      discountPercent: 0,
+      total: order.totalAmount,
+      paymentMethod:
+        t(`ecommerceOrders.paymentMethods.${order.paymentMethod}`) ||
+        order.paymentMethod ||
+        "cash_on_delivery",
+      note: order.note || undefined,
+    };
+
+    localStorage.setItem(
+      `receipt_${order.orderNumber}`,
+      JSON.stringify(receiptData)
+    );
+
+    window.open(
+      `/print-receipt/${encodeURIComponent(order.orderNumber)}?size=${getSavedPrintPaperSize()}&autoprint=1`,
+      "_blank"
+    );
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleString("en-US", {
@@ -90,64 +158,85 @@ export const EcommerceOrderDetailModal: React.FC<
       ?.url || order?.products[0]?.inventoryId?.images?.[0]?.url;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-2 sm:p-4">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="flex flex-row justify-between items-start gap-4 p-4 border-b bg-slate-50">
-          <h3 className="font-bold text-lg text-slate-800 flex items-center gap-2">
-            <Receipt className="w-5 h-5 text-primary" />
-            {t("ecommerceOrders.title")}
+        <div className="flex items-center justify-between gap-2 sm:gap-4 p-3.5 sm:p-4 border-b bg-slate-50 shrink-0">
+          <h3 className="font-bold text-base sm:text-lg text-slate-800 flex items-center gap-1.5 sm:gap-2 shrink-0 truncate">
+            <Receipt className="w-5 h-5 text-primary shrink-0" />
+            <span className="truncate">{t("ecommerceOrders.title")}</span>
           </h3>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {order && (
               <>
+                {/* Print Button */}
+                <button
+                  onClick={handlePrint}
+                  className="h-9 px-2.5 sm:px-3 bg-slate-700 hover:bg-slate-800 text-white rounded-lg transition-colors text-xs sm:text-sm font-semibold flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
+                  title={t("common.print") === "common.print" ? "ပရင့်ထုတ်မည်" : t("common.print")}
+                >
+                  <Printer className="w-4 h-4 shrink-0" />
+                  <span className="hidden sm:inline">
+                    {t("common.print") === "common.print" ? "ပရင့်ထုတ်မည်" : t("common.print")}
+                  </span>
+                </button>
+
                 {!order.isSentToFulfillment && order.status !== "cancelled" ? (
                   <button
                     onClick={handleSendToFulfillment}
                     disabled={isSendingFulfillment}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-semibold disabled:opacity-50 cursor-pointer shadow-sm"
+                    className="h-9 px-2.5 sm:px-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors text-xs sm:text-sm font-semibold disabled:opacity-50 cursor-pointer shadow-sm flex items-center justify-center gap-1.5"
+                    title={t("ecommerceOrders.sendToFulfillment") || "ဂိုဒေါင်သို့ လွှဲမည်"}
                   >
                     {isSendingFulfillment ? (
-                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      <RefreshCw className="w-4 h-4 animate-spin shrink-0" />
                     ) : (
-                      <Truck className="w-4 h-4" />
+                      <Truck className="w-4 h-4 shrink-0" />
                     )}
                     <span className="hidden sm:inline">
-                      {t("ecommerceOrders.sendToFulfillment") || "ဂိုဒေါင်သို့ ပို့မည်"}
+                      {t("ecommerceOrders.sendToFulfillment") || "ဂိုဒေါင်သို့ လွှဲမည်"}
                     </span>
                   </button>
                 ) : order.isSentToFulfillment ? (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
-                    <Truck className="w-4 h-4" />
-                    <span>{t("ecommerceOrders.inFulfillment") || "ဂိုဒေါင်သို့ လွှဲပြီး"}</span>
+                  <span
+                    className="h-9 px-2.5 sm:px-3 rounded-lg text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 inline-flex items-center justify-center gap-1.5 shadow-sm"
+                    title={t("ecommerceOrders.inFulfillment") || "ဂိုဒေါင်သို့ လွှဲပြီး"}
+                  >
+                    <Truck className="w-4 h-4 shrink-0" />
+                    <span className="hidden sm:inline">
+                      {t("ecommerceOrders.inFulfillment") || "ဂိုဒေါင်သို့ လွှဲပြီး"}
+                    </span>
                   </span>
                 ) : null}
 
                 <button
                   onClick={() => setShowRemoveItemsModal(true)}
-                  className="flex items-center gap-2 px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
+                  className="h-9 px-2.5 sm:px-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors text-xs sm:text-sm font-semibold flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
+                  title={t("orders.removeItems") || "ပစ္စည်းများ ဖယ်ရှားမည်"}
                 >
-                  <Minus className="w-4 h-4" />
+                  <Minus className="w-4 h-4 shrink-0" />
                   <span className="hidden sm:inline">
-                    {t("orders.removeItems") || "Remove Items"}
+                    {t("orders.removeItems") || "ပစ္စည်းများ ဖယ်ရှားမည်"}
                   </span>
                 </button>
                 <button
                   onClick={() => setShowAddItemsModal(true)}
-                  className="flex items-center gap-2 px-3 py-1.5 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium"
+                  className="h-9 px-2.5 sm:px-3 bg-primary hover:bg-primary/90 text-white rounded-lg transition-colors text-xs sm:text-sm font-semibold flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
+                  title={t("orders.addItems") || "ပစ္စည်းများ ထည့်မည်"}
                 >
-                  <Plus className="w-4 h-4" />
+                  <Plus className="w-4 h-4 shrink-0" />
                   <span className="hidden sm:inline">
-                    {t("orders.addItems") || "Add Items"}
+                    {t("orders.addItems") || "ပစ္စည်းများ ထည့်မည်"}
                   </span>
                 </button>
               </>
             )}
             <button
               onClick={onClose}
-              className="p-1 hover:bg-slate-200 rounded-lg transition-colors"
+              className="h-9 w-9 hover:bg-slate-200 rounded-lg transition-colors flex items-center justify-center text-slate-500 hover:text-slate-800"
+              title="Close"
             >
-              <X className="w-5 h-5 text-slate-500" />
+              <X className="w-5 h-5 shrink-0" />
             </button>
           </div>
         </div>
@@ -241,8 +330,8 @@ export const EcommerceOrderDetailModal: React.FC<
                   <Package className="w-4 h-4" />
                   {t("ecommerceOrders.detail.products")}
                 </h4>
-                <div className="border rounded-lg overflow-hidden">
-                  <table className="w-full text-sm">
+                <div className="border rounded-lg overflow-x-auto">
+                  <table className="w-full text-sm min-w-[550px]">
                     <thead className="bg-slate-50">
                       <tr>
                         <th className="p-3 text-left font-medium text-slate-600">
@@ -287,13 +376,64 @@ export const EcommerceOrderDetailModal: React.FC<
                             )}
                           </td>
                           <td className="p-3 font-medium text-slate-800">
-                            {p.inventoryId.productName}
+                            <div>{p.inventoryId.productName}</div>
+                            {(() => {
+                              let batches = p.batches;
+                              if (
+                                (!batches || batches.length === 0) &&
+                                typeof order.fulfillmentOrderId === "object" &&
+                                order.fulfillmentOrderId
+                              ) {
+                                const fulfillmentOp = (
+                                  order.fulfillmentOrderId as any
+                                ).ordersProducts?.find(
+                                  (fop: any) =>
+                                    (fop.inventoryId?._id || fop.inventoryId)?.toString() ===
+                                    (p.inventoryId?._id || (p as any)._id || (p.inventoryId as any))?.toString()
+                                );
+                                if (fulfillmentOp?.batches?.length) {
+                                  batches = fulfillmentOp.batches;
+                                }
+                              }
+                              const expBatches = (batches || []).filter((b: any) => b.expiryDate);
+                              if (expBatches.length === 0) return null;
+
+                              const formattedDates = Array.from(
+                                new Set(
+                                  expBatches.map((b: any) => {
+                                    const d = new Date(b.expiryDate);
+                                    const day = String(d.getDate()).padStart(2, "0");
+                                    const month = String(d.getMonth() + 1).padStart(2, "0");
+                                    return `${day}/${month}/${d.getFullYear()}`;
+                                  })
+                                )
+                              );
+
+                              return (
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                  {formattedDates.map((exp, expIdx) => (
+                                    <span
+                                      key={expIdx}
+                                      className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-200 font-mono"
+                                    >
+                                      Exp: {exp}
+                                    </span>
+                                  ))}
+                                </div>
+                              );
+                            })()}
                           </td>
                           <td className="p-3 text-slate-600">
                             {p.inventoryId.productCode}
                           </td>
                           <td className="p-3 text-center font-medium">
-                            {p.quantity.toLocaleString()}
+                            <div>{p.quantity.toLocaleString()}</div>
+                            {(p as any).originalQuantity != null &&
+                              (p as any).originalQuantity > p.quantity && (
+                                <span className="text-amber-600 text-xs block font-normal">
+                                  (မူလ: {(p as any).originalQuantity})
+                                </span>
+                              )}
                           </td>
                           <td className="p-3 text-center text-slate-600">
                             {p.unit}
