@@ -46,7 +46,7 @@ export const PurchaseReport: React.FC = () => {
   }, [supplierIdParam]);
 
   if (userRole && userRole !== "owner" && userRole !== "admin") {
-    return <Navigate to="/pos" replace />;
+    return <Navigate to="/menu" replace />;
   }
 
   const handleTabChange = (tab: PurchaseReportTab) => {

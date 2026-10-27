@@ -1,3 +1,4 @@
+import { useLanguage } from "../../context/LanguageContext";
 import React from "react";
 import {
   ChevronRight,
@@ -39,6 +40,7 @@ export const SaleStatisticsTab: React.FC<SaleStatisticsTabProps> = ({
   endDate,
   selectedStorefront,
 }) => {
+  const { t } = useLanguage();
   const [selectedProduct, setSelectedProduct] =
     React.useState<ProductSalesData | null>(null);
   const [isModalOpen, setIsModalOpen] = React.useState(false);

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useLanguage } from "../../context/LanguageContext";
 import { Link } from "react-router-dom";
 import {
   History,
@@ -94,6 +95,7 @@ function SkeletonRows() {
 }
 
 function MetadataDisplay({ metadata }: { metadata: Record<string, unknown> }) {
+  const { t } = useLanguage();
   const entries = Object.entries(metadata);
   if (entries.length === 0) {
     return <p className="text-sm text-slate-500">{t("settings.noMetadata")}</p>;

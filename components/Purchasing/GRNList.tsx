@@ -1,3 +1,4 @@
+import { useLanguage } from "../../context/LanguageContext";
 import React, { useState } from "react";
 import {
   Plus,
@@ -41,6 +42,7 @@ export const GRNList: React.FC<GRNListProps> = ({
   grnFilter,
   setGrnFilter,
 }) => {
+  const { t } = useLanguage();
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   const handleUpdateStatus = async (grnId: string, newStatus: string) => {

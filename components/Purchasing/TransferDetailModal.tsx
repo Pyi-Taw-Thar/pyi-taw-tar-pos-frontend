@@ -1,3 +1,4 @@
+import { useLanguage } from "../../context/LanguageContext";
 import React, { useEffect, useState } from "react";
 import { Modal } from "../Modal";
 import { fetchTransferById } from "../../services/Purchase/fetchTransferById";
@@ -27,6 +28,7 @@ export const TransferDetailModal: React.FC<TransferDetailModalProps> = ({
   onClose,
   transferId,
 }) => {
+  const { t } = useLanguage();
   const [transfer, setTransfer] = useState<TransferData | null>(null);
   const [loading, setLoading] = useState(false);
   const [productDetails, setProductDetails] = useState<

@@ -1,11 +1,22 @@
-import React, { useState } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import React from "react";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 import { Toaster } from "sonner";
-import { Menu } from "lucide-react";
+import { LayoutGrid } from "lucide-react";
 import { AppProvider } from "./context/AppContext";
-import { LanguageProvider } from "./context/LanguageContext";
-import { Sidebar } from "./components/Sidebar";
+import { LanguageProvider, useLanguage } from "./context/LanguageContext";
 import { LanguageSwitcher } from "./components/LanguageSwitcher";
+import { UserMenu } from "./components/UserMenu";
+import { FeatureRoute } from "./components/FeatureRoute";
+import { getMenuItemByPath } from "./config/menuConfig";
+
+import MenuPage from "./pages/Menu";
 import { POS } from "./pages/POS";
 import { QuickSale } from "./pages/QuickSale";
 import { DirectSale } from "./pages/DirectSale";
@@ -40,89 +51,228 @@ import { AIChat } from "./pages/AIChat";
 import { OrderFulfillment } from "./pages/OrderFulfillment";
 
 const AppLayout: React.FC = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { t } = useLanguage();
   const token = localStorage.getItem("authToken");
 
-  return (
-    <div className="min-h-screen flex flex-col bg-[#F8F9FA]">
-      {/* Only show header and sidebar if authenticated */}
-      {token && (
-        <>
-          {/* Header */}
-          <header className="bg-[#1E2937] border-b border-white/10 sticky top-0 z-30 print:hidden shadow-lg">
-            <div className="flex items-center justify-between h-14 px-4">
-              <div className="flex items-center">
-                <button
-                  onClick={() => setSidebarOpen(true)}
-                  className="p-2 hover:bg-white/10 rounded-lg transition-colors mr-3"
-                  aria-label="Open menu"
-                >
-                  <Menu className="w-6 h-6 text-white" />
-                </button>
-                <h1 className="text-lg font-bold text-white tracking-wide">
-                  Pyi-Taw-Tar POS
-                </h1>
-              </div>
-              <div className="flex items-center gap-2">
-                {/* <button
-                  onClick={() => setRunTutorial(true)}
-                  className="p-2 hover:bg-white/10 rounded-lg transition-colors text-white flex items-center gap-2"
-                  title="Start Tutorial"
-                >
-                  <HelpCircle className="w-5 h-5" />
-                  <span className="text-xs font-medium hidden sm:inline">
-                    ဆော့ဝဲ လမ်းညွှန်
-                  </span>
-                </button> */}
-                <LanguageSwitcher />
-              </div>
-            </div>
-          </header>
+  const isMenuPage = location.pathname === "/menu";
+  const currentMenuItem = getMenuItemByPath(location.pathname);
+  const pageTitle = currentMenuItem ? t(currentMenuItem.labelKey) : "";
 
-          {/* Sidebar */}
-          <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-        </>
+  return (
+    <div
+      className={`min-h-screen flex flex-col bg-[#F8F9FA] ${
+        isMenuPage ? "h-screen max-h-screen overflow-hidden" : ""
+      }`}
+    >
+      {/* Only show header if authenticated */}
+      {token && (
+        <header
+          className="app-navbar-fixed bg-[#1E2937] border-b border-white/10 print:hidden shadow-lg"
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            width: "100%",
+            height: "56px",
+            zIndex: 30,
+          }}
+        >
+          <div className="flex items-center justify-between h-14 px-4">
+            <div className="flex items-center min-w-0">
+              {/* Menu shortcut icon (hidden on /menu page) */}
+              {!isMenuPage && (
+                <button
+                  onClick={() => navigate("/menu")}
+                  className="p-2 hover:bg-white/10 rounded-lg transition-colors mr-2.5 text-white focus:outline-none focus:ring-2 focus:ring-white/20"
+                  aria-label={t("menu.openMenu")}
+                  title={t("menu.openMenu")}
+                >
+                  <LayoutGrid className="w-5 h-5 text-white" />
+                </button>
+              )}
+
+              {/* Title / Breadcrumb */}
+              {!isMenuPage ? (
+                <div className="flex items-center min-w-0 text-white">
+                  <button
+                    onClick={() => navigate("/menu")}
+                    className="text-base sm:text-lg font-bold tracking-wide hover:text-white/80 transition-colors hidden sm:inline truncate"
+                  >
+                    {t("menu.appName")}
+                  </button>
+                  <span className="text-white/40 mx-2 hidden sm:inline">›</span>
+                  <h1 className="text-sm sm:text-base font-semibold tracking-wide truncate">
+                    {pageTitle || t("menu.appName")}
+                  </h1>
+                </div>
+              ) : (
+                <h1 className="text-lg font-bold text-white tracking-wide">
+                  {t("menu.appName")}
+                </h1>
+              )}
+            </div>
+
+            {/* Right side: Language Switcher + User Dropdown */}
+            <div className="flex items-center gap-2">
+              <LanguageSwitcher />
+              <UserMenu />
+            </div>
+          </div>
+        </header>
       )}
 
       {/* Main Content */}
-      <main className="flex-1 overflow-x-hidden">
+      <main
+        className={`flex-1 ${
+          isMenuPage
+            ? "h-screen max-h-screen overflow-hidden flex flex-col"
+            : "overflow-x-hidden"
+        }`}
+        style={{ paddingTop: "56px" }}
+      >
         <Routes>
-          <Route path="/" element={<Navigate to="/pos" replace />} />
-          <Route path="/pos" element={<POS />} />
-          <Route path="/quick-sale" element={<QuickSale />} />
-          <Route path="/direct-sale" element={<DirectSale />} />
+          <Route path="/" element={<Navigate to="/menu" replace />} />
+          <Route path="/menu" element={<MenuPage />} />
+
+          {/* POS & Sales routes guarded by posSales feature flag */}
+          <Route
+            path="/pos"
+            element={
+              <FeatureRoute feature="posSales">
+                <POS />
+              </FeatureRoute>
+            }
+          />
+          <Route
+            path="/quick-sale"
+            element={
+              <FeatureRoute feature="posSales">
+                <QuickSale />
+              </FeatureRoute>
+            }
+          />
+          <Route
+            path="/direct-sale"
+            element={
+              <FeatureRoute feature="posSales">
+                <DirectSale />
+              </FeatureRoute>
+            }
+          />
+          <Route
+            path="/orders"
+            element={
+              <FeatureRoute feature="posSales">
+                <Orders />
+              </FeatureRoute>
+            }
+          />
+          <Route
+            path="/direct-sale-orders"
+            element={
+              <FeatureRoute feature="posSales">
+                <DirectSaleOrders />
+              </FeatureRoute>
+            }
+          />
+          <Route
+            path="/credit-orders"
+            element={
+              <FeatureRoute feature="posSales">
+                <CreditOrders />
+              </FeatureRoute>
+            }
+          />
+          <Route
+            path="/quotations"
+            element={
+              <FeatureRoute feature="posSales">
+                <QuotationList />
+              </FeatureRoute>
+            }
+          />
+          <Route
+            path="/quotations/create"
+            element={
+              <FeatureRoute feature="posSales">
+                <QuotationCreate />
+              </FeatureRoute>
+            }
+          />
+          <Route
+            path="/quotations/new"
+            element={
+              <FeatureRoute feature="posSales">
+                <Navigate to="/quotations/create" replace />
+              </FeatureRoute>
+            }
+          />
+          <Route
+            path="/quotations/:id/edit"
+            element={
+              <FeatureRoute feature="posSales">
+                <QuotationCreate />
+              </FeatureRoute>
+            }
+          />
+          <Route
+            path="/quotations/:id"
+            element={
+              <FeatureRoute feature="posSales">
+                <QuotationDetail />
+              </FeatureRoute>
+            }
+          />
+          <Route
+            path="/credits"
+            element={
+              <FeatureRoute feature="posSales">
+                <Credits />
+              </FeatureRoute>
+            }
+          />
+          <Route
+            path="/credits/:id"
+            element={
+              <FeatureRoute feature="posSales">
+                <CreditDetail />
+              </FeatureRoute>
+            }
+          />
+          <Route
+            path="/print-receipt/:orderId"
+            element={
+              <FeatureRoute feature="posSales">
+                <PrintReceipt />
+              </FeatureRoute>
+            }
+          />
+
+          {/* E-commerce, Inventory, Warehouse, Purchasing & System routes */}
+          <Route path="/admin/ecommerce-orders" element={<EcommerceOrders />} />
+          <Route path="/order-fulfillment" element={<OrderFulfillment />} />
+          <Route path="/customers" element={<Customers />} />
           <Route path="/inventory" element={<Inventory />} />
           <Route path="/warehouse" element={<Warehouse />} />
           <Route path="/warehouse/:id" element={<WarehouseDetail />} />
           <Route path="/storefront" element={<Storefront />} />
           <Route path="/storefront/:id" element={<StorefrontDetail />} />
-          <Route path="/storefront/:storeId/product/:productId" element={<StorefrontProductDetail />} />
+          <Route
+            path="/storefront/:storeId/product/:productId"
+            element={<StorefrontProductDetail />}
+          />
           <Route path="/suppliers" element={<Suppliers />} />
           <Route path="/suppliers/:id" element={<SupplierDetail />} />
           <Route path="/purchasing" element={<Purchasing />} />
-          <Route path="/orders" element={<Orders />} />
-          <Route path="/order-fulfillment" element={<OrderFulfillment />} />
-          <Route path="/direct-sale-orders" element={<DirectSaleOrders />} />
-          <Route path="/admin/ecommerce-orders" element={<EcommerceOrders />} />
-          <Route path="/customers" element={<Customers />} />
-          <Route path="/credit-orders" element={<CreditOrders />} />
-          <Route path="/quotations" element={<QuotationList />} />
-          <Route path="/quotations/create" element={<QuotationCreate />} />
-          <Route
-            path="/quotations/new"
-            element={<Navigate to="/quotations/create" replace />}
-          />
-          <Route path="/quotations/:id/edit" element={<QuotationCreate />} />
-          <Route path="/quotations/:id" element={<QuotationDetail />} />
-          <Route path="/credits" element={<Credits />} />
-          <Route path="/credits/:id" element={<CreditDetail />} />
           <Route path="/expenses" element={<Expenses />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/purchase-report" element={<PurchaseReport />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/accounts" element={<AccountManagement />} />
           <Route path="/ai-chat" element={<AIChat />} />
-          <Route path="/print-receipt/:orderId" element={<PrintReceipt />} />
         </Routes>
       </main>
     </div>

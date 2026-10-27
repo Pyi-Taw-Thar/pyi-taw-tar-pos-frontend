@@ -1,3 +1,4 @@
+import { useLanguage } from "../../context/LanguageContext";
 import React, { useState, useEffect, useRef } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { Modal } from "../Modal";
@@ -23,6 +24,7 @@ export const CreatePOModal: React.FC<CreatePOModalProps> = ({
   products,
   onSuccess,
 }) => {
+  const { t } = useLanguage();
   const [poSupplierId, setPOSupplierId] = useState("");
   const [poItems, setPOItems] = useState<PurchaseOrderItem[]>([]);
   const [poSelectedProduct, setPOSelectedProduct] = useState("");

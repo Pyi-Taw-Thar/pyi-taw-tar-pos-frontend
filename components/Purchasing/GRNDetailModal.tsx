@@ -1,3 +1,4 @@
+import { useLanguage } from "../../context/LanguageContext";
 import React, { useEffect, useState } from "react";
 import { Modal } from "../Modal";
 import { GRNData } from "../../services/Purchase/fetchGRNs";
@@ -29,6 +30,7 @@ export const GRNDetailModal: React.FC<GRNDetailModalProps> = ({
   grnId,
   onGRNUpdate,
 }) => {
+  const { t } = useLanguage();
   const [grn, setGrn] = useState<GRNData | null>(null);
   const [loading, setLoading] = useState(false);
   const [updateModalOpen, setUpdateModalOpen] = useState(false);

@@ -15,7 +15,7 @@ export const Login: React.FC = () => {
   useEffect(() => {
     const token = localStorage.getItem("authToken");
     if (token) {
-      navigate("/pos", { replace: true });
+      navigate("/menu", { replace: true });
     }
   }, [navigate]);
   const [formData, setFormData] = useState({
@@ -53,7 +53,7 @@ export const Login: React.FC = () => {
         );
 
         // Redirect to POS page
-        navigate("/pos");
+        navigate("/menu");
       } else {
         toast.error(response.message || t("login.loginFailed"));
       }

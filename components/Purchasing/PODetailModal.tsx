@@ -1,3 +1,4 @@
+import { useLanguage } from "../../context/LanguageContext";
 import React, { useEffect, useState } from "react";
 import { Modal } from "../Modal";
 import {
@@ -31,6 +32,7 @@ export const PODetailModal: React.FC<PODetailModalProps> = ({
   suppliers,
   onUpdate,
 }) => {
+  const { t } = useLanguage();
   const [purchase, setPurchase] = useState<PurchaseDetail | null>(null);
   const [loading, setLoading] = useState(false);
 

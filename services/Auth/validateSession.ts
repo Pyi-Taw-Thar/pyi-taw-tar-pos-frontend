@@ -5,5 +5,5 @@ import axios from "../axios";
  * Throws on network/auth errors so callers can handle status codes.
  */
 export const validateSession = async (): Promise<void> => {
-  await axios.get("/inventory/categories");
+  await axios.get("/location-profile");
 };

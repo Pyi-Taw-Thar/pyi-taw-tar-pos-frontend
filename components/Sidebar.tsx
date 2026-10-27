@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { removeAuthToken } from "../services/axios";
+import { performLogout } from "../utils/logout";
 import { toast } from "sonner";
 import { useLanguage } from "../context/LanguageContext";
 
@@ -280,11 +281,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   };
 
   const handleLogout = () => {
-    removeAuthToken();
-    localStorage.removeItem("adminData");
-    toast.success(t("sidebar.loggedOut"));
-    navigate("/login");
-    onClose();
+    performLogout(navigate, t, onClose);
   };
 
   return (

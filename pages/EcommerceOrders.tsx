@@ -7,7 +7,6 @@ import {
   Truck,
   Eye,
   User,
-  CreditCard,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useLanguage } from "../context/LanguageContext";
@@ -504,7 +503,7 @@ export const EcommerceOrders: React.FC = () => {
 
         {/* Desktop Table (sm and up, or when loading/empty) */}
         <div className={`${!loading && !hasError && orders.length > 0 ? "hidden sm:block" : ""} overflow-x-auto`}>
-          <table className="w-full text-sm text-left min-w-[850px]">
+          <table className="w-full text-sm text-left min-w-[900px]">
             <thead className="bg-slate-50 border-b">
               <tr>
                 <th className="px-3 sm:px-4 py-3 text-left font-semibold text-slate-600 text-xs sm:text-sm">
@@ -524,12 +523,9 @@ export const EcommerceOrders: React.FC = () => {
                   {t("common.status")}
                 </th>
                 <th className="px-3 sm:px-4 py-3 text-left font-semibold text-slate-600 text-xs sm:text-sm">
-                  {t("ecommerceOrders.payment")}
-                </th>
-                <th className="px-3 sm:px-4 py-3 text-left font-semibold text-slate-600 text-xs sm:text-sm">
                   {t("common.date")}
                 </th>
-                <th className="px-3 sm:px-4 py-3 text-right font-semibold text-slate-600 text-xs sm:text-sm">
+                <th className="px-3 sm:px-4 py-3 text-right font-semibold text-slate-600 text-xs sm:text-sm whitespace-nowrap">
                   {t("common.actions")}
                 </th>
               </tr>
@@ -537,7 +533,7 @@ export const EcommerceOrders: React.FC = () => {
             <tbody className="divide-y">
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-slate-500">
+                  <td colSpan={7} className="py-12 text-center text-slate-500">
                     <div className="flex flex-col items-center justify-center gap-2">
                       <RefreshCw className="w-6 h-6 animate-spin text-primary" />
                       <span>{t("common.loading")}</span>
@@ -546,7 +542,7 @@ export const EcommerceOrders: React.FC = () => {
                 </tr>
               ) : hasError ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-rose-500">
+                  <td colSpan={7} className="py-12 text-center text-rose-500">
                     <div className="flex flex-col items-center justify-center gap-2">
                       <AlertCircle className="w-8 h-8 text-rose-400" />
                       <p className="font-medium">{t("ecommerceOrders.failedToLoad")}</p>
@@ -561,7 +557,7 @@ export const EcommerceOrders: React.FC = () => {
                 </tr>
               ) : orders.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-slate-500">
+                  <td colSpan={7} className="py-12 text-center text-slate-500">
                     <div className="flex flex-col items-center justify-center gap-2">
                       <PackageOpen className="w-10 h-10 text-slate-300" />
                       <p className="font-medium text-slate-600">
@@ -581,11 +577,6 @@ export const EcommerceOrders: React.FC = () => {
                   const statusLabelMm =
                     t(`ecommerceOrders.statusLabelsMm.${order.status}`) ||
                     t(`ecommerceOrders.statusLabels.${order.status}`);
-
-                  const paymentLabel =
-                    t(
-                      `ecommerceOrders.paymentMethods.${order.paymentMethod}`,
-                    ) || order.paymentMethod;
 
                   const nextStatuses = getNextStatuses(order.status);
 
@@ -630,35 +621,14 @@ export const EcommerceOrders: React.FC = () => {
                           {statusLabelMm}
                         </span>
                       </td>
-                      <td className="px-3 sm:px-4 py-3.5">
-                        <div className="flex items-center gap-2">
-                          <CreditCard className="w-4 h-4 text-slate-400 shrink-0" />
-                          <div>
-                            <p className="text-xs sm:text-sm font-medium text-slate-700">
-                              {paymentLabel}
-                            </p>
-                            <span
-                              className={`inline-block text-[11px] px-1.5 py-0.5 rounded font-medium ${
-                                order.paymentStatus === "paid"
-                                  ? "bg-green-50 text-green-700 border border-green-200"
-                                  : "bg-amber-50 text-amber-700 border border-amber-200"
-                              }`}
-                            >
-                              {order.paymentStatus === "paid"
-                                ? t("common.paid")
-                                : t("common.remaining")}
-                            </span>
-                          </div>
-                        </div>
-                      </td>
                       <td className="px-3 sm:px-4 py-3.5 text-xs sm:text-sm text-slate-600 whitespace-nowrap">
                         {formatDate(order.createdAt)}
                       </td>
-                      <td className="px-3 sm:px-4 py-3.5 text-right">
+                      <td className="px-3 sm:px-4 py-3.5 text-right whitespace-nowrap">
                         <div className="flex items-center justify-end gap-1.5 sm:gap-2">
                           {order.isSentToFulfillment ? (
                             <span
-                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200"
+                              className="inline-flex items-center justify-center gap-1.5 w-32 h-8 px-2 rounded-lg text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 whitespace-nowrap shrink-0"
                               title={
                                 typeof order.fulfillmentOrderId === "object" && order.fulfillmentOrderId?.orderNumber
                                   ? `Fulfillment Vr: ${order.fulfillmentOrderId.orderNumber}`
@@ -666,32 +636,33 @@ export const EcommerceOrders: React.FC = () => {
                               }
                             >
                               <Truck className="w-3.5 h-3.5 shrink-0" />
-                              <span className="hidden lg:inline">{t("ecommerceOrders.inFulfillment") || "ဂိုဒေါင်သို့ လွှဲပြီး"}</span>
+                              <span className="truncate">{t("ecommerceOrders.inFulfillment") || "ဂိုဒေါင်သို့ လွှဲပြီး"}</span>
                             </span>
                           ) : order.status !== "cancelled" ? (
                             <button
                               onClick={() => setSendingFulfillmentOrder(order)}
-                              className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold rounded bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-sm cursor-pointer"
+                              className="inline-flex items-center justify-center gap-1.5 w-32 h-8 px-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-sm cursor-pointer whitespace-nowrap shrink-0"
                               title="ဂိုဒေါင်သို့ ပစ္စည်းစစ်ဆေးထုတ်ပိုးရန် ပို့မည်"
                             >
                               <Truck className="w-3.5 h-3.5 shrink-0" />
-                              <span className="hidden lg:inline">{t("ecommerceOrders.sendToFulfillment") || "ဂိုဒေါင်သို့ ပို့မည်"}</span>
+                              <span className="truncate">{t("ecommerceOrders.sendToFulfillment") || "ဂိုဒေါင်သို့ ပို့မည်"}</span>
                             </button>
                           ) : null}
 
                           <button
                             onClick={() => handleOpenDetail(order)}
-                            className="text-xs bg-primary/20 text-yellow-800 px-2.5 py-1.5 sm:px-3 sm:py-1.5 rounded hover:bg-primary/30 border border-primary/30 font-medium transition-colors flex items-center gap-1 cursor-pointer"
+                            className="inline-flex items-center justify-center gap-1.5 w-32 h-8 px-2 text-xs font-semibold rounded-lg bg-primary/20 text-yellow-800 hover:bg-primary/30 border border-primary/30 transition-colors cursor-pointer whitespace-nowrap shrink-0"
+                            title={t("common.view")}
                           >
                             <Eye className="w-3.5 h-3.5 shrink-0" />
-                            <span className="hidden xl:inline">{t("common.view")}</span>
+                            <span className="truncate">{t("common.view")}</span>
                           </button>
 
                           {/* ပြောင်းခွင့်ရှိသော status မရှိလျှင် (delivered / cancelled) dropdown မပြ */}
                           {nextStatuses.length > 0 && (
-                          <div className="inline-flex items-center">
+                          <div className="inline-flex items-center shrink-0">
                             <select
-                              className="px-2 py-1.5 text-xs rounded border border-slate-200 bg-white hover:border-slate-300 text-slate-700 cursor-pointer"
+                              className="h-8 px-2 text-xs rounded-lg border border-slate-200 bg-white hover:border-slate-300 text-slate-700 cursor-pointer shrink-0"
                               disabled={updatingStatusId === order._id}
                               defaultValue=""
                               onChange={(e) => {

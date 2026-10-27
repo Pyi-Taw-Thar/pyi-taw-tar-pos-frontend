@@ -1,3 +1,4 @@
+import { useLanguage } from "../../context/LanguageContext";
 import React, { useState, useEffect } from "react";
 import { X, History, Loader2, Trash2 } from "lucide-react";
 import { fetchPaymentsByPO } from "../../services/SupplierCreditPayment/fetchPaymentsByPO";
@@ -19,6 +20,7 @@ export const PaymentHistoryModal: React.FC<PaymentHistoryModalProps> = ({
   purchaseId,
   onPaymentDeleted,
 }) => {
+  const { t } = useLanguage();
   const [isLoading, setIsLoading] = useState(false);
   const [purchaseData, setPurchaseData] = useState<any>(null);
   const [payments, setPayments] = useState<CreditPaymentRecord[]>([]);

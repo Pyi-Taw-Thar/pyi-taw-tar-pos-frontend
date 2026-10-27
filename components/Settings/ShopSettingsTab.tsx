@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useLanguage } from "../../context/LanguageContext";
 import { Store, RefreshCw, Loader2, Info, Edit } from "lucide-react";
 import { toast } from "sonner";
 import {

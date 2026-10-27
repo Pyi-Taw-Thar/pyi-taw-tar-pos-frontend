@@ -1,3 +1,4 @@
+import { useLanguage } from "../../context/LanguageContext";
 import React, { useState } from "react";
 import { Eye, Truck, CheckCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -15,6 +16,7 @@ export const TransferList: React.FC<TransferListProps> = ({
   onViewTransfer,
   onStatusChange,
 }) => {
+  const { t } = useLanguage();
   const [transferFilter, setTransferFilter] = useState<"pending" | "completed">(
     "completed",
   );

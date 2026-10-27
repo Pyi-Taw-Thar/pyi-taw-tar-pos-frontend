@@ -1,3 +1,4 @@
+import { useLanguage } from "../../context/LanguageContext";
 import React, { useState, useEffect } from "react";
 import { Modal } from "../Modal";
 import { ApiPurchaseOrder, Supplier } from "../../types";
@@ -35,6 +36,7 @@ export const CreateGRNModal: React.FC<CreateGRNModalProps> = ({
   onSuccess,
   selectedPOId: propSelectedPOId,
 }) => {
+  const { t } = useLanguage();
   const [internalSelectedPOId, setInternalSelectedPOId] = useState("");
   const [grnItems, setGRNItems] = useState<ExtendedGRNItem[]>([]);
   const [grnNote, setGRNNote] = useState("");
