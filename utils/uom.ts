@@ -170,3 +170,65 @@ export function validateUomConversions(
 export function cartLineKey(stockItemId: string, unit: string): string {
   return `${stockItemId}::${normalizeUnit(unit)}`;
 }
+
+
+/**
+ * Break down a base quantity into composite units from largest to smallest factor.
+ * E.g., 135 pieces with box (10) and carton (120) -> "1 carton 1 box 5 pieces".
+ * Returns empty string if quantity <= 0 or no larger units can be extracted.
+ */
+export function breakdownQuantity(
+  baseQty: number,
+  baseUnit: string,
+  conversions?: UomConversion[],
+): string {
+  if (!baseQty || baseQty <= 0 || !conversions || conversions.length === 0) {
+    return "";
+  }
+
+  const base = normalizeUnit(baseUnit);
+  // Build a list of units with their effective factors to base unit
+  const unitsWithFactors: { unit: string; factor: number }[] = [];
+
+  for (const c of conversions) {
+    const u = normalizeUnit(c.unit);
+    const factor = getConversionFactor(base, u, conversions);
+    if (factor > 1 && !unitsWithFactors.some((item) => item.unit === u)) {
+      unitsWithFactors.push({ unit: u, factor });
+    }
+  }
+
+  // Sort descending by factor
+  unitsWithFactors.sort((a, b) => b.factor - a.factor);
+
+  if (unitsWithFactors.length === 0) {
+    return "";
+  }
+
+  let remainder = baseQty;
+  const parts: string[] = [];
+  let hasLargerUnit = false;
+
+  for (const item of unitsWithFactors) {
+    if (remainder >= item.factor) {
+      const count = Math.floor(remainder / item.factor);
+      if (count > 0) {
+        parts.push(`${count} ${item.unit}`);
+        remainder = remainder % item.factor;
+        hasLargerUnit = true;
+      }
+    }
+  }
+
+  if (!hasLargerUnit) {
+    return "";
+  }
+
+  // Round remainder to avoid floating point precision issues
+  const roundedRemainder = Math.round(remainder * 100) / 100;
+  if (roundedRemainder > 0) {
+    parts.push(`${roundedRemainder} ${base}`);
+  }
+
+  return parts.join(" ");
+}
