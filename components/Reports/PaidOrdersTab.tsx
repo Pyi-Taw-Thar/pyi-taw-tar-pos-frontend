@@ -1,4 +1,5 @@
 import React from "react";
+import { useLanguage } from "../../context/LanguageContext";
 import {
   ResponsiveContainer,
   PieChart,
@@ -21,6 +22,7 @@ export const PaidOrdersTab: React.FC<PaidOrdersTabProps> = ({
   paidOrdersReport,
   loading,
 }) => {
+  const { t } = useLanguage();
   console.log(paidOrdersReport);
   const paymentMethodChartData =
     paidOrdersReport?.success && paidOrdersReport.data.paymentMethods.length > 0
@@ -35,7 +37,7 @@ export const PaidOrdersTab: React.FC<PaidOrdersTabProps> = ({
     return (
       <div className="bg-white rounded-xl shadow-sm border p-12 text-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
-        <p className="text-slate-600">Loading payment methods...</p>
+        <p className="text-slate-600">{t("reports.loadingPaymentMethods")}</p>
       </div>
     );
   }
@@ -44,7 +46,7 @@ export const PaidOrdersTab: React.FC<PaidOrdersTabProps> = ({
     return (
       <div className="bg-white rounded-xl shadow-sm border p-12 text-center">
         <CreditCard className="w-12 h-12 text-slate-400 mx-auto mb-4" />
-        <p className="text-slate-600">No paid orders data available</p>
+        <p className="text-slate-600">{t("reports.noPaidOrdersData")}</p>
       </div>
     );
   }
@@ -204,7 +206,7 @@ export const PaidOrdersTab: React.FC<PaidOrdersTabProps> = ({
               </tbody>
               <tfoot className="bg-slate-50 border-t-2">
                 <tr>
-                  <td className="px-4 py-3 font-bold text-slate-800">Total</td>
+                  <td className="px-4 py-3 font-bold text-slate-800">{t("reports.total")}</td>
                   <td className="px-4 py-3 text-right font-bold text-slate-800">
                     {paidOrdersReport.data.totals.totalOrderCount}
                   </td>

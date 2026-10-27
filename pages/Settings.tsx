@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useApp } from "../context/AppContext";
 import { Role } from "../types";
+import { useLanguage } from "../context/LanguageContext";
 import {
   Shield,
   AlertTriangle,
@@ -30,6 +31,7 @@ import { ShopSettingsTab } from "../components/Settings/ShopSettingsTab";
 import { ActivityLogTab } from "../components/Settings/ActivityLogTab";
 
 export const Settings: React.FC = () => {
+  const { t } = useLanguage();
   const { currentUser, setUserRole, logs } = useApp();
   const [stockAuditLogs, setStockAuditLogs] = useState<StockAuditLog[]>([]);
   const [loading, setLoading] = useState(true);
@@ -63,7 +65,7 @@ export const Settings: React.FC = () => {
       }
     } catch (error) {
       console.error("Error loading stock audit logs:", error);
-      toast.error("Failed to load stock audit logs");
+      toast.error(t("settings.failedToLoadStockAudits"));
     } finally {
       setLoading(false);
     }
@@ -77,7 +79,7 @@ export const Settings: React.FC = () => {
       }
     } catch (error) {
       console.error("Failed to load transfers", error);
-      toast.error("Failed to load transfers");
+      toast.error(t("settings.failedToLoadTransfers"));
     }
   };
 
@@ -115,8 +117,8 @@ export const Settings: React.FC = () => {
           }`}
         >
           <Store className="w-3 h-3 sm:w-4 sm:h-4" />
-          <span className="hidden sm:inline">Shop Settings</span>
-          <span className="sm:hidden">Shop</span>
+          <span className="hidden sm:inline">{t("settings.shopSettings")}</span>
+          <span className="sm:hidden">{t("settings.shop")}</span>
         </button>
         <button
           onClick={() => setActiveTab("audit")}
@@ -127,8 +129,8 @@ export const Settings: React.FC = () => {
           }`}
         >
           <FileText className="w-3 h-3 sm:w-4 sm:h-4" />{" "}
-          <span className="hidden sm:inline">Stock Audit Logs</span>
-          <span className="sm:hidden">Audit</span>
+          <span className="hidden sm:inline">{t("settings.stockAuditLogs")}</span>
+          <span className="sm:hidden">{t("settings.audit")}</span>
         </button>
         <button
           onClick={() => setActiveTab("transfer")}
@@ -139,8 +141,8 @@ export const Settings: React.FC = () => {
           }`}
         >
           <Truck className="w-3 h-3 sm:w-4 sm:h-4" />{" "}
-          <span className="hidden sm:inline">Transfer Management</span>
-          <span className="sm:hidden">Transfers</span>
+          <span className="hidden sm:inline">{t("settings.transferManagement")}</span>
+          <span className="sm:hidden">{t("settings.transfers")}</span>
         </button>
         <button
           onClick={() => setActiveTab("activity")}
@@ -151,8 +153,8 @@ export const Settings: React.FC = () => {
           }`}
         >
           <History className="w-3 h-3 sm:w-4 sm:h-4" />
-          <span className="hidden sm:inline">Activity Log</span>
-          <span className="sm:hidden">Activity</span>
+          <span className="hidden sm:inline">{t("settings.activityLog")}</span>
+          <span className="sm:hidden">{t("settings.activity")}</span>
         </button>
       </div>
 
@@ -191,7 +193,7 @@ export const Settings: React.FC = () => {
                 <RefreshCw
                   className={`w-4 h-4 ${loading ? "animate-spin" : ""}`}
                 />
-                <span>Refresh</span>
+                <span>{t("common.refresh")}</span>
               </button>
             </div>
           </div>
@@ -200,13 +202,13 @@ export const Settings: React.FC = () => {
             <div className="p-6 sm:p-8 text-center text-slate-500">
               <Loader2 className="w-6 h-6 sm:w-8 sm:h-8 animate-spin text-primary mx-auto mb-2" />
               <p className="text-sm sm:text-base">
-                Loading stock audit logs...
+                {t("settings.loadingLogs")}
               </p>
             </div>
           ) : stockAuditLogs.length === 0 ? (
             <div className="p-6 sm:p-8 text-center text-slate-500">
               <AlertTriangle className="w-10 h-10 sm:w-12 sm:h-12 text-slate-300 mx-auto mb-3" />
-              <p className="text-sm sm:text-base">No stock audit logs found</p>
+              <p className="text-sm sm:text-base">{t("settings.noLogsFound")}</p>
             </div>
           ) : (
             <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
@@ -216,40 +218,40 @@ export const Settings: React.FC = () => {
                     <thead className="bg-slate-50 border-b sticky top-0 z-10">
                       <tr>
                         <th className="px-2 sm:px-4 py-3 font-semibold text-slate-600">
-                          <span className="hidden sm:inline">Date</span>
-                          <span className="sm:hidden">Date</span>
+                          <span className="hidden sm:inline">{t("settings.date")}</span>
+                          <span className="sm:hidden">{t("settings.date")}</span>
                         </th>
                         <th className="px-2 sm:px-4 py-3 font-semibold text-slate-600">
-                          <span className="hidden sm:inline">Product</span>
-                          <span className="sm:hidden">Product</span>
+                          <span className="hidden sm:inline">{t("settings.product")}</span>
+                          <span className="sm:hidden">{t("settings.product")}</span>
                         </th>
                         <th className="px-2 sm:px-4 py-3 font-semibold text-slate-600">
-                          <span className="hidden sm:inline">Location</span>
-                          <span className="sm:hidden">Location</span>
+                          <span className="hidden sm:inline">{t("settings.location")}</span>
+                          <span className="sm:hidden">{t("settings.location")}</span>
                         </th>
                         <th className="px-2 sm:px-4 py-3 font-semibold text-slate-600">
-                          <span className="hidden sm:inline">Action</span>
-                          <span className="sm:hidden">Action</span>
+                          <span className="hidden sm:inline">{t("settings.action")}</span>
+                          <span className="sm:hidden">{t("settings.action")}</span>
                         </th>
                         <th className="px-2 sm:px-4 py-3 font-semibold text-slate-600 text-right">
-                          <span className="hidden sm:inline">Before</span>
-                          <span className="sm:hidden">Before</span>
+                          <span className="hidden sm:inline">{t("settings.before")}</span>
+                          <span className="sm:hidden">{t("settings.before")}</span>
                         </th>
                         <th className="px-2 sm:px-4 py-3 font-semibold text-slate-600 text-right">
-                          <span className="hidden sm:inline">After</span>
-                          <span className="sm:hidden">After</span>
+                          <span className="hidden sm:inline">{t("settings.after")}</span>
+                          <span className="sm:hidden">{t("settings.after")}</span>
                         </th>
                         <th className="px-2 sm:px-4 py-3 font-semibold text-slate-600 text-right">
-                          <span className="hidden sm:inline">Change</span>
-                          <span className="sm:hidden">Change</span>
+                          <span className="hidden sm:inline">{t("settings.change")}</span>
+                          <span className="sm:hidden">{t("settings.change")}</span>
                         </th>
                         <th className="px-2 sm:px-4 py-3 font-semibold text-slate-600">
-                          <span className="hidden sm:inline">Admin</span>
-                          <span className="sm:hidden">Admin</span>
+                          <span className="hidden sm:inline">{t("settings.adminUser")}</span>
+                          <span className="sm:hidden">{t("settings.adminUser")}</span>
                         </th>
                         <th className="px-2 sm:px-4 py-3 font-semibold text-slate-600">
-                          <span className="hidden sm:inline">Reason</span>
-                          <span className="sm:hidden">Reason</span>
+                          <span className="hidden sm:inline">{t("settings.reason")}</span>
+                          <span className="sm:hidden">{t("settings.reason")}</span>
                         </th>
                       </tr>
                     </thead>
@@ -405,7 +407,7 @@ export const Settings: React.FC = () => {
                           disabled={currentPage <= 1 || loading}
                           className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-slate-300 bg-white text-sm font-medium text-slate-500 hover:bg-slate-50 disabled:opacity-50"
                         >
-                          <span className="sr-only">Previous</span>
+                          <span className="sr-only">{t("common.previous") || "Previous"}</span>
                           <ChevronLeft className="h-5 w-5" aria-hidden="true" />
                         </button>
 
@@ -445,7 +447,7 @@ export const Settings: React.FC = () => {
                           disabled={currentPage >= totalPages || loading}
                           className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-slate-300 bg-white text-sm font-medium text-slate-500 hover:bg-slate-50 disabled:opacity-50"
                         >
-                          <span className="sr-only">Next</span>
+                          <span className="sr-only">{t("common.next") || "Next"}</span>
                           <ChevronRight
                             className="h-5 w-5"
                             aria-hidden="true"
@@ -477,7 +479,7 @@ export const Settings: React.FC = () => {
               className="hidden sm:flex items-center gap-2 bg-blue-600 text-white px-3 py-2 sm:px-4 rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base"
             >
               <RefreshCw className="w-4 h-4" />
-              <span className="hidden sm:inline">Refresh</span>
+              <span className="hidden sm:inline">{t("common.refresh")}</span>
             </button>
           </div>
           <TransferList

@@ -24,7 +24,7 @@ export const QuickSale: React.FC = () => {
       <div className="flex items-center justify-center h-screen bg-[#F8F9FA]">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="w-10 h-10 animate-spin text-primary" />
-          <p className="text-gray-500 text-sm">Loading...</p>
+          <p className="text-gray-500 text-sm">{t("common.loading")}</p>
         </div>
       </div>
     );
@@ -103,7 +103,7 @@ export const QuickSale: React.FC = () => {
             <Loader2 className="w-16 h-16 animate-spin text-primary" />
             <div className="text-center">
               <p className="text-xl font-bold text-gray-800 mb-1">{t("pos.processing")}</p>
-              <p className="text-sm text-gray-500">Please wait while we process your order...</p>
+              <p className="text-sm text-gray-500">{t("pos.processingOrderWait")}</p>
             </div>
           </div>
         </div>

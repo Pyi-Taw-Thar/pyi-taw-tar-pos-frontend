@@ -1,5 +1,5 @@
-import React from "react";
-import { Store, Loader2 } from "lucide-react";
+import React, { useState } from "react";
+import { Store, Loader2, ShoppingCart } from "lucide-react";
 import { usePOS } from "../hooks/usePOS";
 import { useLanguage } from "../context/LanguageContext";
 import { ProductGrid } from "../components/POS/ProductGrid";
@@ -10,6 +10,7 @@ import { SuccessModal } from "../components/POS/SuccessModal";
 export const POS: React.FC = () => {
   const { t } = useLanguage();
   const pos = usePOS();
+  const [cartOpen, setCartOpen] = useState(false);
 
   if (pos.initialLoading && pos.storefronts.length === 0) {
     return (
@@ -67,8 +68,46 @@ export const POS: React.FC = () => {
         onSetQty={pos.setQty}
         onSetCartLineUnit={pos.setCartLineUnit}
         onRemoveFromCart={pos.removeFromCart}
-        onOpenCheckout={() => pos.setShowCheckoutModal(true)}
+        onOpenCheckout={() => {
+          setCartOpen(false);
+          pos.setShowCheckoutModal(true);
+        }}
+        isOpen={cartOpen}
+        onClose={() => setCartOpen(false)}
       />
+
+      {/* Mobile/Tablet Fixed Bottom Cart Bar */}
+      {pos.cart.length > 0 && (
+        <div className="lg:hidden fixed bottom-0 inset-x-0 z-30 bg-white border-t border-gray-200 px-4 py-3 shadow-lg flex items-center justify-between">
+          <div
+            className="flex items-center gap-3 cursor-pointer flex-1 mr-3 min-w-0"
+            onClick={() => setCartOpen(true)}
+          >
+            <div className="relative shrink-0">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                <ShoppingCart className="w-5 h-5" />
+              </div>
+              <span className="absolute -top-1 -right-1 bg-primary text-white text-[11px] font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                {pos.cart.reduce((sum, i) => sum + i.qty, 0)}
+              </span>
+            </div>
+            <div className="min-w-0">
+              <div className="text-xs text-gray-500 font-medium">
+                {pos.cart.reduce((sum, i) => sum + i.qty, 0)} {t("pos.itemsLower") || "ခု"}
+              </div>
+              <div className="text-sm sm:text-base font-bold text-gray-900 truncate">
+                {pos.subtotal.toLocaleString()} MMK
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={() => setCartOpen(true)}
+            className="bg-primary hover:bg-primary/90 text-white px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm shadow transition-colors shrink-0"
+          >
+            {t("pos.proceedToCheckout") || "ငွေရှင်းမယ်"}
+          </button>
+        </div>
+      )}
 
       {pos.isProcessing && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm">
@@ -76,7 +115,7 @@ export const POS: React.FC = () => {
             <Loader2 className="w-16 h-16 animate-spin text-primary" />
             <div className="text-center">
               <p className="text-xl font-bold text-gray-800 mb-1">{t("pos.processing")}</p>
-              <p className="text-sm text-gray-500">Please wait while we process your order...</p>
+              <p className="text-sm text-gray-500">{t("pos.processingOrderWait")}</p>
             </div>
           </div>
         </div>

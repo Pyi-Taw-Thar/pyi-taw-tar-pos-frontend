@@ -206,15 +206,15 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   {/* ── Basic Info ── */}
                   <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
                     <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-200">
-                      <h4 className="font-semibold text-slate-700 text-sm">Basic Info</h4>
+                      <h4 className="font-semibold text-slate-700 text-sm">{t("inventory.basicInfo")}</h4>
                     </div>
                     <div className="p-4 grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-slate-500">Product Name</span>
+                        <span className="text-slate-500">{t("inventory.productName")}</span>
                         <span className="font-medium text-slate-800 text-right">{product.productName}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-500">Product Code</span>
+                        <span className="text-slate-500">{t("inventory.productCode")}</span>
                         <span className="font-medium text-slate-800 text-right">{product.productCode}</span>
                       </div>
                       <div className="flex justify-between">
@@ -222,29 +222,29 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                         <span className="font-medium text-slate-800 text-right">{product.SKU || "—"}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-500">Category</span>
+                        <span className="text-slate-500">{t("inventory.category")}</span>
                         <span className="font-medium text-slate-800 text-right">{product.category}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-500">Sub Category</span>
+                        <span className="text-slate-500">{t("inventory.subCategory")}</span>
                         <span className="font-medium text-slate-800 text-right">{product.subCategory || "—"}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-500">Brand</span>
+                        <span className="text-slate-500">{t("inventory.brand")}</span>
                         <span className="font-medium text-slate-800 text-right">{product.brand || "—"}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-500">Unit of Measure</span>
+                        <span className="text-slate-500">{t("inventory.unitOfMeasure")}</span>
                         <span className="font-medium text-slate-800 text-right">{product.unitOfMeasure}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-500">Status</span>
+                        <span className="text-slate-500">{t("common.status")}</span>
                         <span className={`font-medium ${product.status === "active" ? "text-green-600" : "text-red-600"}`}>
                           {product.status}
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-500">Created</span>
+                        <span className="text-slate-500">{t("inventory.created")}</span>
                         <span className="font-medium text-slate-800 text-right">{formatDate(product.createdAt)}</span>
                       </div>
                       <div className="col-span-2 flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 pt-2 border-t border-slate-100">
@@ -270,19 +270,19 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   {/* ── Pricing ── */}
                   <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
                     <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-200">
-                      <h4 className="font-semibold text-slate-700 text-sm">Pricing</h4>
+                      <h4 className="font-semibold text-slate-700 text-sm">{t("inventory.pricing")}</h4>
                     </div>
                     <div className="p-4 grid grid-cols-3 gap-4">
                       <div className="text-center p-3 bg-red-50 rounded-lg">
-                        <p className="text-xs text-red-600 font-medium">Buying Price</p>
+                        <p className="text-xs text-red-600 font-medium">{t("inventory.buyingPrice")}</p>
                         <p className="text-lg font-bold text-slate-800 mt-1">{product.buyingPrice.toLocaleString()}</p>
                       </div>
                       <div className="text-center p-3 bg-green-50 rounded-lg">
-                        <p className="text-xs text-green-600 font-medium">Selling Price</p>
+                        <p className="text-xs text-green-600 font-medium">{t("inventory.sellingPrice")}</p>
                         <p className="text-lg font-bold text-slate-800 mt-1">{product.sellingPrice.toLocaleString()}</p>
                       </div>
                       <div className="text-center p-3 bg-blue-50 rounded-lg">
-                        <p className="text-xs text-blue-600 font-medium">Profit</p>
+                        <p className="text-xs text-blue-600 font-medium">{t("inventory.profit")}</p>
                         <p className="text-lg font-bold text-blue-700 mt-1">{product.profitAmount.toLocaleString()}</p>
                         <p className="text-xs text-blue-500">{product.profitMargin}%</p>
                       </div>
@@ -293,15 +293,15 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   {wholesalePrices.length > 0 && (
                     <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
                       <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-200">
-                        <h4 className="font-semibold text-slate-700 text-sm">Wholesale Prices</h4>
+                        <h4 className="font-semibold text-slate-700 text-sm">{t("inventory.wholesalePrices")}</h4>
                       </div>
                       <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                           <thead className="bg-slate-50">
                             <tr>
-                              <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Unit</th>
-                              <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500">Min Qty</th>
-                              <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500">Price (MMK)</th>
+                              <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">{t("inventory.unit") || "Unit"}</th>
+                              <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500">{t("inventory.minQty")}</th>
+                              <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500">{t("inventory.priceMmk")}</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y">
@@ -322,16 +322,16 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   {product.uomConversions && product.uomConversions.length > 0 && (
                     <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
                       <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-200">
-                        <h4 className="font-semibold text-slate-700 text-sm">UOM Conversions</h4>
+                        <h4 className="font-semibold text-slate-700 text-sm">{t("inventory.uomConversions")}</h4>
                       </div>
                       <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                           <thead className="bg-slate-50">
                             <tr>
-                              <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Unit</th>
-                              <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500">Factor</th>
-                              <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Convert From</th>
-                              <th className="px-4 py-2.5 text-center text-xs font-semibold text-slate-500">Default</th>
+                              <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">{t("common.unit")}</th>
+                              <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500">{t("inventory.factor")}</th>
+                              <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">{t("inventory.convertFrom")}</th>
+                              <th className="px-4 py-2.5 text-center text-xs font-semibold text-slate-500">{t("inventory.default")}</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y">
@@ -353,7 +353,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   {productImages.length > 0 && (
                     <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
                       <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-200">
-                        <h4 className="font-semibold text-slate-700 text-sm">Images</h4>
+                        <h4 className="font-semibold text-slate-700 text-sm">{t("inventory.images")}</h4>
                       </div>
                       <div className="p-4 space-y-3">
                         {primaryImageUrl && (
@@ -375,7 +375,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   {/* ── Note ── */}
                   {product.note && (
                     <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-                      <p className="text-xs font-semibold text-amber-700 mb-1">Note</p>
+                      <p className="text-xs font-semibold text-amber-700 mb-1">{t("inventory.note")}</p>
                       <p className="text-sm text-amber-900">{product.note}</p>
                     </div>
                   )}
@@ -385,10 +385,10 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   {/* ── Total Quantity ── */}
                   <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
                     <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-200">
-                      <h4 className="font-semibold text-slate-700 text-sm">Stock Summary</h4>
+                      <h4 className="font-semibold text-slate-700 text-sm">{t("inventory.stockSummary")}</h4>
                     </div>
                     <div className="p-6 text-center">
-                      <p className="text-xs text-slate-500 uppercase tracking-wide font-medium mb-1">Total Quantity</p>
+                      <p className="text-xs text-slate-500 uppercase tracking-wide font-medium mb-1">{t("inventory.totalQuantity")}</p>
                       <p className="text-5xl font-bold text-slate-800">
                         {product.stockAvailability.totalQuantity.toLocaleString()}
                       </p>
@@ -398,7 +398,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   {/* ── Warehouse Stock ── */}
                   <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
                     <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
-                      <h4 className="font-semibold text-slate-700 text-sm">Warehouses</h4>
+                      <h4 className="font-semibold text-slate-700 text-sm">{t("inventory.warehouses")}</h4>
                       <span className="text-xs font-medium text-slate-500">
                         {product.stockAvailability.warehouses.count} location(s) · Total: {product.stockAvailability.warehouses.totalQuantity.toLocaleString()}
                       </span>
@@ -408,9 +408,9 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                         <table className="w-full text-sm">
                           <thead className="bg-slate-50">
                             <tr>
-                              <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Location</th>
-                              <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Address</th>
-                              <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500">Quantity</th>
+                              <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">{t("inventory.location")}</th>
+                              <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">{t("common.address")}</th>
+                              <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500">{t("common.quantity")}</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y">
@@ -425,14 +425,14 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                         </table>
                       </div>
                     ) : (
-                      <div className="p-6 text-center text-slate-400 text-sm">No warehouses found</div>
+                      <div className="p-6 text-center text-slate-400 text-sm">{t("inventory.noWarehousesFound")}</div>
                     )}
                   </div>
 
                   {/* ── Storefront Stock ── */}
                   <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
                     <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
-                      <h4 className="font-semibold text-slate-700 text-sm">Storefronts</h4>
+                      <h4 className="font-semibold text-slate-700 text-sm">{t("inventory.storefronts")}</h4>
                       <span className="text-xs font-medium text-slate-500">
                         {product.stockAvailability.storefronts.count} location(s) · Total: {product.stockAvailability.storefronts.totalQuantity.toLocaleString()}
                       </span>
@@ -442,9 +442,9 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                         <table className="w-full text-sm">
                           <thead className="bg-slate-50">
                             <tr>
-                              <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Location</th>
-                              <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Address</th>
-                              <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500">Quantity</th>
+                              <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">{t("inventory.location")}</th>
+                              <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">{t("common.address")}</th>
+                              <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500">{t("common.quantity")}</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y">
@@ -459,7 +459,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                         </table>
                       </div>
                     ) : (
-                      <div className="p-6 text-center text-slate-400 text-sm">No storefronts found</div>
+                      <div className="p-6 text-center text-slate-400 text-sm">{t("inventory.noStorefrontsFound")}</div>
                     )}
                   </div>
                 </div>

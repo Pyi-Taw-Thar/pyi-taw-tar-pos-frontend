@@ -37,16 +37,16 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
   const { t } = useLanguage();
 
   return (
-    <div className="flex-1 flex flex-col px-6 py-4 overflow-hidden">
+    <div className="flex-1 flex flex-col px-3 sm:px-4 lg:px-6 py-3 lg:py-4 pb-24 lg:pb-4 overflow-hidden">
       <div className="mb-4">
-        <div className="flex items-center gap-3">
-          <div className="relative flex-1">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+          <div className="relative w-full sm:flex-1 sm:w-auto min-w-0">
             <Search className="absolute left-3 top-[13px] h-5 w-5 text-gray-400 pointer-events-none" />
             <Scan className="absolute right-3 top-[13px] h-5 w-5 text-gray-400 pointer-events-none opacity-50" />
             <input
               type="text"
               placeholder={t("pos.searchOrScanBarcode") || "Search products or scan barcode..."}
-              className="search-input w-full pl-10 pr-10 py-2.5 border border-dark-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none bg-white shadow-sm"
+              className="search-input w-full pl-10 pr-10 py-2.5 border border-dark-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none bg-white shadow-sm text-sm"
               value={search}
               onChange={(e) => { onSearchChange(e.target.value); onPageChange(1); }}
               onKeyDown={(e) => {
@@ -59,28 +59,31 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
             />
           </div>
 
-          <select
-            className="border border-dark-200 rounded-xl px-4 py-2.5 bg-white focus:ring-2 focus:ring-primary focus:border-primary outline-none shadow-sm"
-            value={selectedCategory}
-            onChange={(e) => onCategoryChange(e.target.value)}
-          >
-            <option value="All">{t("pos.allCategories")}</option>
-            {categories.map((c) => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
-
-          <div className="relative">
-            <button
-              onClick={onToggleStorefrontMenu}
-              className="flex items-center gap-2 px-3 py-2.5 bg-[#1E2937] text-white rounded-xl hover:bg-[#334155] transition-all shadow-sm"
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-start">
+            <select
+              className="flex-1 sm:flex-none border border-dark-200 rounded-xl px-3 sm:px-4 py-2.5 bg-white focus:ring-2 focus:ring-primary focus:border-primary outline-none shadow-sm text-sm min-w-0"
+              value={selectedCategory}
+              onChange={(e) => onCategoryChange(e.target.value)}
             >
-              <Store className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium max-w-[120px] truncate">
-                {storefronts.find((sf) => sf._id === selectedStorefrontId)?.locationName || "Store"}
-              </span>
-              <ChevronDown className={`w-4 h-4 text-primary transition-transform duration-200 ${showStorefrontMenu ? "rotate-180" : ""}`} />
-            </button>
+              <option value="All">{t("pos.allCategories")}</option>
+              {categories.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+
+            <div className="relative shrink-0">
+              <button
+                onClick={onToggleStorefrontMenu}
+                className="flex items-center gap-1.5 sm:gap-2 px-3 py-2.5 bg-[#1E2937] text-white rounded-xl hover:bg-[#334155] transition-all shadow-sm"
+              >
+                <Store className="w-4 h-4 text-primary shrink-0" />
+                <span className="text-xs sm:text-sm font-medium max-w-[100px] sm:max-w-[120px] truncate">
+                  {storefronts.find((sf) => sf._id === selectedStorefrontId)?.locationName || "Store"}
+                </span>
+                <ChevronDown className={`w-4 h-4 text-primary transition-transform duration-200 shrink-0 ${showStorefrontMenu ? "rotate-180" : ""}`} />
+              </button>
+            </div>
+          </div>
 
             {showStorefrontMenu && (
               <>
@@ -118,7 +121,6 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
                 </div>
               </>
             )}
-          </div>
         </div>
       </div>
 
@@ -136,13 +138,19 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
       {!loading && totalPages > 1 && (
         <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-xl border border-gray-200 shadow-sm mb-6">
           <div className="text-sm text-gray-600">
-            {((currentPage - 1) * 100 + 1)} to {Math.min(currentPage * 100, totalItems)} of {totalItems}
+            {t("common.paginationRange", {
+              from: (currentPage - 1) * 100 + 1,
+              to: Math.min(currentPage * 100, totalItems),
+              total: totalItems,
+            })}
           </div>
           <div className="flex items-center gap-2">
             <button onClick={() => onPageChange(1)} disabled={currentPage === 1}
-              className="p-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors" title="First Page"
+              className="p-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors" title={t("common.firstPage") || "First Page"}
+              aria-label={t("common.firstPage") || "First Page"}
             ><ChevronDown className="w-4 h-4 rotate-90" /></button>
             <button onClick={() => onPageChange(Math.max(1, currentPage - 1))} disabled={currentPage === 1}
+              aria-label={t("common.previous") || "Previous"}
               className="px-3 py-1 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
             >{t("common.previous") || "Prev"}</button>
             {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
@@ -154,16 +162,18 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
               );
             })}
             <button onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))} disabled={currentPage === totalPages}
+              aria-label={t("common.next") || "Next"}
               className="px-3 py-1 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
             >{t("common.next") || "Next"}</button>
             <button onClick={() => onPageChange(totalPages)} disabled={currentPage === totalPages}
-              className="p-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors" title="Last Page"
+              className="p-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors" title={t("common.lastPage") || "Last Page"}
+              aria-label={t("common.lastPage") || "Last Page"}
             ><ChevronDown className="w-4 h-4 -rotate-90" /></button>
           </div>
         </div>
       )}
 
-      <div className="flex overflow-y-auto grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4 pb-20">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3 lg:gap-4 overflow-y-auto pb-20">
         {loading ? (
           Array.from({ length: 8 }).map((_, idx) => (
             <div

@@ -1,3 +1,4 @@
+import { useLanguage } from "../../context/LanguageContext";
 import React from "react";
 
 export type POReportStatus =
@@ -58,13 +59,14 @@ const STATUS_STYLES: Record<
 };
 
 export const POStatusBadge: React.FC<{ status: string }> = ({ status }) => {
+  const { t } = useLanguage();
   const key = status?.toLowerCase() || "pending";
   const style = STATUS_STYLES[key] || STATUS_STYLES.pending;
   return (
     <span
       className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold border ${style.className}`}
     >
-      {style.label}
+      {t("purchaseReport." + key) || style.label}
     </span>
   );
 };

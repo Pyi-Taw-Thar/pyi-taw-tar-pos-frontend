@@ -187,7 +187,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                         <input
                           type="text"
                           className="w-full pl-7 pr-2 py-1.5 border border-gray-200 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
-                          placeholder="Search name or phone..."
+                          placeholder={t("common.searchNameOrPhone")}
                           value={searchTerm}
                           onChange={(e) => setSearchTerm(e.target.value)}
                         />
@@ -197,7 +197,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                         value={selectedTownship}
                         onChange={(e) => setSelectedTownship(e.target.value)}
                       >
-                        <option value="">All Townships</option>
+                        <option value="">{t("common.allTownships")}</option>
                         {townships.map((t) => (
                           <option key={t} value={t}>
                             {t}
@@ -255,17 +255,17 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             </div>
 
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Pricing Option</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{t("common.pricingOption")}</label>
               <div className="flex gap-4">
                 <label className="flex items-center cursor-pointer">
                   <input type="radio" name="pricingOption" checked={!useMarkup}
                     onChange={() => onUseMarkupChange(false)} className="mr-2" />
-                  <span className="text-sm">Discount</span>
+                  <span className="text-sm">{t("common.discount")}</span>
                 </label>
                 <label className="flex items-center cursor-pointer">
                   <input type="radio" name="pricingOption" checked={useMarkup}
                     onChange={() => onUseMarkupChange(true)} className="mr-2" />
-                  <span className="text-sm">Markup</span>
+                  <span className="text-sm">{t("pos.markup") || "Markup"}</span>
                 </label>
               </div>
             </div>
@@ -274,7 +274,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   {t("pos.discount")} (%)
-                  <button onClick={onOpenDiscountCalc} className="ml-2 text-primary hover:text-primary-700 transition-colors" title="Calculate discount percentage">
+                  <button onClick={onOpenDiscountCalc} className="ml-2 text-primary hover:text-primary-700 transition-colors" title={t("pos.calcDiscountPercent")}>
                     <Calculator className="w-4 h-4 inline" />
                   </button>
                 </label>
@@ -289,7 +289,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Markup Amount (MMK)
-                  <button onClick={onOpenMarkupCalc} className="ml-2 text-primary hover:text-primary-700 transition-colors" title="Add fixed markup amount">
+                  <button onClick={onOpenMarkupCalc} className="ml-2 text-primary hover:text-primary-700 transition-colors" title={t("pos.addFixedMarkup")}>
                     <Calculator className="w-4 h-4 inline" />
                   </button>
                 </label>
@@ -337,7 +337,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
               )}
               {useMarkup && markupAmount > 0 && (
                 <div className="flex justify-between text-sm text-blue-600">
-                  <span>Markup Amount</span>
+                  <span>{t("pos.markupAmount")}</span>
                   <span>+{markupAmount.toLocaleString()} MMK</span>
                 </div>
               )}

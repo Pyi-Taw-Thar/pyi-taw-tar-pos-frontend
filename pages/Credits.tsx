@@ -188,7 +188,7 @@ export const Credits: React.FC = () => {
           >
             <UserPlus className="w-4 h-4" />{" "}
             <span className="hidden sm:inline">{t("credits.addProfile")}</span>
-            <span className="sm:hidden">Add</span>
+            <span className="sm:hidden">{t("common.add")}</span>
           </button>
         </div>
       </div>
@@ -291,19 +291,19 @@ export const Credits: React.FC = () => {
                       <span className="hidden sm:inline">
                         {t("credits.name")}
                       </span>
-                      <span className="sm:hidden">Name</span>
+                      <span className="sm:hidden">{t("credits.name")}</span>
                     </th>
                     <th className="px-2 sm:px-4 py-3 font-medium">
                       <span className="hidden sm:inline">
                         {t("credits.phone")}
                       </span>
-                      <span className="sm:hidden">Phone</span>
+                      <span className="sm:hidden">{t("credits.phone")}</span>
                     </th>
                     <th className="px-2 sm:px-4 py-3 font-medium">
                       <span className="hidden sm:inline">
                         {t("credits.status")}
                       </span>
-                      <span className="sm:hidden">Status</span>
+                      <span className="sm:hidden">{t("credits.status")}</span>
                     </th>
                     {/* <th className="px-4 py-3 font-medium">
                   {t("credits.blacklistReason")}
@@ -312,13 +312,13 @@ export const Credits: React.FC = () => {
                       <span className="hidden sm:inline">
                         {t("credits.createdAt")}
                       </span>
-                      <span className="sm:hidden">Created</span>
+                      <span className="sm:hidden">{t("credits.createdAt")}</span>
                     </th>
                     <th className="px-2 sm:px-4 py-3 font-medium text-right">
                       <span className="hidden sm:inline">
                         {t("credits.actions")}
                       </span>
-                      <span className="sm:hidden">A</span>
+                      <span className="sm:hidden">{t("credits.actions")}</span>
                     </th>
                   </tr>
                 </thead>
@@ -348,7 +348,7 @@ export const Credits: React.FC = () => {
                             <span className="hidden sm:inline">
                               {t("credits.blacklisted")}
                             </span>
-                            <span className="sm:hidden">Blacklisted</span>
+                            <span className="sm:hidden">{t("credits.blacklistedShort")}</span>
                           </span>
                         ) : (
                           <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 w-fit">
@@ -356,7 +356,7 @@ export const Credits: React.FC = () => {
                             <span className="hidden sm:inline">
                               {t("credits.active")}
                             </span>
-                            <span className="sm:hidden">Active</span>
+                            <span className="sm:hidden">{t("credits.activeShort")}</span>
                           </span>
                         )}
                       </td>
@@ -497,7 +497,7 @@ export const Credits: React.FC = () => {
                     <span className="hidden sm:inline">
                       {t("credits.createProfile")}
                     </span>
-                    <span className="sm:hidden">Create</span>
+                    <span className="sm:hidden">{t("common.create")}</span>
                   </>
                 )}
               </button>

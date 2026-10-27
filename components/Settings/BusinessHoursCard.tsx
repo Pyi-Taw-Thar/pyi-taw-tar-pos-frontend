@@ -1,3 +1,4 @@
+import { useLanguage } from "../../context/LanguageContext";
 import React from "react";
 import { Clock } from "lucide-react";
 import {
@@ -36,13 +37,13 @@ const DayRow: React.FC<{ day: string; hours?: DayHours | null }> = ({
   <div className="flex items-center justify-between py-3 border-b border-slate-100 last:border-0">
     <span className="text-sm font-medium text-slate-700 w-28">{day}</span>
     {!hours || hours.closed ? (
-      <span className="text-sm text-red-600 font-medium">Closed</span>
+      <span className="text-sm text-red-600 font-medium">{t("settings.closed")}</span>
     ) : hours.open && hours.close ? (
       <span className="text-sm text-slate-600">
         {formatTime(hours.open)} – {formatTime(hours.close)}
       </span>
     ) : (
-      <span className="text-sm text-slate-400">Not set</span>
+      <span className="text-sm text-slate-400">{t("settings.notSet")}</span>
     )}
   </div>
 );
@@ -58,6 +59,10 @@ const DEFAULT_DAYS: (keyof BusinessHours)[] = [
 ];
 
 export const BusinessHoursCard: React.FC<BusinessHoursCardProps> = ({
+  ...props
+}) => {
+  const { t } = useLanguage();
+  const { schedule, isEditing, onDayToggle, onTimeChange, onApplyToAllWeekdays, onReset } = props;
   businessHours,
 }) => {
   const days = DEFAULT_DAYS.map((key) => [

@@ -1,3 +1,4 @@
+import { useLanguage } from "../context/LanguageContext";
 import React, { useState, useRef, useEffect } from "react";
 import { MessageSquare, Send, Bot, Loader2, MinusSquare } from "lucide-react";
 import { toast } from "sonner";
@@ -10,6 +11,7 @@ interface Message {
 }
 
 export const AIChat: React.FC = () => {
+  const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -77,11 +79,11 @@ export const AIChat: React.FC = () => {
           },
         ]);
       } else {
-        toast.error("Failed to get a response from AI.");
+        toast.error(t("aiChat.failedResponse"));
       }
     } catch (error) {
       console.error("AI Chat Error:", error);
-      toast.error("Something went wrong while contacting the AI.");
+      toast.error(t("aiChat.error"));
     } finally {
       setIsLoading(false);
     }
@@ -115,7 +117,7 @@ export const AIChat: React.FC = () => {
       <div className="bg-primary px-4 py-3 flex items-center justify-between text-white shadow-md">
         <div className="flex items-center gap-2">
           <Bot className="w-5 h-5" />
-          <h3 className="font-semibold tracking-wide">AI Assistant</h3>
+          <h3 className="font-semibold tracking-wide">{t("aiChat.title")}</h3>
         </div>
         <button
           onClick={() => setIsOpen(false)}
@@ -157,7 +159,7 @@ export const AIChat: React.FC = () => {
           <div className="flex justify-start">
             <div className="max-w-[80%] rounded-2xl px-4 py-3 bg-white text-gray-800 border border-gray-100 shadow-sm flex items-center gap-2">
               <Loader2 className="w-4 h-4 animate-spin text-primary" />
-              <span className="text-sm text-gray-500">AI is thinking...</span>
+              <span className="text-sm text-gray-500">{t("aiChat.thinking")}</span>
             </div>
           </div>
         )}
@@ -171,7 +173,7 @@ export const AIChat: React.FC = () => {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyPress}
-            placeholder="Ask me anything..."
+            placeholder={t("aiChat.askAnything")}
             className="flex-1 outline-none bg-transparent border-none focus:ring-0 focus:outline-none resize-none max-h-32 min-h-[40px] px-3 py-2 text-sm text-gray-700"
             rows={1}
           /> */}

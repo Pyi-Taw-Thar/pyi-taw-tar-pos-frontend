@@ -1,3 +1,4 @@
+import { useLanguage } from "../context/LanguageContext";
 import React, { useEffect, useState } from "react";
 import { Navigate, Outlet, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -15,6 +16,7 @@ import {
  * Validates the token at most once per browser tab session (30 min TTL).
  */
 export const ProtectedRoute: React.FC = () => {
+  const { t } = useLanguage();
   const token = localStorage.getItem("authToken");
   const [isValidating, setIsValidating] = useState(!!token);
   const [isValid, setIsValid] = useState(false);
@@ -60,7 +62,7 @@ export const ProtectedRoute: React.FC = () => {
     removeAuthToken();
     clearSessionValidation();
     localStorage.removeItem("adminData");
-    toast.error("Session expired. Please login again.");
+    toast.error(t("login.sessionExpired"));
     setIsValid(false);
     navigate("/login", { replace: true });
   };
@@ -74,7 +76,7 @@ export const ProtectedRoute: React.FC = () => {
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin text-[#4CAF50] mx-auto mb-4" />
-          <p className="text-slate-600">Validating session...</p>
+          <p className="text-slate-600">{t("login.validatingSession")}</p>
         </div>
       </div>
     );

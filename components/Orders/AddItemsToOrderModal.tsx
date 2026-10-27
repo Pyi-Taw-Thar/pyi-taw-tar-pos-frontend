@@ -839,7 +839,7 @@ export const AddItemsToOrderModal: React.FC<AddItemsToOrderModalProps> = ({
                   onChange={() => setUseMarkup(false)}
                   className="mr-2"
                 />
-                <span className="text-sm">Discount</span>
+                <span className="text-sm">{t("orders.discount")}</span>
               </label>
               <label className="flex items-center cursor-pointer">
                 <input
@@ -849,7 +849,7 @@ export const AddItemsToOrderModal: React.FC<AddItemsToOrderModalProps> = ({
                   onChange={() => setUseMarkup(true)}
                   className="mr-2"
                 />
-                <span className="text-sm">Markup</span>
+                <span className="text-sm">{t("orders.markup")}</span>
               </label>
             </div>
           </div>
@@ -983,7 +983,7 @@ export const AddItemsToOrderModal: React.FC<AddItemsToOrderModalProps> = ({
                   )}
                   {useMarkup && markupAmount > 0 && (
                     <div className="flex justify-between text-blue-600">
-                      <span>Markup Amount</span>
+                      <span>{t("orders.markupAmount")}</span>
                       <span>+{markupAmount.toLocaleString()} MMK</span>
                     </div>
                   )}

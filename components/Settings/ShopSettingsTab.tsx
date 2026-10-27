@@ -14,6 +14,7 @@ import { ShopLogoUpload } from "./ShopLogoUpload";
 import { PrintPaperSizeSettingsCard } from "./PrintPaperSizeSettingsCard";
 
 export const ShopSettingsTab: React.FC = () => {
+  const { t } = useLanguage();
   const [settings, setSettings] = useState<ShopSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -48,7 +49,7 @@ export const ShopSettingsTab: React.FC = () => {
       console.error("Error loading shop settings:", error);
       setSettings(null);
       setEmptyMessage(null);
-      toast.error("Failed to load shop settings");
+      toast.error(t("settings.failedToLoadSettings"));
     } finally {
       setLoading(false);
     }
@@ -94,7 +95,7 @@ export const ShopSettingsTab: React.FC = () => {
       {loading ? (
         <div className="p-8 text-center text-slate-500 mt-6">
           <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-2" />
-          <p>Loading shop settings...</p>
+          <p>{t("settings.loadingShopSettings")}</p>
         </div>
       ) : isEditing || !settings ? (
         <div className="space-y-6">
@@ -105,7 +106,7 @@ export const ShopSettingsTab: React.FC = () => {
             >
               <Info className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-medium">No shop settings yet</p>
+                <p className="text-sm font-medium">{t("settings.noShopSettings")}</p>
                 <p className="text-sm text-blue-800/90 mt-1">
                   {emptyMessage ||
                     "Create your shop profile below so receipts and vouchers show the correct shop name, address, and phone number."}

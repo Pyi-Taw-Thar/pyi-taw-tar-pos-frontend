@@ -22,6 +22,8 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
 
   useEffect(() => {
     localStorage.setItem("language", language);
+    // screen reader / browser font ရွေးချယ်မှုအတွက် စာမျက်နှာ ဘာသာစကား သတ်မှတ်
+    document.documentElement.lang = language === "my" ? "my" : "en";
   }, [language]);
 
   const setLanguage = (lang: Language) => {

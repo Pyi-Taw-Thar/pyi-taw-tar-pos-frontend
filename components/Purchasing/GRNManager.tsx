@@ -1,3 +1,4 @@
+import { useLanguage } from "../../context/LanguageContext";
 import React, { useState } from "react";
 import { ApiPurchaseOrder, GRNItem, Supplier } from "../../types";
 import { toast } from "sonner";
@@ -18,6 +19,7 @@ export const GRNManager: React.FC<GRNManagerProps> = ({
   suppliers,
   onSuccess,
 }) => {
+  const { t } = useLanguage();
   const [selectedPOId, setSelectedPOId] = useState("");
   const [grnItems, setGRNItems] = useState<ExtendedGRNItem[]>([]);
   const [grnNote, setGRNNote] = useState("");
@@ -90,12 +92,12 @@ export const GRNManager: React.FC<GRNManagerProps> = ({
 
   const submitGRN = async () => {
     if (!selectedPOId) {
-      toast.error("Please select a Purchase Order");
+      toast.error(t("purchasing.selectPO"));
       return;
     }
 
     if (grnItems.length === 0) {
-      toast.error("Please load PO items first");
+      toast.error(t("purchasing.loadPOItemsFirst"));
       return;
     }
 
@@ -129,14 +131,14 @@ export const GRNManager: React.FC<GRNManagerProps> = ({
         setSelectedPOId("");
         setGRNItems([]);
         setGRNNote("");
-        toast.success("GRN Created Successfully!");
+        toast.success(t("purchasing.grnCreated"));
         if (onSuccess) onSuccess();
       } else {
         toast.error(result.message || "Failed to create GRN");
       }
     } catch (error) {
       console.error(error);
-      toast.error("An error occurred while creating GRN");
+      toast.error(t("purchasing.grnCreateError"));
     } finally {
       setIsSubmitting(false);
     }
@@ -145,7 +147,7 @@ export const GRNManager: React.FC<GRNManagerProps> = ({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
       <div className="bg-white p-6 rounded-xl shadow-sm border">
-        <h2 className="font-bold text-lg mb-4">Create Goods Received Note</h2>
+        <h2 className="font-bold text-lg mb-4">{t("purchasing.createGRNTitle")}</h2>
         <div className="space-y-4">
           <div>
             <label className="block text-xs font-bold text-slate-500 mb-1">
@@ -159,7 +161,7 @@ export const GRNManager: React.FC<GRNManagerProps> = ({
                 setGRNItems([]);
               }}
             >
-              <option value="">Select PO...</option>
+              <option value="">{t("purchasing.selectPOPlaceholder")}</option>
               {pendingPOs.map((po) => (
                 <option key={po._id} value={po._id}>
                   PO-{po.createdAt.split("T")[0]} -{" "}
@@ -210,7 +212,7 @@ export const GRNManager: React.FC<GRNManagerProps> = ({
               className="w-full border rounded p-2 text-sm"
               value={grnNote}
               onChange={(e) => setGRNNote(e.target.value)}
-              placeholder="Additional notes..."
+              placeholder={t("purchasing.additionalNotesPlaceholder")}
               rows={2}
             />
           </div>

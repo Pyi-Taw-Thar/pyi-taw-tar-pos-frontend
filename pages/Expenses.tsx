@@ -78,7 +78,7 @@ export const Expenses: React.FC = () => {
       }
     } catch (error) {
       console.error("Error loading locations:", error);
-      toast.error("Failed to load locations");
+      toast.error(t("expenses.failedToLoadLocations"));
     }
   };
 
@@ -337,7 +337,7 @@ export const Expenses: React.FC = () => {
           <div>
             {/* Mobile scroll indicator */}
             <div className="sm:hidden px-4 py-2 bg-slate-50 text-xs text-slate-500 text-center">
-              ← Swipe to see more →
+              {t("common.swipeMore")}
             </div>
 
             {/* Table container with horizontal scroll on mobile */}
@@ -349,44 +349,44 @@ export const Expenses: React.FC = () => {
                       <span className="hidden sm:inline">
                         {t("expenses.date")}
                       </span>
-                      <span className="sm:hidden">Date</span>
+                      <span className="sm:hidden">{t("expenses.date")}</span>
                     </th>
                     <th className="px-2 sm:px-4 py-3 font-semibold text-slate-600">
                       <span className="hidden sm:inline">
                         {t("expenses.category")}
                       </span>
-                      <span className="sm:hidden">Category</span>
+                      <span className="sm:hidden">{t("expenses.category")}</span>
                     </th>
                     <th className="px-2 sm:px-4 py-3 font-semibold text-slate-600">
                       <span className="hidden sm:inline">
                         {t("expenses.location")}
                       </span>
-                      <span className="sm:hidden">Location</span>
+                      <span className="sm:hidden">{t("expenses.location")}</span>
                     </th>
                     <th className="px-2 sm:px-4 py-3 font-semibold text-slate-600">
                       <span className="hidden sm:inline">
                         {t("expenses.notes")}
                       </span>
-                      <span className="sm:hidden">Notes</span>
+                      <span className="sm:hidden">{t("expenses.notes")}</span>
                     </th>
                     <th className="px-2 sm:px-4 py-3 font-semibold text-slate-600">
                       <span className="hidden sm:inline">
                         {t("expenses.recordedBy")}
                       </span>
-                      <span className="sm:hidden">Recorded By</span>
+                      <span className="sm:hidden">{t("expenses.recordedBy")}</span>
                     </th>
                     <th className="px-2 sm:px-4 py-3 font-semibold text-slate-600 text-right">
                       <span className="hidden sm:inline">
                         {t("expenses.amount")}
                       </span>
-                      <span className="sm:hidden">Amount</span>
+                      <span className="sm:hidden">{t("expenses.amount")}</span>
                     </th>
                     {userRole === "owner" && (
                       <th className="px-2 sm:px-4 py-3 font-semibold text-slate-600 text-center">
                         <span className="hidden sm:inline">
                           {t("common.actions")}
                         </span>
-                        <span className="sm:hidden">A</span>
+                        <span className="sm:hidden">{t("common.actions") || "Actions"}</span>
                       </th>
                     )}
                   </tr>
@@ -431,7 +431,7 @@ export const Expenses: React.FC = () => {
                             <span className="hidden sm:inline">
                               {t("expenses.noLocation")}
                             </span>
-                            <span className="sm:hidden">No location</span>
+                            <span className="sm:hidden">{t("expenses.noLocation")}</span>
                           </span>
                         )}
                       </td>
@@ -551,7 +551,7 @@ export const Expenses: React.FC = () => {
               {userRole !== "cashier" && (
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">
-                    Location <span className="text-red-500">*</span>
+                    {t("expenses.location")} <span className="text-red-500">*</span>
                   </label>
                   <select
                     required
@@ -561,7 +561,7 @@ export const Expenses: React.FC = () => {
                       setFormData({ ...formData, locationId: e.target.value })
                     }
                   >
-                    <option value="">Select Location</option>
+                    <option value="">{t("expenses.noLocation")}</option>
                     {locations.map((location) => (
                       <option key={location._id} value={location._id}>
                         {location.locationName} ({location.locationCode})
@@ -652,7 +652,7 @@ export const Expenses: React.FC = () => {
                       <span className="hidden sm:inline">
                         {t("expenses.createExpense")}
                       </span>
-                      <span className="sm:hidden">Create</span>
+                      <span className="sm:hidden">{t("common.create")}</span>
                     </>
                   )}
                 </button>

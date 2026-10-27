@@ -165,7 +165,7 @@ export const TransferDetailModal: React.FC<TransferDetailModalProps> = ({
   // console.log(transfer);
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Transfer Details">
+    <Modal isOpen={isOpen} onClose={handleClose} title={t("purchasing.transferDetailsTitle")}>
       {loading ? (
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
@@ -294,13 +294,13 @@ export const TransferDetailModal: React.FC<TransferDetailModalProps> = ({
               <div className="text-2xl font-bold text-blue-600">
                 {transfer.lineItems.length}
               </div>
-              <div className="text-sm text-blue-600">Total Items</div>
+              <div className="text-sm text-blue-600">{t("orders.items")}</div>
             </div>
             <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-200 text-center">
               <div className="text-2xl font-bold text-indigo-600">
                 {totalQuantity}
               </div>
-              <div className="text-sm text-indigo-600">Total Quantity</div>
+              <div className="text-sm text-indigo-600">{t("inventory.totalQuantity")}</div>
             </div>
           </div>
 
@@ -339,10 +339,10 @@ export const TransferDetailModal: React.FC<TransferDetailModalProps> = ({
                 <thead className="bg-slate-50 border-b">
                   <tr>
                     <th className="p-3 text-left">#</th>
-                    <th className="p-3 text-left">Product Name</th>
-                    <th className="p-3 text-center">Quantity</th>
+                    <th className="p-3 text-left">{t("inventory.productName")}</th>
+                    <th className="p-3 text-center">{t("common.quantity")}</th>
                     {/* <th className="p-3 text-left">GRN Line Item ID</th> */}
-                    <th className="p-3 text-left">Notes</th>
+                    <th className="p-3 text-left">{t("common.notes")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">

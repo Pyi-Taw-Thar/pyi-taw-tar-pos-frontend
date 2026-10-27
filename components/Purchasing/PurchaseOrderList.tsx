@@ -84,7 +84,7 @@ export const PurchaseOrderList: React.FC<PurchaseOrderListProps> = ({
     try {
       const res = await updatePurchaseStatus(id, status);
       if (res.success) {
-        toast.success("Status updated successfully");
+        toast.success(t("purchasing.statusUpdated"));
         // Reload with current filter status
         loadPurchases(
           pagination.currentPage,
@@ -122,7 +122,7 @@ export const PurchaseOrderList: React.FC<PurchaseOrderListProps> = ({
     try {
       const res = await softDeletePurchase(poToDelete._id);
       if (res.success) {
-        toast.success("Purchase order deleted successfully");
+        toast.success(t("purchasing.poDeleted"));
         loadPurchases(pagination.currentPage, pagination.itemsPerPage, poFilter);
         setDeleteModalOpen(false);
         setPoToDelete(null);
@@ -146,7 +146,7 @@ export const PurchaseOrderList: React.FC<PurchaseOrderListProps> = ({
     try {
       const res = await restorePurchase(po._id);
       if (res.success) {
-        toast.success("Purchase order restored successfully");
+        toast.success(t("purchasing.poRestored"));
         loadPurchases(pagination.currentPage, pagination.itemsPerPage, poFilter);
         loadDeletedPurchases(
           deletedPagination.currentPage,
@@ -314,14 +314,14 @@ export const PurchaseOrderList: React.FC<PurchaseOrderListProps> = ({
           <table className="w-full text-xs sm:text-sm text-left">
             <thead className="bg-slate-50 border-b sticky top-0 z-10 text-xs">
               <tr>
-                <th className="p-3 sm:p-4">PO ID</th>
-                <th className="p-3 sm:p-4">Date</th>
-                <th className="p-3 sm:p-4">Supplier</th>
-                <th className="p-3 sm:p-4">Total Amount</th>
-                <th className="p-3 sm:p-4">Paid Amount</th>
-                <th className="p-3 sm:p-4">Remaining Balance</th>
-                <th className="p-3 sm:p-4">Status</th>
-                <th className="p-3 sm:p-4 text-center">Actions</th>
+                <th className="p-3 sm:p-4">{t("purchasing.poId")}</th>
+                <th className="p-3 sm:p-4">{t("common.date")}</th>
+                <th className="p-3 sm:p-4">{t("purchasing.supplier")}</th>
+                <th className="p-3 sm:p-4">{t("orders.finalAmount")}</th>
+                <th className="p-3 sm:p-4">{t("orders.paidAmount")}</th>
+                <th className="p-3 sm:p-4">{t("orders.remainingBalance")}</th>
+                <th className="p-3 sm:p-4">{t("common.status")}</th>
+                <th className="p-3 sm:p-4 text-center">{t("common.actions")}</th>
               </tr>
             </thead>
             <tbody className="divide-y">
@@ -391,7 +391,7 @@ export const PurchaseOrderList: React.FC<PurchaseOrderListProps> = ({
                           <button
                             onClick={() => onViewPO?.(po)}
                             className="text-xs bg-slate-100 text-slate-700 px-2.5 py-1 rounded hover:bg-slate-200 border font-medium transition-colors flex items-center gap-1"
-                            title="View PO Details"
+                            title={t("purchasing.viewPODetailsTitle")}
                           >
                             <Eye className="w-3 h-3" /> View
                           </button>
@@ -404,7 +404,7 @@ export const PurchaseOrderList: React.FC<PurchaseOrderListProps> = ({
                                 ? "bg-green-600 text-white hover:bg-green-700 border-green-600 shadow-sm"
                                 : "bg-slate-50 text-slate-600 hover:bg-slate-100 border-slate-200"
                                 }`}
-                              title="Record Credit Payment"
+                              title={t("purchasing.recordCreditPaymentTitle")}
                             >
                               <CreditCard className="w-3 h-3" /> Pay
                             </button>
@@ -415,7 +415,7 @@ export const PurchaseOrderList: React.FC<PurchaseOrderListProps> = ({
                             <button
                               onClick={() => setSelectedPoForHistory(po._id)}
                               className="text-xs bg-purple-50 text-purple-700 px-2 py-1 rounded hover:bg-purple-100 border border-purple-200 font-medium transition-colors flex items-center gap-1"
-                              title="View Credit Payment History"
+                              title={t("purchasing.viewCreditPaymentHistoryTitle")}
                             >
                               <History className="w-3 h-3" />
                             </button>
@@ -454,7 +454,7 @@ export const PurchaseOrderList: React.FC<PurchaseOrderListProps> = ({
                                 <button
                                   onClick={() => handleSoftDelete(po)}
                                   className="text-xs bg-red-50 text-red-600 px-2 py-1 rounded hover:bg-red-100 border border-red-200 font-medium transition-colors"
-                                  title="Delete PO"
+                                  title={t("purchasing.deletePOTitle")}
                                 >
                                   <Trash2 className="w-3 h-3" />
                                 </button>
@@ -476,7 +476,7 @@ export const PurchaseOrderList: React.FC<PurchaseOrderListProps> = ({
       {/* Delete Confirmation Modal */}
       <ConfirmModal
         isOpen={deleteModalOpen}
-        title="Delete Purchase Order"
+        title={t("purchasing.deletePurchaseOrderTitle")}
         message={`Are you sure you want to delete PO ${poToDelete?.poNumber}? This action can be undone.`}
         confirmText="Delete"
         cancelText="Cancel"

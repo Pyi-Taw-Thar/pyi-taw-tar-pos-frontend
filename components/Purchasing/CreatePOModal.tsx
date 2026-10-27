@@ -237,7 +237,7 @@ export const CreatePOModal: React.FC<CreatePOModalProps> = ({
 
   const submitPO = async () => {
     if (!poSupplierId || poItems.length === 0) {
-      toast.error("Please select supplier and add at least one item");
+      toast.error(t("purchasing.selectSupplierAndItem"));
       return;
     }
 
@@ -260,7 +260,7 @@ export const CreatePOModal: React.FC<CreatePOModalProps> = ({
     try {
       const response = await createPurchase(payload);
       if (response.success) {
-        toast.success("Purchase Order Created Successfully!");
+        toast.success(t("purchasing.poCreatedSuccess"));
         setPOSupplierId("");
         setPOItems([]);
         setPONote("");
@@ -286,7 +286,7 @@ export const CreatePOModal: React.FC<CreatePOModalProps> = ({
     : [];
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Create Purchase Order">
+    <Modal isOpen={isOpen} onClose={onClose} title={t("purchasing.createPOTitle")}>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-[75vh]">
         <div className="bg-white p-6 rounded-xl shadow-sm border">
           <div className="space-y-4">
@@ -297,7 +297,7 @@ export const CreatePOModal: React.FC<CreatePOModalProps> = ({
               <input
                 type="text"
                 className="w-full border rounded p-2 text-sm bg-white cursor-pointer"
-                placeholder="Type to search supplier..."
+                placeholder={t("purchasing.searchSupplierPlaceholder")}
                 value={showSupplierDropdown ? supplierSearchQuery : (selectedSupplierName || "")}
                 onChange={(e) => {
                   setSupplierSearchQuery(e.target.value);
@@ -373,7 +373,7 @@ export const CreatePOModal: React.FC<CreatePOModalProps> = ({
                 <input
                   type="text"
                   className="w-full border rounded p-2 text-sm"
-                  placeholder="Type to search and select product..."
+                  placeholder={t("purchasing.searchProductPlaceholder")}
                   value={productSearchQuery}
                   onChange={(e) => handleProductInputChange(e.target.value)}
                   onFocus={() => setShowProductDropdown(true)}
@@ -439,7 +439,7 @@ export const CreatePOModal: React.FC<CreatePOModalProps> = ({
                   <input
                     type="number"
                     className="w-full border rounded p-2 text-sm"
-                    placeholder="Qty"
+                    placeholder={t("purchasing.qtyPlaceholder")}
                     value={poQty}
                     onChange={(e) => setPOQty(Number(e.target.value))}
                     min="1"
@@ -482,7 +482,7 @@ export const CreatePOModal: React.FC<CreatePOModalProps> = ({
                 className="w-full border rounded p-2 text-sm"
                 value={poNote}
                 onChange={(e) => setPONote(e.target.value)}
-                placeholder="Additional notes..."
+                placeholder={t("purchasing.additionalNotes")}
                 rows={2}
               />
             </div>
@@ -490,16 +490,16 @@ export const CreatePOModal: React.FC<CreatePOModalProps> = ({
         </div>
 
         <div className="bg-white p-6 rounded-xl shadow-sm border flex flex-col">
-          <h2 className="font-bold text-lg mb-4">PO Summary</h2>
+          <h2 className="font-bold text-lg mb-4">{t("purchasing.poSummary")}</h2>
           <div className="flex-1 overflow-auto mb-4">
             <table className="w-full text-sm text-left">
               <thead className="bg-slate-50">
                 <tr className="border-b">
-                  <th className="py-2 px-1">Item</th>
-                  <th className="py-2 px-1">Qty</th>
-                  <th className="py-2 px-1">Unit</th>
-                  <th className="py-2 px-1">Cost Price</th>
-                  <th className="py-2 px-1 w-12">Action</th>
+                  <th className="py-2 px-1">{t("purchasing.item")}</th>
+                  <th className="py-2 px-1">{t("orders.qty")}</th>
+                  <th className="py-2 px-1">{t("inventory.unit") || "Unit"}</th>
+                  <th className="py-2 px-1">{t("inventory.cost")}</th>
+                  <th className="py-2 px-1 w-12">{t("common.actions")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -515,7 +515,7 @@ export const CreatePOModal: React.FC<CreatePOModalProps> = ({
                       <button
                         onClick={() => removePOItem(i)}
                         className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
-                        title="Remove item"
+                        title={t("purchasing.removeItem")}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>

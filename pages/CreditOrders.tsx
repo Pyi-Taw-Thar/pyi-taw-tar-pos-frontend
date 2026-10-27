@@ -229,7 +229,7 @@ export const CreditOrders: React.FC = () => {
         creditPersonId,
       );
       if (response.success) {
-        toast.success("Credit person assigned successfully");
+        toast.success(t("orders.creditPersonAssigned"));
         setShowCreditPersonModal(false);
         setSelectedOrderForCredit(null);
         // Refresh orders
@@ -239,7 +239,7 @@ export const CreditOrders: React.FC = () => {
       }
     } catch (error) {
       console.error("Error assigning credit person:", error);
-      toast.error("Failed to assign credit person");
+      toast.error(t("orders.failedToAssign"));
     } finally {
       setAssigningCreditPerson(false);
     }
@@ -261,16 +261,16 @@ export const CreditOrders: React.FC = () => {
         newPaidAmount,
       );
       if (response.success) {
-        toast.success("Paid amount updated successfully");
+        toast.success(t("creditOrders.paidAmountUpdated"));
         setShowPaidAmountModal(false);
         setSelectedOrderForPaidAmount(null);
         await loadOrders();
       } else {
-        toast.error(response.message || "Failed to update paid amount");
+        toast.error(response.message || t("creditOrders.failedToUpdatePaidAmount"));
       }
     } catch (error) {
       console.error("Error updating paid amount:", error);
-      toast.error("Failed to update paid amount");
+      toast.error(t("creditOrders.failedToUpdatePaidAmount"));
     } finally {
       setUpdatingPaidAmount(false);
     }
@@ -301,16 +301,16 @@ export const CreditOrders: React.FC = () => {
     try {
       const response = await deleteCreditOrder(orderToDelete._id);
       if (response.success) {
-        toast.success("Credit order deleted successfully");
+        toast.success(t("creditOrders.creditOrderDeleted"));
         setShowDeleteConfirmModal(false);
         setOrderToDelete(null);
         await loadOrders();
       } else {
-        toast.error(response.message || "Failed to delete credit order");
+        toast.error(response.message || t("creditOrders.failedToDeleteCreditOrder"));
       }
     } catch (error) {
       console.error("Error deleting credit order:", error);
-      toast.error("Failed to delete credit order");
+      toast.error(t("creditOrders.failedToDeleteCreditOrder"));
     } finally {
       setDeletingOrder(false);
     }
@@ -393,14 +393,14 @@ export const CreditOrders: React.FC = () => {
                       <span className="hidden sm:inline">
                         Credit Order Number
                       </span>
-                      <span className="sm:hidden">Order #</span>
+                      <span className="sm:hidden">{t("creditOrders.creditOrderNumber")}</span>
                     </th>
 
                     <th className="px-2 sm:px-4 py-3 font-semibold text-slate-600">
                       <span className="hidden sm:inline">
                         {t("creditOrders.storefront")}
                       </span>
-                      <span className="sm:hidden">SF</span>
+                      <span className="sm:hidden">{t("creditOrders.sfShort")}</span>
                     </th>
                     <th className="px-2 sm:px-4 py-3 font-semibold text-slate-600">
                       <span className="hidden sm:inline">
@@ -446,7 +446,7 @@ export const CreditOrders: React.FC = () => {
                       <span className="hidden sm:inline">
                         {t("creditOrders.actions")}
                       </span>
-                      <span className="sm:hidden">A</span>
+                      <span className="sm:hidden">{t("creditOrders.actions")}</span>
                     </th>
                   </tr>
                 </thead>
@@ -528,7 +528,7 @@ export const CreditOrders: React.FC = () => {
                           {/* <button
                             onClick={() => handleOpenPaidAmountModal(order)}
                             className="p-1 hover:bg-slate-200 rounded text-slate-400 hover:text-blue-600 transition-colors"
-                            title="Edit Paid Amount"
+                            title={t("creditOrders.editPaidAmount")}
                           >
                             <Edit2 className="w-3.5 h-3.5" />
                           </button> */}
@@ -583,8 +583,8 @@ export const CreditOrders: React.FC = () => {
                             className="text-xs bg-red-100 text-red-700 px-2 py-1.5 sm:px-3 sm:py-1.5 rounded hover:bg-red-200 border border-red-200 font-medium transition-colors flex items-center gap-1"
                           >
                             <Trash2 className="w-3 h-3" />
-                            <span className="hidden xl:block">Delete</span>
-                            <span className="xl:hidden sm:hidden">Del</span>
+                            <span className="hidden xl:block">{t("common.delete")}</span>
+                            <span className="xl:hidden sm:hidden">{t("common.delShort")}</span>
                           </button> */}
                         </div>
                       </td>
@@ -657,7 +657,7 @@ export const CreditOrders: React.FC = () => {
                       type="number"
                       value={newPaidAmount}
                       onChange={(e) => setNewPaidAmount(e.target.value)}
-                      placeholder="Enter amount..."
+                      placeholder={t("creditOrders.enterAmountPlaceholder")}
                       className="w-full pl-3 pr-12 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none text-lg font-semibold"
                       autoFocus
                     />
@@ -669,7 +669,7 @@ export const CreditOrders: React.FC = () => {
 
                 <div className="p-3 bg-blue-50 rounded-xl border border-blue-100">
                   <div className="flex justify-between text-sm">
-                    <span className="text-blue-700">Remaining Balance:</span>
+                    <span className="text-blue-700">{t("creditOrders.remainingBalanceLabel")}</span>
                     <span className="font-bold text-blue-800">
                       {Math.max(
                         0,
@@ -732,19 +732,19 @@ export const CreditOrders: React.FC = () => {
                 <div className="bg-slate-50 rounded-lg p-4 mb-6">
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
-                      <span className="text-slate-600">Order Number:</span>
+                      <span className="text-slate-600">{t("creditOrders.orderNumber")}:</span>
                       <span className="font-medium text-slate-800">
                         {orderToDelete.orderNumber}
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-slate-600">Total Amount:</span>
+                      <span className="text-slate-600">{t("creditOrders.totalAmount")}:</span>
                       <span className="font-medium text-slate-800">
                         {orderToDelete.finalAmount.toLocaleString()} MMK
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-slate-600">Customer:</span>
+                      <span className="text-slate-600">{t("creditOrders.customer")}:</span>
                       <span className="font-medium text-slate-800">
                         {orderToDelete.creditPersonId?.name ||
                           "No customer assigned"}
@@ -781,7 +781,7 @@ export const CreditOrders: React.FC = () => {
                       Deleting...
                     </>
                   ) : (
-                    "Delete Order"
+                    t("creditOrders.deleteOrderButton")
                   )}
                 </button>
               </div>

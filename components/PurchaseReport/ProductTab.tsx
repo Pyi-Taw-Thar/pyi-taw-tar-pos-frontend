@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
+import { useLanguage } from "../../context/LanguageContext";
 import { Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { DateRangePicker } from "../Reports/DateRangePicker";
@@ -29,6 +30,7 @@ const formatDateForAPI = (date: Date | null): string | null => {
 };
 
 export const ProductTab: React.FC = () => {
+  const { t } = useLanguage();
   const [startDate, setStartDate] = useState<Date | null>(getToday());
   const [endDate, setEndDate] = useState<Date | null>(getToday());
   const [supplierId, setSupplierId] = useState("");
@@ -79,7 +81,7 @@ export const ProductTab: React.FC = () => {
         toast.error(res.message);
       }
     } catch {
-      toast.error("Failed to load product report");
+      toast.error(t("purchaseReport.failedToLoadProductReport"));
     } finally {
       setLoading(false);
     }
@@ -110,7 +112,7 @@ export const ProductTab: React.FC = () => {
             }}
             className="border rounded-lg px-3 py-2 text-sm"
           >
-            <option value="">All suppliers</option>
+            <option value="">{t("purchaseReport.allSuppliers")}</option>
             {suppliers.map((s) => (
               <option key={s._id || s.id} value={s._id || s.id}>
                 {s.supplierName}
@@ -125,7 +127,7 @@ export const ProductTab: React.FC = () => {
             }}
             className="border rounded-lg px-3 py-2 text-sm"
           >
-            <option value="">All categories</option>
+            <option value="">{t("purchaseReport.allCategories")}</option>
             {categories.map((c) => (
               <option key={c} value={c}>
                 {c}
@@ -152,8 +154,8 @@ export const ProductTab: React.FC = () => {
             }}
             className="border rounded-lg px-3 py-2 text-sm"
           >
-            <option value="desc">Descending</option>
-            <option value="asc">Ascending</option>
+            <option value="desc">{t("purchaseReport.descending")}</option>
+            <option value="asc">{t("purchaseReport.ascending")}</option>
           </select>
         </div>
         <button
@@ -175,29 +177,29 @@ export const ProductTab: React.FC = () => {
         <>
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
             <div className="bg-white p-4 rounded-xl border">
-              <p className="text-xs text-slate-500 uppercase font-bold">Products</p>
+              <p className="text-xs text-slate-500 uppercase font-bold">{t("purchaseReport.products")}</p>
               <p className="text-2xl font-bold">{totals.uniqueProducts}</p>
             </div>
             <div className="bg-white p-4 rounded-xl border">
-              <p className="text-xs text-slate-500 uppercase font-bold">Total Ordered</p>
+              <p className="text-xs text-slate-500 uppercase font-bold">{t("purchaseReport.ordered")}</p>
               <p className="text-2xl font-bold text-blue-600">
                 {totals.totalOrdered.toLocaleString()}
               </p>
             </div>
             <div className="bg-white p-4 rounded-xl border">
-              <p className="text-xs text-slate-500 uppercase font-bold">Received</p>
+              <p className="text-xs text-slate-500 uppercase font-bold">{t("purchaseReport.received")}</p>
               <p className="text-2xl font-bold text-green-600">
                 {totals.totalReceived.toLocaleString()}
               </p>
             </div>
             <div className="bg-white p-4 rounded-xl border">
-              <p className="text-xs text-slate-500 uppercase font-bold">Remaining</p>
+              <p className="text-xs text-slate-500 uppercase font-bold">{t("purchaseReport.remaining")}</p>
               <p className="text-2xl font-bold text-amber-600">
                 {totals.totalRemaining.toLocaleString()}
               </p>
             </div>
             <div className="bg-white p-4 rounded-xl border">
-              <p className="text-xs text-slate-500 uppercase font-bold">Total Amount</p>
+              <p className="text-xs text-slate-500 uppercase font-bold">{t("purchaseReport.totalAmount")}</p>
               <p className="text-lg font-bold text-primary">
                 {formatMMK(totals.totalAmount)}
               </p>
@@ -209,14 +211,14 @@ export const ProductTab: React.FC = () => {
               <table className="w-full text-sm text-left min-w-[960px]">
                 <thead className="bg-slate-50 border-b">
                   <tr>
-                    <th className="px-4 py-3 font-medium text-slate-600">Product</th>
-                    <th className="px-4 py-3 font-medium text-slate-600">Code</th>
-                    <th className="px-4 py-3 font-medium text-slate-600">Category</th>
-                    <th className="px-4 py-3 font-medium text-slate-600">Unit</th>
+                    <th className="px-4 py-3 font-medium text-slate-600">{t("purchaseReport.products")}</th>
+                    <th className="px-4 py-3 font-medium text-slate-600">{t("purchaseReport.code")}</th>
+                    <th className="px-4 py-3 font-medium text-slate-600">{t("purchaseReport.category")}</th>
+                    <th className="px-4 py-3 font-medium text-slate-600">{t("purchaseReport.unit")}</th>
                     <th className="px-4 py-3 font-medium text-slate-600 text-right">
                       Ordered
                     </th>
-                    <th className="px-4 py-3 font-medium text-slate-600">Progress</th>
+                    <th className="px-4 py-3 font-medium text-slate-600">{t("purchaseReport.progress")}</th>
                     <th className="px-4 py-3 font-medium text-slate-600 text-right">
                       Remaining
                     </th>

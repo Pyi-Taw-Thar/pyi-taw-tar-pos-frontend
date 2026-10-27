@@ -51,7 +51,7 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
     <div className="bg-white shadow-sm border rounded-xl overflow-hidden">
       {/* Mobile scroll indicator */}
       <div className="sm:hidden px-4 py-2 bg-slate-50 border-b text-xs text-slate-500 text-center">
-        ← Swipe to see more →
+        {t("common.swipeMore")}
       </div>
 
       {/* Table container with horizontal scroll on mobile */}
@@ -72,15 +72,15 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
                   />
                 </th>
               )}
-              <th className="px-2 sm:px-4 py-3 text-center">No</th>
-              <th className="px-2 sm:px-4 py-3">Code</th>
-              <th className="px-2 sm:px-4 py-3">Name</th>
-              <th className="px-2 sm:px-4 py-3">Brand</th>
-              <th className="px-2 sm:px-4 py-3">Category</th>
-              <th className="px-2 sm:px-4 py-3 text-right">Cost</th>
-              <th className="px-2 sm:px-4 py-3 text-right">Price</th>
-              <th className="px-2 sm:px-4 py-3 text-center">Status</th>
-              <th className="px-2 sm:px-4 py-3 text-center">Actions</th>
+              <th className="px-2 sm:px-4 py-3 text-center">#</th>
+              <th className="px-2 sm:px-4 py-3">{t("inventory.code")}</th>
+              <th className="px-2 sm:px-4 py-3">{t("inventory.name")}</th>
+              <th className="px-2 sm:px-4 py-3">{t("inventory.brand")}</th>
+              <th className="px-2 sm:px-4 py-3">{t("inventory.category")}</th>
+              <th className="px-2 sm:px-4 py-3 text-right">{t("inventory.cost")}</th>
+              <th className="px-2 sm:px-4 py-3 text-right">{t("inventory.price")}</th>
+              <th className="px-2 sm:px-4 py-3 text-center">{t("common.status")}</th>
+              <th className="px-2 sm:px-4 py-3 text-center">{t("common.actions")}</th>
             </tr>
           </thead>
           <tbody className="divide-y">
@@ -138,7 +138,7 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
                             : "bg-red-100 text-red-700 hover:bg-red-200"
                         }`}
                       >
-                        {p.status === "active" ? "Active" : "Inactive"}
+                        {p.status === "active" ? t("common.active") : t("common.inactive")}
                       </button>
                     ) : (
                       <span
@@ -148,7 +148,7 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
                             : "bg-red-100 text-red-700"
                         }`}
                       >
-                        {p.status === "active" ? "Active" : "Inactive"}
+                        {p.status === "active" ? t("common.active") : t("common.inactive")}
                       </span>
                     )}
                   </td>
@@ -156,22 +156,22 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
                     <div className="flex items-center justify-center gap-1 sm:gap-2">
                       <button
                         onClick={() => onViewDetails(p.id)}
-                        className="inventory-view-btn px-2 py-1 sm:px-3 sm:py-1.5 text-xs rounded-2xl border border-[#212529] hover:bg-gray-200 transition-colors whitespace-nowrap"
+                        className="inventory-view-btn min-w-[36px] min-h-[36px] px-2 py-1 sm:min-w-0 sm:min-h-0 sm:px-3 sm:py-1.5 text-xs rounded-2xl border border-[#212529] hover:bg-gray-200 transition-colors whitespace-nowrap flex items-center justify-center"
                       >
                         <span className="hidden sm:inline">
                           {t("inventory.checkItem")}
                         </span>
-                        <span className="sm:hidden">View</span>
+                        <span className="sm:hidden">{t("common.view")}</span>
                       </button>
                       {userRole === "owner" && (
                         <button
                           onClick={() => onEdit(p)}
-                          className="px-2 py-1 sm:px-3 sm:py-1.5 text-xs rounded-2xl border border-[#212529] hover:bg-gray-200 transition-colors whitespace-nowrap"
+                          className="min-w-[36px] min-h-[36px] px-2 py-1 sm:min-w-0 sm:min-h-0 sm:px-3 sm:py-1.5 text-xs rounded-2xl border border-[#212529] hover:bg-gray-200 transition-colors whitespace-nowrap flex items-center justify-center"
                         >
                           <span className="hidden sm:inline">
                             {t("inventory.editItem")}
                           </span>
-                          <span className="sm:hidden">Edit</span>
+                          <span className="sm:hidden">{t("common.edit")}</span>
                         </button>
                       )}
                     </div>

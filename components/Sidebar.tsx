@@ -109,7 +109,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           { path: "/orders", label: t("sidebar.orders"), icon: Receipt },
           {
             path: "/order-fulfillment",
-            label: t("sidebar.orderFulfillment") || "Order ထုတ်ပိုးစစ်ဆေးခြင်း",
+            label: t("sidebar.orderFulfillment"),
             icon: PackageCheck,
           },
           // {
@@ -216,7 +216,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       },
       {
         id: "ecommerce",
-        label: t("Ecommerce"),
+        label: t("sidebar.groupEcommerce"),
         icon: ShoppingBag,
         children: [
           {
@@ -315,7 +315,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           <button
             onClick={onClose}
             className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-            aria-label="Close menu"
+            aria-label={t("common.close") || "Close menu"}
           >
             <X className="w-5 h-5 text-white" />
           </button>

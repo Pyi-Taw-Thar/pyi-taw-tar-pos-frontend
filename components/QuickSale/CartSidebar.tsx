@@ -52,10 +52,10 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-200 text-left text-xs text-gray-500 uppercase">
-                <th className="px-4 py-2 w-10">Sr</th>
-                <th className="px-4 py-2">Description</th>
-                <th className="px-4 py-2 w-20 text-center">Qty</th>
-                <th className="px-4 py-2 w-24 text-right">Amount</th>
+                <th className="px-4 py-2 w-10">{t("pos.sr")}</th>
+                <th className="px-4 py-2">{t("common.description")}</th>
+                <th className="px-4 py-2 w-20 text-center">{t("common.quantity")}</th>
+                <th className="px-4 py-2 w-24 text-right">{t("common.amount")}</th>
                 <th className="px-4 py-2 w-10"></th>
               </tr>
             </thead>

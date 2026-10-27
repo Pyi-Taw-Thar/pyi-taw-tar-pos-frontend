@@ -176,7 +176,7 @@ export const Customers: React.FC = () => {
     try {
       const result = await updateCustomerTier(customerId, newTier);
       if (result.success) {
-        toast.success("Customer tier updated");
+        toast.success(t("customers.tierUpdated"));
         if (selectedCustomer && selectedCustomer._id === customerId) {
           setSelectedCustomer(result.data || { ...selectedCustomer, tier: newTier });
         }
@@ -390,7 +390,7 @@ export const Customers: React.FC = () => {
             ) : (
               <FileUp className="w-4 h-4" />
             )}
-            <span>Import Excel</span>
+            <span>{t("customers.importExcel")}</span>
           </button>
           <button
             onClick={handleOpenRegisterModal}
@@ -427,7 +427,7 @@ export const Customers: React.FC = () => {
             }}
             className="w-full border rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/60 focus:border-primary"
           >
-            <option value="">All Townships</option>
+            <option value="">{t("customers.allTownships")}</option>
             {townships.map((ts) => (
               <option key={ts} value={ts}>
                 {ts}
@@ -675,7 +675,7 @@ export const Customers: React.FC = () => {
                   <input
                     type="text"
                     className="w-full border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none"
-                    placeholder="Enter township"
+                    placeholder={t("customers.enterTownship")}
                     value={formData.township}
                     onChange={(e) =>
                       setFormData({ ...formData, township: e.target.value })
@@ -690,7 +690,7 @@ export const Customers: React.FC = () => {
                   <input
                     type="text"
                     className="w-full border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none"
-                    placeholder="Enter address"
+                    placeholder={t("customers.enterAddress")}
                     value={formData.address}
                     onChange={(e) =>
                       setFormData({ ...formData, address: e.target.value })

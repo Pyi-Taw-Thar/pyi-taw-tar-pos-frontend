@@ -316,7 +316,7 @@ export const Suppliers: React.FC = () => {
         >
           <Plus className="w-4 h-4" />{" "}
           <span className="hidden sm:inline">{t("suppliers.addSupplier")}</span>
-          <span className="sm:hidden">Add</span>
+          <span className="sm:hidden">{t("common.add")}</span>
         </button>
       </div>
 
@@ -356,7 +356,7 @@ export const Suppliers: React.FC = () => {
                 <span className="hidden sm:inline">
                   {t("suppliers.inactive")}
                 </span>
-                <span className="sm:hidden">Inactive</span>
+                <span className="sm:hidden">{t("common.inactive")}</span>
               </button>
             </div>
             <span className="hidden md:block bg-primary/20 text-primary-700 text-xs font-medium px-2.5 py-0.5 rounded-full whitespace-nowrap">
@@ -401,7 +401,7 @@ export const Suppliers: React.FC = () => {
                 title="Filters ပြန်လည်ရှင်းလင်းရန်"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
-                <span>Reset</span>
+                <span>{t("common.reset")}</span>
               </button>
             </div>
           </div>
@@ -463,7 +463,7 @@ export const Suppliers: React.FC = () => {
                 className="w-full p-2 bg-white border rounded-lg text-slate-700 outline-none focus:ring-1 focus:ring-primary"
               >
                 <option value="">အားလုံး (All)</option>
-                <option value="true">Consign Supplier</option>
+                <option value="true">{t("purchasing.consignSupplier")}</option>
                 <option value="false">Consign မဟုတ်သော Supplier</option>
               </select>
             </div>
@@ -579,7 +579,7 @@ export const Suppliers: React.FC = () => {
                             navigate(`/suppliers/${supplier._id || supplier.id}`);
                           }}
                           className="p-1.5 text-slate-600 hover:text-primary hover:bg-primary/10 rounded transition-colors"
-                          title="View Supplier Details"
+                          title={t("suppliers.viewSupplierDetails")}
                         >
                           <Eye className="w-4 h-4" />
                         </button>
@@ -866,7 +866,7 @@ export const Suppliers: React.FC = () => {
                     <input
                       type="text"
                       className="w-full border rounded-lg pl-10 p-2 focus:ring-2 focus:ring-primary outline-none text-sm"
-                      placeholder="No. 123, Main Road"
+                      placeholder={t("suppliers.addressPlaceholder")}
                       value={formData.address}
                       onChange={(e) =>
                         setFormData({ ...formData, address: e.target.value })

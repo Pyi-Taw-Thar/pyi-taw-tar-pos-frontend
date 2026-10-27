@@ -1,4 +1,5 @@
 import React from "react";
+import { useLanguage } from "../../context/LanguageContext";
 import { LayoutGrid, Package, Users } from "lucide-react";
 
 export type PurchaseReportTab = "overview" | "products" | "suppliers";
@@ -12,11 +13,12 @@ export const PurchaseReportTabs: React.FC<PurchaseReportTabsProps> = ({
   activeTab,
   onTabChange,
 }) => {
+  const { t } = useLanguage();
   const tabs: { id: PurchaseReportTab; label: string; icon: React.ElementType }[] =
     [
-      { id: "overview", label: "Overview", icon: LayoutGrid },
-      { id: "products", label: "By Product", icon: Package },
-      { id: "suppliers", label: "By Supplier", icon: Users },
+      { id: "overview", label: t("purchaseReport.overview"), icon: LayoutGrid },
+      { id: "products", label: t("purchaseReport.byProduct"), icon: Package },
+      { id: "suppliers", label: t("purchaseReport.bySupplier"), icon: Users },
     ];
 
   return (

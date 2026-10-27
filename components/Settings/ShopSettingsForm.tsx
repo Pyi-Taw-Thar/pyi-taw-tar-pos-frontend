@@ -1,3 +1,4 @@
+import { useLanguage } from "../../context/LanguageContext";
 import React, { useState, useEffect } from "react";
 import { Save, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -15,6 +16,7 @@ export const ShopSettingsForm: React.FC<ShopSettingsFormProps> = ({
   onSuccess,
   onCancel,
 }) => {
+  const { t } = useLanguage();
   const [shopName, setShopName] = useState("");
   const [address, setAddress] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -32,7 +34,7 @@ export const ShopSettingsForm: React.FC<ShopSettingsFormProps> = ({
     e.preventDefault();
 
     if (!shopName.trim() || !address.trim() || !phoneNumber.trim()) {
-      toast.error("Please fill in all required fields");
+      toast.error(t("settings.fillRequiredFields"));
       return;
     }
 
@@ -83,7 +85,7 @@ export const ShopSettingsForm: React.FC<ShopSettingsFormProps> = ({
             type="text"
             value={shopName}
             onChange={(e) => setShopName(e.target.value)}
-            placeholder="My Super Shop"
+            placeholder={t("settings.shopNamePlaceholder")}
             className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             disabled={isSubmitting}
           />

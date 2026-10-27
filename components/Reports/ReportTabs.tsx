@@ -1,4 +1,5 @@
 import React from "react";
+import { useLanguage } from "../../context/LanguageContext";
 import {
   Store,
   DollarSign,
@@ -19,6 +20,7 @@ export const ReportTabs: React.FC<ReportTabsProps> = ({
   activeTab,
   onTabChange,
 }) => {
+  const { t } = useLanguage();
   return (
     <div className="flex gap-1 sm:gap-2 border-b overflow-x-auto">
       {/* <button
@@ -30,8 +32,8 @@ export const ReportTabs: React.FC<ReportTabsProps> = ({
         }`}
       >
         <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4" />
-        <span className="hidden sm:inline">Total Revenue</span>
-        <span className="sm:hidden">Revenue</span>
+        <span className="hidden sm:inline">{t("reports.totalRevenue")}</span>
+        <span className="sm:hidden">{t("reports.revenue")}</span>
       </button> */}
 
       <button
@@ -43,8 +45,8 @@ export const ReportTabs: React.FC<ReportTabsProps> = ({
         }`}
       >
         <Store className="w-3 h-3 sm:w-4 sm:h-4" />
-        <span className="hidden sm:inline">Overall</span>
-        <span className="sm:hidden">Overall</span>
+        <span className="hidden sm:inline">{t("reports.overall")}</span>
+        <span className="sm:hidden">{t("reports.overall")}</span>
       </button>
       <button
         onClick={() => onTabChange("paid")}
@@ -55,8 +57,8 @@ export const ReportTabs: React.FC<ReportTabsProps> = ({
         }`}
       >
         <DollarSign className="w-3 h-3 sm:w-4 sm:h-4" />
-        <span className="hidden sm:inline">Paid Orders</span>
-        <span className="sm:hidden">Paid</span>
+        <span className="hidden sm:inline">{t("reports.paidOrders")}</span>
+        <span className="sm:hidden">{t("reports.paid")}</span>
       </button>
       <button
         onClick={() => onTabChange("credit")}
@@ -67,8 +69,8 @@ export const ReportTabs: React.FC<ReportTabsProps> = ({
         }`}
       >
         <CreditCard className="w-3 h-3 sm:w-4 sm:h-4" />
-        <span className="hidden sm:inline">Credit Orders</span>
-        <span className="sm:hidden">Credit</span>
+        <span className="hidden sm:inline">{t("reports.creditOrders")}</span>
+        <span className="sm:hidden">{t("reports.credit")}</span>
       </button>
       <button
         onClick={() => onTabChange("statistics")}
@@ -79,8 +81,8 @@ export const ReportTabs: React.FC<ReportTabsProps> = ({
         }`}
       >
         <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4" />
-        <span className="hidden sm:inline">Sale Statistics</span>
-        <span className="sm:hidden">Stats</span>
+        <span className="hidden sm:inline">{t("reports.saleStatistics")}</span>
+        <span className="sm:hidden">{t("reports.stats")}</span>
       </button>
       <button
         onClick={() => onTabChange("foc")}
@@ -91,8 +93,8 @@ export const ReportTabs: React.FC<ReportTabsProps> = ({
         }`}
       >
         <Gift className="w-3 h-3 sm:w-4 sm:h-4" />
-        <span className="hidden sm:inline">FOC Products</span>
-        <span className="sm:hidden">FOC</span>
+        <span className="hidden sm:inline">{t("reports.focProducts")}</span>
+        <span className="sm:hidden">{t("reports.foc")}</span>
       </button>
     </div>
   );

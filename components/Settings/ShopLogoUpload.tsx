@@ -1,3 +1,4 @@
+import { useLanguage } from "../../context/LanguageContext";
 import React, { useRef, useState } from "react";
 import { ImagePlus, Upload, Loader2, Store, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -19,6 +20,7 @@ export const ShopLogoUpload: React.FC<ShopLogoUploadProps> = ({
   shopName,
   onSuccess,
 }) => {
+  const { t } = useLanguage();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -48,7 +50,7 @@ export const ShopLogoUpload: React.FC<ShopLogoUploadProps> = ({
 
   const handleUpload = async () => {
     if (!selectedFile) {
-      toast.error("Please select an image first");
+      toast.error(t("settings.selectImageFirst"));
       return;
     }
 
@@ -194,7 +196,7 @@ export const ShopLogoUpload: React.FC<ShopLogoUploadProps> = ({
 
       <ConfirmModal
         isOpen={showDeleteConfirm}
-        title="Delete Shop Logo"
+        title={t("settings.deleteLogoTitle")}
         message="Are you sure you want to delete the shop logo? This action cannot be undone."
         confirmText="Delete"
         cancelText="Cancel"

@@ -133,12 +133,12 @@ export const CreateGRNModal: React.FC<CreateGRNModalProps> = ({
 
   const submitGRN = async (selectedItemsOnly = false) => {
     if (!selectedPOId) {
-      toast.error("Please select a Purchase Order");
+      toast.error(t("purchasing.selectPO"));
       return;
     }
 
     if (grnItems.length === 0) {
-      toast.error("Please load PO items first");
+      toast.error(t("purchasing.loadPOItemsFirst"));
       return;
     }
 
@@ -147,7 +147,7 @@ export const CreateGRNModal: React.FC<CreateGRNModalProps> = ({
       : grnItems;
 
     if (itemsToProcess.length === 0) {
-      toast.error("Please select at least one item to create GRN");
+      toast.error(t("purchasing.selectAtLeastOneItemGRN"));
       return;
     }
 
@@ -179,7 +179,7 @@ export const CreateGRNModal: React.FC<CreateGRNModalProps> = ({
       const result = await createGRN(payload);
 
       if (result.success) {
-        toast.success("GRN Created Successfully!");
+        toast.success(t("purchasing.grnCreated"));
         resetForm();
         onSuccess();
         onClose();
@@ -188,7 +188,7 @@ export const CreateGRNModal: React.FC<CreateGRNModalProps> = ({
       }
     } catch (error) {
       console.error(error);
-      toast.error("An error occurred while creating GRN");
+      toast.error(t("purchasing.grnCreateError"));
     } finally {
       setIsSubmitting(false);
     }
@@ -198,7 +198,7 @@ export const CreateGRNModal: React.FC<CreateGRNModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Create Goods Received Note"
+      title={t("purchasing.createGRNTitle")}
     >
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left Panel - PO Selection */}
@@ -215,7 +215,7 @@ export const CreateGRNModal: React.FC<CreateGRNModalProps> = ({
                 setGRNItems([]);
               }}
             >
-              <option value="">Select PO...</option>
+              <option value="">{t("purchasing.selectPOPlaceholder")}</option>
               {pendingPOs.map((po) => (
                 <option key={po._id} value={po._id}>
                   {po.poNumber} - {po.supplierId.supplierName} ({po.status})
@@ -226,7 +226,7 @@ export const CreateGRNModal: React.FC<CreateGRNModalProps> = ({
 
           {selectedPO && (
             <div className="p-4 bg-slate-50 rounded-lg border">
-              <h3 className="font-semibold text-slate-800 mb-3">PO Details</h3>
+              <h3 className="font-semibold text-slate-800 mb-3">{t("purchasing.poDetails")}</h3>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-slate-500">Supplier:</span>
@@ -282,7 +282,7 @@ export const CreateGRNModal: React.FC<CreateGRNModalProps> = ({
               className="w-full border rounded-lg p-3 text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500"
               value={grnNote}
               onChange={(e) => setGRNNote(e.target.value)}
-              placeholder="Additional notes..."
+              placeholder={t("purchasing.additionalNotesPlaceholder")}
               rows={3}
             />
           </div>

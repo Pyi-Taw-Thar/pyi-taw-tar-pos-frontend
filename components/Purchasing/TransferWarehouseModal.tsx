@@ -1,3 +1,4 @@
+import { useLanguage } from "../../context/LanguageContext";
 import React, { useState, useEffect } from "react";
 import { Modal } from "../Modal";
 import { GRNData } from "../../services/Purchase/fetchGRNs";
@@ -35,6 +36,7 @@ export const TransferWarehouseModal: React.FC<TransferWarehouseModalProps> = ({
   grnId,
   onSuccess,
 }) => {
+  const { t } = useLanguage();
   const [grn, setGrn] = useState<GRNData | null>(null);
   const [warehouses, setWarehouses] = useState<WarehouseProfile[]>([]);
   const [selectedWarehouseId, setSelectedWarehouseId] = useState("");
@@ -79,7 +81,7 @@ export const TransferWarehouseModal: React.FC<TransferWarehouseModalProps> = ({
       }
     } catch (error) {
       console.error("Failed to load data", error);
-      toast.error("Failed to load data");
+      toast.error(t("purchasing.failedToLoadData"));
     } finally {
       setLoading(false);
     }
@@ -125,12 +127,12 @@ export const TransferWarehouseModal: React.FC<TransferWarehouseModalProps> = ({
 
   const handleSubmit = async (selectedItemsOnly = false) => {
     if (!grnId) {
-      toast.error("GRN ID is required");
+      toast.error(t("purchasing.grnIdRequired"));
       return;
     }
 
     if (!selectedWarehouseId) {
-      toast.error("Please select a destination warehouse");
+      toast.error(t("purchasing.selectWarehouse"));
       return;
     }
 
@@ -166,7 +168,7 @@ export const TransferWarehouseModal: React.FC<TransferWarehouseModalProps> = ({
       const result = await transferGRN(payload);
 
       if (result.success) {
-        toast.success("Transfer completed successfully!");
+        toast.success(t("purchasing.transferWarehouseSuccess"));
         resetForm();
         onSuccess?.();
         onClose();
@@ -175,18 +177,18 @@ export const TransferWarehouseModal: React.FC<TransferWarehouseModalProps> = ({
       }
     } catch (error) {
       console.error(error);
-      toast.error("An error occurred while transferring");
+      toast.error(t("purchasing.transferError"));
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Transfer to Warehouse">
+    <Modal isOpen={isOpen} onClose={handleClose} title={t("purchasing.transferToWarehouseTitle")}>
       {loading ? (
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
-          <span className="ml-3 text-slate-500">Loading...</span>
+          <span className="ml-3 text-slate-500">{t("common.loading")}</span>
         </div>
       ) : grn ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -230,7 +232,7 @@ export const TransferWarehouseModal: React.FC<TransferWarehouseModalProps> = ({
                 value={selectedWarehouseId}
                 onChange={(e) => setSelectedWarehouseId(e.target.value)}
               >
-                <option value="">Select Warehouse...</option>
+                <option value="">{t("purchasing.selectWarehousePlaceholder")}</option>
                 {warehouses.map((wh) => (
                   <option key={wh._id} value={wh._id}>
                     {wh.locationName} ({wh.locationCode})
@@ -261,7 +263,7 @@ export const TransferWarehouseModal: React.FC<TransferWarehouseModalProps> = ({
                 className="w-full border rounded-lg p-3 text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="Additional notes..."
+                placeholder={t("purchasing.additionalNotesPlaceholder")}
                 rows={3}
               />
             </div>

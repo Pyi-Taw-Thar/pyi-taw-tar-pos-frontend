@@ -1,3 +1,4 @@
+import { useLanguage } from "../../context/LanguageContext";
 import React, { useState } from "react";
 import { X, Minus, Plus, ChevronDown } from "lucide-react";
 import { CartUnitSelector } from "../UOM/CartUnitSelector";
@@ -29,6 +30,7 @@ export const CartProductModal: React.FC<CartProductModalProps> = ({
   onUpdateQty,
   onRemoveFromCart,
 }) => {
+  const { t } = useLanguage();
   const [showWholesale, setShowWholesale] = useState(false);
 
   if (!isOpen || !item) return null;
@@ -70,7 +72,7 @@ export const CartProductModal: React.FC<CartProductModalProps> = ({
         <div className="px-5 py-5">
           <div className="grid grid-cols-2 gap-x-6 gap-y-4">
             <div className="space-y-1">
-              <label className="text-xs text-gray-500 uppercase">Qty</label>
+              <label className="text-xs text-gray-500 uppercase">{t("common.quantity")}</label>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => onUpdateQty(lineId, -1)}
@@ -104,7 +106,7 @@ export const CartProductModal: React.FC<CartProductModalProps> = ({
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs text-gray-500 uppercase">Unit</label>
+              <label className="text-xs text-gray-500 uppercase">{t("common.unit") || "Unit"}</label>
               <CartUnitSelector
                 baseUnit={baseUnit}
                 conversions={conversions}
@@ -126,7 +128,7 @@ export const CartProductModal: React.FC<CartProductModalProps> = ({
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs text-gray-500 uppercase">Amount</label>
+              <label className="text-xs text-gray-500 uppercase">{t("common.amount")}</label>
               <div className="border border-gray-300 rounded px-3 py-1.5 text-sm font-bold text-gray-900 bg-gray-50">
                 {(effectiveUnitPrice * item.qty).toLocaleString()}
               </div>
@@ -149,9 +151,9 @@ export const CartProductModal: React.FC<CartProductModalProps> = ({
                   <table className="w-full text-xs">
                     <thead>
                       <tr className="bg-dark-100 text-left text-dark-600">
-                        <th className="px-3 py-1.5">Min Qty</th>
-                        <th className="px-3 py-1.5 text-right">Price</th>
-                        <th className="px-3 py-1.5 text-right">Save</th>
+                        <th className="px-3 py-1.5">{t("pos.minQty")}</th>
+                        <th className="px-3 py-1.5 text-right">{t("common.price")}</th>
+                        <th className="px-3 py-1.5 text-right">{t("pos.savings")}</th>
                       </tr>
                     </thead>
                     <tbody>

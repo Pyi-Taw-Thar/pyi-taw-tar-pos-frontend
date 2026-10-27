@@ -1,3 +1,4 @@
+import { useLanguage } from "../context/LanguageContext";
 import React, { useState, useEffect } from "react";
 import { Loader2, Store } from "lucide-react";
 import { toast } from "sonner";
@@ -57,6 +58,7 @@ const getToday = () => {
 };
 
 export const Reports: React.FC = () => {
+  const { t } = useLanguage();
   const [storefronts, setStorefronts] = useState<LocationProfile[]>([]);
   const [saleReports, setSaleReports] = useState<SaleReportResponse[]>([]);
   const [allStorefrontsReport, setAllStorefrontsReport] =
@@ -109,10 +111,6 @@ export const Reports: React.FC = () => {
 
   const reportSaleType =
     reportsDataSource === "direct-sale" ? "direct-sale" : null;
-
-  useEffect(() => {
-    loadReports();
-  }, []);
 
   useEffect(() => {
     if (selectedStorefront !== "all") {
@@ -195,11 +193,11 @@ export const Reports: React.FC = () => {
           setSelectedStorefront(storefrontList[0]._id);
         }
       } else {
-        toast.error("Failed to load storefronts");
+        toast.error(t("reports.failedToLoadStorefronts"));
       }
     } catch (error) {
       console.error("Error loading reports:", error);
-      toast.error("Failed to load reports");
+      toast.error(t("reports.failedToLoad"));
     } finally {
       setLoading(false);
     }
@@ -221,7 +219,7 @@ export const Reports: React.FC = () => {
       setPaidOrdersReport(response);
     } catch (error) {
       console.error("Error loading paid orders report:", error);
-      toast.error("Failed to load paid orders report");
+      toast.error(t("reports.failedToLoadPaidOrders"));
     } finally {
       setLoadingPaidOrders(false);
     }
@@ -240,7 +238,7 @@ export const Reports: React.FC = () => {
       setAllStorefrontsPaidOrdersReport(response);
     } catch (error) {
       console.error("Error loading all storefronts paid orders report:", error);
-      toast.error("Failed to load all storefronts paid orders report");
+      toast.error(t("reports.failedToLoadAllSfPaidOrders"));
     } finally {
       setLoadingPaidOrders(false);
     }
@@ -261,7 +259,7 @@ export const Reports: React.FC = () => {
       setCreditOrdersReport(response);
     } catch (error) {
       console.error("Error loading credit orders report:", error);
-      toast.error("Failed to load credit orders report");
+      toast.error(t("reports.failedToLoadCreditOrders"));
     } finally {
       setLoadingCreditOrders(false);
     }
@@ -282,7 +280,7 @@ export const Reports: React.FC = () => {
         "Error loading all storefronts credit orders report:",
         error,
       );
-      toast.error("Failed to load all storefronts credit orders report");
+      toast.error(t("reports.failedToLoadAllSfCreditOrders"));
     } finally {
       setLoadingCreditOrders(false);
     }
@@ -305,7 +303,7 @@ export const Reports: React.FC = () => {
       setProductSalesStatistics(response);
     } catch (error) {
       console.error("Error loading product sales statistics:", error);
-      toast.error("Failed to load product sales statistics");
+      toast.error(t("reports.failedToLoadProductStats"));
     } finally {
       setLoadingStatistics(false);
     }
@@ -342,7 +340,7 @@ export const Reports: React.FC = () => {
         "Error loading all storefronts product sales statistics:",
         error,
       );
-      toast.error("Failed to load all storefronts product sales statistics");
+      toast.error(t("reports.failedToLoadAllSfProductStats"));
     } finally {
       setLoadingStatistics(false);
     }
@@ -395,7 +393,7 @@ export const Reports: React.FC = () => {
       setFocOrders(response);
     } catch (error) {
       console.error("Error loading FOC orders:", error);
-      toast.error("Failed to load FOC orders");
+      toast.error(t("reports.failedToLoadFocOrders"));
     } finally {
       setLoadingFOC(false);
     }
@@ -413,7 +411,7 @@ export const Reports: React.FC = () => {
       setAllStorefrontsFocOrders(response);
     } catch (error) {
       console.error("Error loading all storefronts FOC orders:", error);
-      toast.error("Failed to load all storefronts FOC orders");
+      toast.error(t("reports.failedToLoadAllSfFocOrders"));
     } finally {
       setLoadingFOC(false);
     }
@@ -501,7 +499,7 @@ export const Reports: React.FC = () => {
       }
     } catch (error) {
       console.error("Error loading revenue data:", error);
-      toast.error("Failed to load revenue data");
+      toast.error(t("reports.failedToLoadRevenue"));
     } finally {
       setLoadingRevenue(false);
     }
@@ -637,7 +635,7 @@ export const Reports: React.FC = () => {
       <div className="p-4 sm:p-6 flex items-center justify-center h-96">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-slate-600">Loading reports...</p>
+          <p className="text-slate-600">{t("reports.loadingReports")}</p>
         </div>
       </div>
     );

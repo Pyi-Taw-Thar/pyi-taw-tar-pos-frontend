@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "../../context/LanguageContext";
 import {
   ChevronDown,
   ChevronRight,
@@ -47,6 +48,7 @@ interface OverviewTabProps {
 export const OverviewTab: React.FC<OverviewTabProps> = ({
   initialSupplierId = "",
 }) => {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [startDate, setStartDate] = useState<Date | null>(getToday());
   const [endDate, setEndDate] = useState<Date | null>(getToday());
@@ -96,7 +98,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
         toast.error(res.message);
       }
     } catch {
-      toast.error("Failed to load purchase report");
+      toast.error(t("purchaseReport.failedToLoadReport"));
     } finally {
       setLoading(false);
     }
@@ -132,12 +134,12 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             }}
             className="border rounded-lg px-3 py-2 text-sm flex-1"
           >
-            <option value="">All statuses</option>
-            <option value="pending">Pending</option>
-            <option value="confirmed">Confirmed</option>
-            <option value="arrived">Arrived</option>
-            <option value="completed">Completed</option>
-            <option value="cancelled">Cancelled</option>
+            <option value="">{t("purchaseReport.allStatuses")}</option>
+            <option value="pending">{t("purchaseReport.pending")}</option>
+            <option value="confirmed">{t("purchaseReport.confirmed")}</option>
+            <option value="arrived">{t("purchaseReport.arrived")}</option>
+            <option value="completed">{t("purchaseReport.completed")}</option>
+            <option value="cancelled">{t("purchaseReport.cancelled")}</option>
           </select>
           <select
             value={supplierId}
@@ -147,7 +149,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             }}
             className="border rounded-lg px-3 py-2 text-sm flex-1"
           >
-            <option value="">All suppliers</option>
+            <option value="">{t("purchaseReport.allSuppliers")}</option>
             {suppliers.map((s) => (
               <option key={s._id || s.id} value={s._id || s.id}>
                 {s.supplierName}
@@ -174,29 +176,29 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
         <>
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
             <div className="bg-white p-4 rounded-xl border">
-              <p className="text-xs text-slate-500 uppercase font-bold">Total POs</p>
+              <p className="text-xs text-slate-500 uppercase font-bold">{t("purchaseReport.totalPOs")}</p>
               <p className="text-2xl font-bold text-slate-800">{summary.totalPOs}</p>
             </div>
             <div className="bg-white p-4 rounded-xl border border-green-100">
-              <p className="text-xs text-slate-500 uppercase font-bold">Total Amount</p>
+              <p className="text-xs text-slate-500 uppercase font-bold">{t("purchaseReport.totalAmount")}</p>
               <p className="text-lg font-bold text-green-700">
                 {formatMMK(summary.totalAmount)}
               </p>
             </div>
             <div className="bg-white p-4 rounded-xl border">
-              <p className="text-xs text-slate-500 uppercase font-bold">Ordered</p>
+              <p className="text-xs text-slate-500 uppercase font-bold">{t("purchaseReport.ordered")}</p>
               <p className="text-2xl font-bold text-blue-600">
                 {summary.totalProductsOrdered.toLocaleString()}
               </p>
             </div>
             <div className="bg-white p-4 rounded-xl border">
-              <p className="text-xs text-slate-500 uppercase font-bold">Received</p>
+              <p className="text-xs text-slate-500 uppercase font-bold">{t("purchaseReport.received")}</p>
               <p className="text-2xl font-bold text-primary">
                 {summary.totalReceived.toLocaleString()}
               </p>
             </div>
             <div className="bg-white p-4 rounded-xl border">
-              <p className="text-xs text-slate-500 uppercase font-bold">Remaining</p>
+              <p className="text-xs text-slate-500 uppercase font-bold">{t("purchaseReport.remaining")}</p>
               <p className="text-2xl font-bold text-amber-600">
                 {summary.totalRemaining.toLocaleString()}
               </p>
@@ -218,9 +220,9 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                 <thead className="bg-slate-50 border-b">
                   <tr>
                     <th className="px-3 py-3 w-8" />
-                    <th className="px-3 py-3 font-medium text-slate-600">PO Number</th>
-                    <th className="px-3 py-3 font-medium text-slate-600">Supplier</th>
-                    <th className="px-3 py-3 font-medium text-slate-600">Status</th>
+                    <th className="px-3 py-3 font-medium text-slate-600">{t("purchaseReport.poNumber")}</th>
+                    <th className="px-3 py-3 font-medium text-slate-600">{t("purchaseReport.supplier")}</th>
+                    <th className="px-3 py-3 font-medium text-slate-600">{t("purchaseReport.status")}</th>
                     <th className="px-3 py-3 font-medium text-slate-600 text-right">
                       Amount
                     </th>
@@ -233,8 +235,8 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                     <th className="px-3 py-3 font-medium text-slate-600 text-right">
                       Remaining
                     </th> */}
-                    <th className="px-3 py-3 font-medium text-slate-600">Created By</th>
-                    <th className="px-3 py-3 font-medium text-slate-600">Date</th>
+                    <th className="px-3 py-3 font-medium text-slate-600">{t("purchaseReport.createdBy")}</th>
+                    <th className="px-3 py-3 font-medium text-slate-600">{t("purchaseReport.date")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
@@ -322,11 +324,11 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                                 <table className="w-full text-xs bg-white rounded-lg border">
                                   <thead className="bg-slate-100">
                                     <tr>
-                                      <th className="px-3 py-2 text-left">Product</th>
-                                      <th className="px-3 py-2 text-left">Code</th>
+                                      <th className="px-3 py-2 text-left">{t("purchaseReport.products")}</th>
+                                      <th className="px-3 py-2 text-left">{t("purchaseReport.code")}</th>
                                       {/* <th className="px-3 py-2 text-right">Ordered</th> */}
-                                      <th className="px-3 py-2 text-right">Received</th>
-                                      <th className="px-3 py-2 text-right">Price</th>
+                                      <th className="px-3 py-2 text-right">{t("purchaseReport.received")}</th>
+                                      <th className="px-3 py-2 text-right">{t("purchaseReport.price")}</th>
                                     </tr>
                                   </thead>
                                   <tbody className="divide-y">

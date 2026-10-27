@@ -35,25 +35,35 @@ export const OrderFulfillment: React.FC = () => {
   const [storefronts, setStorefronts] = useState<StorefrontProfile[]>([]);
   const [selectedOrderForFulfill, setSelectedOrderForFulfill] = useState<Order | null>(null);
 
+  // Load storefront profiles once on mount
+  useEffect(() => {
+    let cancelled = false;
+    fetchStorefrontProfiles()
+      .then((sfRes) => {
+        if (!cancelled && sfRes?.success && sfRes?.data) {
+          setStorefronts(sfRes.data.filter((sf) => sf.status === "active"));
+        }
+      })
+      .catch(() => {
+        // Silently ignore storefront profile loading errors
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const loadData = useCallback(async (isSilent = false) => {
     if (!isSilent) setLoading(true);
     try {
-      const [ordersRes, sfRes] = await Promise.all([
-        fetchPendingFulfillmentOrders({
-          search: search.trim() || undefined,
-          storefrontId: selectedStorefrontId !== "all" ? selectedStorefrontId : undefined,
-        }),
-        storefronts.length === 0 ? fetchStorefrontProfiles() : Promise.resolve(null),
-      ]);
+      const ordersRes = await fetchPendingFulfillmentOrders({
+        search: search.trim() || undefined,
+        storefrontId: selectedStorefrontId !== "all" ? selectedStorefrontId : undefined,
+      });
 
       if (ordersRes.success && ordersRes.data) {
         setOrders(ordersRes.data);
       } else {
         setOrders([]);
-      }
-
-      if (sfRes && sfRes.success && sfRes.data) {
-        setStorefronts(sfRes.data.filter((sf) => sf.status === "active"));
       }
     } catch (err: any) {
       if (!isSilent) {
@@ -62,7 +72,7 @@ export const OrderFulfillment: React.FC = () => {
     } finally {
       if (!isSilent) setLoading(false);
     }
-  }, [search, selectedStorefrontId, storefronts.length]);
+  }, [search, selectedStorefrontId]);
 
   useEffect(() => {
     loadData();

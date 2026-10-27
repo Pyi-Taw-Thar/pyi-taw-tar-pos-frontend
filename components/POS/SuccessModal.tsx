@@ -9,7 +9,6 @@ interface SuccessModalProps {
 
 export const SuccessModal: React.FC<SuccessModalProps> = ({ show, orderNumber, onClose }) => {
   const { t } = useLanguage();
-
   if (!show) return null;
 
   return (
@@ -22,12 +21,12 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({ show, orderNumber, o
             </svg>
           </div>
           <h2 className="text-2xl font-bold text-white mb-2">{t("pos.saleCompleted")}</h2>
-          <p className="text-green-50 text-sm">Your order has been processed successfully</p>
+          <p className="text-green-50 text-sm">{t("pos.orderProcessedSuccess")}</p>
         </div>
         <div className="p-6 pt-6">
           <button onClick={onClose}
             className="w-full bg-primary hover:bg-primary/90 text-white py-3 rounded-lg font-bold transition-colors shadow-lg"
-          >Done</button>
+          >{t("pos.done")}</button>
         </div>
       </div>
     </div>

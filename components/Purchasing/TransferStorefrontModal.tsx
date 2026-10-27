@@ -1,3 +1,4 @@
+import { useLanguage } from "../../context/LanguageContext";
 import React, { useState, useEffect } from "react";
 import { Modal } from "../Modal";
 import { GRNData } from "../../services/Purchase/fetchGRNs";
@@ -32,6 +33,7 @@ export const TransferStorefrontModal: React.FC<TransferStorefrontModalProps> = (
   grnId,
   onSuccess,
 }) => {
+  const { t } = useLanguage();
   const [grn, setGrn] = useState<GRNData | null>(null);
   const [storefronts, setStorefronts] = useState<StorefrontProfile[]>([]);
   const [selectedStorefrontId, setSelectedStorefrontId] = useState("");
@@ -84,7 +86,7 @@ export const TransferStorefrontModal: React.FC<TransferStorefrontModalProps> = (
       }
     } catch (error) {
       console.error("Failed to load data", error);
-      toast.error("Failed to load data");
+      toast.error(t("purchasing.failedToLoadData"));
     } finally {
       setLoading(false);
     }
@@ -130,12 +132,12 @@ export const TransferStorefrontModal: React.FC<TransferStorefrontModalProps> = (
 
   const handleSubmit = async (selectedItemsOnly = false) => {
     if (!grnId) {
-      toast.error("GRN ID is required");
+      toast.error(t("purchasing.grnIdRequired"));
       return;
     }
 
     if (!selectedStorefrontId) {
-      toast.error("Please select a destination storefront");
+      toast.error(t("purchasing.selectStorefront"));
       return;
     }
 
@@ -171,7 +173,7 @@ export const TransferStorefrontModal: React.FC<TransferStorefrontModalProps> = (
       const result = await transferGRNToStorefront(payload);
 
       if (result.success) {
-        toast.success("Transfer to storefront completed successfully!");
+        toast.success(t("purchasing.transferStorefrontSuccess"));
         resetForm();
         onSuccess?.();
         onClose();
@@ -180,18 +182,18 @@ export const TransferStorefrontModal: React.FC<TransferStorefrontModalProps> = (
       }
     } catch (error) {
       console.error(error);
-      toast.error("An error occurred while transferring");
+      toast.error(t("purchasing.transferError"));
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Transfer to Storefront">
+    <Modal isOpen={isOpen} onClose={handleClose} title={t("purchasing.transferToStorefrontTitle")}>
       {loading ? (
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
-          <span className="ml-3 text-slate-500">Loading...</span>
+          <span className="ml-3 text-slate-500">{t("common.loading")}</span>
         </div>
       ) : grn ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -232,7 +234,7 @@ export const TransferStorefrontModal: React.FC<TransferStorefrontModalProps> = (
                 value={selectedStorefrontId}
                 onChange={(e) => setSelectedStorefrontId(e.target.value)}
               >
-                <option value="">Select Storefront...</option>
+                <option value="">{t("purchasing.selectStorefrontPlaceholder")}</option>
                 {storefronts.map((sf) => (
                   <option key={sf._id} value={sf._id}>
                     {sf.locationName} ({sf.locationCode})
@@ -261,7 +263,7 @@ export const TransferStorefrontModal: React.FC<TransferStorefrontModalProps> = (
                 className="w-full border rounded-lg p-3 text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="Additional notes..."
+                placeholder={t("purchasing.additionalNotesPlaceholder")}
                 rows={3}
               />
             </div>

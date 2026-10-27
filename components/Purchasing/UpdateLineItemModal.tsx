@@ -1,3 +1,4 @@
+import { useLanguage } from "../../context/LanguageContext";
 import React, { useState } from "react";
 import { Modal } from "../Modal";
 import { Package, Edit2, Save, X } from "lucide-react";
@@ -37,6 +38,7 @@ export const UpdateLineItemModal: React.FC<UpdateLineItemModalProps> = ({
   onSave,
   updating,
 }) => {
+  const { t } = useLanguage();
   const [goodQuantity, setGoodQuantity] = useState(0);
   const [badQuantity, setBadQuantity] = useState(0);
   const [notes, setNotes] = useState("");
@@ -79,7 +81,7 @@ export const UpdateLineItemModal: React.FC<UpdateLineItemModalProps> = ({
   if (!lineItem) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Update Line Item">
+    <Modal isOpen={isOpen} onClose={handleClose} title={t("purchasing.updateLineItem")}>
       <div className="space-y-6">
         {/* Product Info */}
         <div className="bg-slate-50 p-4 rounded-lg border">
@@ -154,7 +156,7 @@ export const UpdateLineItemModal: React.FC<UpdateLineItemModalProps> = ({
             onChange={(e) => setNotes(e.target.value)}
             rows={3}
             className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
-            placeholder="Add any notes about this update..."
+            placeholder={t("purchasing.updateNotesPlaceholder")}
             disabled={updating}
           />
         </div> */}

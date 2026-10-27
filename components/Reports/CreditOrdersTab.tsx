@@ -1,4 +1,5 @@
 import React from "react";
+import { useLanguage } from "../../context/LanguageContext";
 import { Loader2, Receipt, DollarSign, AlertCircle, CreditCard, TrendingUp } from "lucide-react";
 import { CreditOrdersReportResponse } from "../../services/Reports/fetchCreditOrdersReport";
 import { getPaymentMethodLabel } from "../Orders/orderUtils";
@@ -13,11 +14,12 @@ export const CreditOrdersTab: React.FC<CreditOrdersTabProps> = ({
   creditOrdersReport,
   loading,
 }) => {
+  const { t } = useLanguage();
   if (loading) {
     return (
       <div className="bg-white rounded-xl shadow-sm border p-12 text-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
-        <p className="text-slate-600">Loading credit orders...</p>
+        <p className="text-slate-600">{t("reports.loadingCreditOrders")}</p>
       </div>
     );
   }
@@ -26,7 +28,7 @@ export const CreditOrdersTab: React.FC<CreditOrdersTabProps> = ({
     return (
       <div className="bg-white rounded-xl shadow-sm border p-12 text-center">
         <CreditCard className="w-12 h-12 text-slate-400 mx-auto mb-4" />
-        <p className="text-slate-600">No credit orders data available</p>
+        <p className="text-slate-600">{t("reports.noCreditOrdersData")}</p>
       </div>
     );
   }
@@ -96,7 +98,7 @@ export const CreditOrdersTab: React.FC<CreditOrdersTabProps> = ({
                 {creditOrdersReport.data.totals.orderCount}
               </p>
               <p className="text-xs text-purple-600 mt-1">
-                {creditOrdersReport.data.totals.creditRecordCount} records
+                {creditOrdersReport.data.totals.creditRecordCount} {t("reports.records")}
               </p>
             </div>
             <div className="p-3 bg-purple-200 rounded-lg">
@@ -116,7 +118,7 @@ export const CreditOrdersTab: React.FC<CreditOrdersTabProps> = ({
               Initial Payments
             </h3>
             <p className="text-xs text-slate-600 mt-1">
-              Total:{" "}
+              {t("reports.total")}:{" "}
               {creditOrdersReport.data.totals.totalInitialPaidAmount.toLocaleString()}{" "}
               MMK
             </p>
@@ -170,7 +172,7 @@ export const CreditOrdersTab: React.FC<CreditOrdersTabProps> = ({
                       colSpan={3}
                       className="px-4 py-8 text-center text-slate-500"
                     >
-                      No initial payments found
+                      {t("reports.noInitialPayments")}
                     </td>
                   </tr>
                 )}
@@ -260,7 +262,7 @@ export const CreditOrdersTab: React.FC<CreditOrdersTabProps> = ({
                       colSpan={3}
                       className="px-4 py-8 text-center text-slate-500"
                     >
-                      No credit payments found
+                      {t("reports.noCreditPayments")}
                     </td>
                   </tr>
                 )}

@@ -96,7 +96,7 @@ function SkeletonRows() {
 function MetadataDisplay({ metadata }: { metadata: Record<string, unknown> }) {
   const entries = Object.entries(metadata);
   if (entries.length === 0) {
-    return <p className="text-sm text-slate-500">No metadata</p>;
+    return <p className="text-sm text-slate-500">{t("settings.noMetadata")}</p>;
   }
   return (
     <dl className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
@@ -117,6 +117,7 @@ function MetadataDisplay({ metadata }: { metadata: Record<string, unknown> }) {
 }
 
 export const ActivityLogTab: React.FC = () => {
+  const { t } = useLanguage();
   const adminData = JSON.parse(localStorage.getItem("adminData") || "{}");
   const userRole = adminData?.role as string | undefined;
   const canView = userRole === "owner" || userRole === "admin";
@@ -297,7 +298,7 @@ export const ActivityLogTab: React.FC = () => {
               }
               className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none"
             >
-              <option value="">All Admins</option>
+              <option value="">{t("settings.allAdmins")}</option>
               {admins.map((a) => (
                 <option key={a._id} value={a._id}>
                   {a.name}
@@ -334,7 +335,7 @@ export const ActivityLogTab: React.FC = () => {
                 type="button"
                 onClick={handleClearFilters}
                 className="px-3 py-2 border rounded-lg text-slate-600 hover:bg-slate-50 text-sm"
-                title="Clear filters"
+                title={t("settings.clearFiltersTitle")}
               >
                 <X className="w-4 h-4" />
               </button>
@@ -389,7 +390,7 @@ export const ActivityLogTab: React.FC = () => {
               className="flex items-center gap-2 px-3 py-2 border rounded-lg hover:bg-slate-50 disabled:opacity-50 text-sm"
             >
               <Download className="w-4 h-4" />
-              <span className="hidden sm:inline">Export CSV</span>
+              <span className="hidden sm:inline">{t("settings.exportCSV")}</span>
             </button>
             <button
               type="button"
@@ -455,7 +456,7 @@ export const ActivityLogTab: React.FC = () => {
           <div className="p-8 sm:p-12 text-center">
             <History className="w-12 h-12 text-slate-300 mx-auto mb-3" />
             <p className="text-slate-600 font-medium mb-2">
-              No activity logs found matching your filters
+              {t("settings.noActivityLogsFound")}
             </p>
             {hasActiveFilters && (
               <button

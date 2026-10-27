@@ -48,7 +48,7 @@ export const GRNList: React.FC<GRNListProps> = ({
     try {
       const res = await updateGRNStatus(grnId, newStatus);
       if (res.success) {
-        toast.success("GRN status updated successfully");
+        toast.success(t("purchasing.grnStatusUpdated"));
         onStatusChange?.(pagination.currentPage, pagination.itemsPerPage);
       } else {
         toast.error(res.message || "Failed to update status");
@@ -207,16 +207,16 @@ export const GRNList: React.FC<GRNListProps> = ({
           <table className="w-full text-sm text-left">
             <thead className="bg-slate-50 border-b sticky top-0 z-10">
               <tr>
-                <th className="p-4">GRN Number</th>
-                <th className="p-4">Supplier</th>
-                <th className="p-4">Date</th>
-                <th className="p-4">Items</th>
-                <th className="p-4">Received Qty</th>
-                <th className="p-4">Good / Bad</th>
-                <th className="p-4">Total Amount</th>
-                <th className="p-4">Status</th>
+                <th className="p-4">{t("purchasing.grnNumber")}</th>
+                <th className="p-4">{t("purchasing.supplier")}</th>
+                <th className="p-4">{t("common.date")}</th>
+                <th className="p-4">{t("orders.items")}</th>
+                <th className="p-4">{t("purchasing.receivedQty")}</th>
+                <th className="p-4">{t("purchasing.goodBad")}</th>
+                <th className="p-4">{t("orders.finalAmount")}</th>
+                <th className="p-4">{t("common.status")}</th>
                 {/* <th className="p-4">Notes</th> */}
-                <th className="p-4">Actions</th>
+                <th className="p-4">{t("common.actions")}</th>
               </tr>
             </thead>
             <tbody className="divide-y">

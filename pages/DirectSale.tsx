@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import {
+  ShoppingCart,
   Search,
   Plus,
   Minus,
@@ -102,6 +103,7 @@ export const DirectSale: React.FC = () => {
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
   const [showStorefrontMenu, setShowStorefrontMenu] = useState(false);
   const [useMarkup, setUseMarkup] = useState(false); // Toggle between discount and markup
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(
@@ -542,12 +544,12 @@ export const DirectSale: React.FC = () => {
   return (
     <div className="flex h-[calc(100vh-60px)] overflow-hidden bg-[#F8F9FA]">
       {/* Product Grid */}
-      <div className="flex-1 flex flex-col px-6 py-4 overflow-hidden">
+      <div className="flex-1 flex flex-col px-3 sm:px-4 lg:px-6 py-3 lg:py-4 pb-24 lg:pb-4 overflow-hidden">
         {/* Search Bar with Storefront Badge */}
         <div className="mb-4">
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             {/* Combined Search/Barcode Input */}
-            <div className="relative flex-1">
+            <div className="relative w-full sm:flex-1 sm:w-auto min-w-0">
               <Search className="absolute left-3 top-[13px] h-5 w-5 text-gray-400 pointer-events-none" />
               <Scan className="absolute right-3 top-[13px] h-5 w-5 text-gray-400 pointer-events-none opacity-50" />
               <input
@@ -556,25 +558,19 @@ export const DirectSale: React.FC = () => {
                   t("pos.searchOrScanBarcode") ||
                   "Search products or scan barcode..."
                 }
-                className="search-input w-full pl-10 pr-10 py-2.5 border border-dark-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none bg-white shadow-sm"
+                className="search-input w-full pl-10 pr-10 py-2.5 border border-dark-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none bg-white shadow-sm text-sm"
                 value={search}
                 onChange={(e) => {
                   setSearch(e.target.value);
                   setCurrentPage(1);
                 }}
                 onKeyDown={(e) => {
-                  // When Enter is pressed, try to scan barcode first
                   if (e.key === "Enter" && search.trim()) {
                     e.preventDefault();
                     handleBarcodeScan(search);
-                    // If barcode was found and added, search is already cleared
-                    // If not found, continue with regular search (filtering happens automatically)
                   }
                 }}
                 onBlur={() => {
-                  // Auto-process barcode when input loses focus (useful for barcode scanners that auto-tab)
-                  // Only if search value exists and looks like it could be a barcode (length >= 3)
-                  // This helps with barcode scanners that send data on blur
                   if (search.trim() && search.trim().length >= 3) {
                     handleBarcodeScan(search);
                   }
@@ -583,37 +579,40 @@ export const DirectSale: React.FC = () => {
               />
             </div>
 
-            {/* Category Selector */}
-            <select
-              className="border border-dark-200 rounded-xl px-4 py-2.5 bg-white focus:ring-2 focus:ring-primary focus:border-primary outline-none shadow-sm"
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-            >
-              <option value="All">{t("pos.allCategories")}</option>
-              {categories.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
-
-            {/* Storefront Settings Button */}
-            <div className="relative">
-              <button
-                onClick={() => setShowStorefrontMenu(!showStorefrontMenu)}
-                className="flex items-center gap-2 px-3 py-2.5 bg-dark text-white rounded-xl hover:bg-dark-800 transition-all shadow-sm"
+            <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-start">
+              {/* Category Selector */}
+              <select
+                className="flex-1 sm:flex-none border border-dark-200 rounded-xl px-3 sm:px-4 py-2.5 bg-white focus:ring-2 focus:ring-primary focus:border-primary outline-none shadow-sm text-sm min-w-0"
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
               >
-                <Store className="w-4 h-4 text-primary" />
-                <span className="text-sm font-medium max-w-[120px] truncate">
-                  {storefronts.find((sf) => sf._id === selectedStorefrontId)
-                    ?.locationName || "Store"}
-                </span>
-                <ChevronDown
-                  className={`w-4 h-4 text-primary transition-transform duration-200 ${
-                    showStorefrontMenu ? "rotate-180" : ""
-                  }`}
-                />
-              </button>
+                <option value="All">{t("pos.allCategories")}</option>
+                {categories.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+
+              {/* Storefront Settings Button */}
+              <div className="relative shrink-0">
+                <button
+                  onClick={() => setShowStorefrontMenu(!showStorefrontMenu)}
+                  className="flex items-center gap-1.5 sm:gap-2 px-3 py-2.5 bg-dark text-white rounded-xl hover:bg-dark-800 transition-all shadow-sm"
+                >
+                  <Store className="w-4 h-4 text-primary shrink-0" />
+                  <span className="text-xs sm:text-sm font-medium max-w-[100px] sm:max-w-[120px] truncate">
+                    {storefronts.find((sf) => sf._id === selectedStorefrontId)
+                      ?.locationName || "Store"}
+                  </span>
+                  <ChevronDown
+                    className={`w-4 h-4 text-primary transition-transform duration-200 shrink-0 ${
+                      showStorefrontMenu ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+              </div>
+            </div>
 
               {/* Dropdown Menu */}
               {showStorefrontMenu && (
@@ -685,7 +684,6 @@ export const DirectSale: React.FC = () => {
                   </div>
                 </>
               )}
-            </div>
           </div>
         </div>
 
@@ -714,7 +712,7 @@ export const DirectSale: React.FC = () => {
                 onClick={() => setCurrentPage(1)}
                 disabled={currentPage === 1}
                 className="p-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                title="First Page"
+                title={t("common.firstPage") || "First Page"}
               >
                 <ChevronDown className="w-4 h-4 rotate-90" />
               </button>
@@ -764,7 +762,7 @@ export const DirectSale: React.FC = () => {
                 onClick={() => setCurrentPage(totalPages)}
                 disabled={currentPage === totalPages}
                 className="p-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                title="Last Page"
+                title={t("common.lastPage") || "Last Page"}
               >
                 <ChevronDown className="w-4 h-4 -rotate-90" />
               </button>
@@ -773,7 +771,7 @@ export const DirectSale: React.FC = () => {
         )}
 
         {/* Product Grid */}
-        <div className="flex overflow-y-auto grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4 pb-20">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3 lg:gap-4 overflow-y-auto pb-20">
           {filteredProducts.length === 0 ? (
             <div className="col-span-full text-center py-12 text-gray-400">
               {selectedStorefrontId
@@ -810,10 +808,24 @@ export const DirectSale: React.FC = () => {
         </div>
       </div>
 
+      {/* Mobile backdrop */}
+      {cartOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black/40 z-40 transition-opacity"
+          onClick={() => setCartOpen(false)}
+        />
+      )}
+
       {/* Cart Sidebar */}
-      <div className="w-96 bg-white flex flex-col border-l border-gray-200 shadow-xl h-[calc(100vh-60px)] sticky top-0">
-        <div className="p-4 border-b">
-          <h2 className="font-bold text-lg">{t("directSale.currentSale")}</h2>
+      <div
+        className={`bg-white flex flex-col border-l border-gray-200 shadow-xl transition-transform duration-300 ease-in-out
+          lg:static lg:w-80 xl:w-96 lg:h-[calc(100vh-60px)] lg:sticky lg:top-0 lg:translate-y-0 lg:z-auto
+          fixed inset-x-0 bottom-0 z-50 h-[85vh] rounded-t-2xl lg:rounded-none
+          ${cartOpen ? "translate-y-0" : "translate-y-full lg:translate-y-0"}`}
+      >
+        <div className="p-4 border-b flex items-center justify-between">
+          <div>
+            <h2 className="font-bold text-lg">{t("directSale.currentSale")}</h2>
           {selectedStorefrontId && (
             <p className="text-xs text-gray-400 mt-1">
               {
@@ -822,6 +834,14 @@ export const DirectSale: React.FC = () => {
               }
             </p>
           )}
+          </div>
+          <button
+            onClick={() => setCartOpen(false)}
+            className="lg:hidden p-1 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
+            aria-label="Close cart"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -967,6 +987,7 @@ export const DirectSale: React.FC = () => {
                   ? 0
                   : Math.ceil(total);
               setPaidAmount(initialPaidAmount);
+              setCartOpen(false);
               setShowCheckoutModal(true);
             }}
             disabled={cart.length === 0}
@@ -976,6 +997,39 @@ export const DirectSale: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Mobile/Tablet Fixed Bottom Cart Bar */}
+      {cart.length > 0 && (
+        <div className="lg:hidden fixed bottom-0 inset-x-0 z-30 bg-white border-t border-gray-200 px-4 py-3 shadow-lg flex items-center justify-between">
+          <div
+            className="flex items-center gap-3 cursor-pointer flex-1 mr-3 min-w-0"
+            onClick={() => setCartOpen(true)}
+          >
+            <div className="relative shrink-0">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                <ShoppingCart className="w-5 h-5" />
+              </div>
+              <span className="absolute -top-1 -right-1 bg-primary text-white text-[11px] font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                {cart.reduce((sum, item) => sum + item.qty, 0)}
+              </span>
+            </div>
+            <div className="min-w-0">
+              <div className="text-xs text-gray-500 font-medium">
+                {cart.reduce((sum, item) => sum + item.qty, 0)} {t("pos.itemsLower") || "ခု"}
+              </div>
+              <div className="text-sm sm:text-base font-bold text-gray-900 truncate">
+                {total.toLocaleString()} MMK
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={() => setCartOpen(true)}
+            className="bg-primary hover:bg-primary/90 text-white px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm shadow transition-colors shrink-0"
+          >
+            {t("pos.proceedToCheckout") || "ငွေရှင်းမယ်"}
+          </button>
+        </div>
+      )}
 
       {/* Loading Overlay */}
       {isProcessing && (
@@ -1184,7 +1238,7 @@ export const DirectSale: React.FC = () => {
                       onChange={() => setUseMarkup(false)}
                       className="mr-2"
                     />
-                    <span className="text-sm">Discount</span>
+                    <span className="text-sm">{t("common.discount")}</span>
                   </label>
                   <label className="flex items-center cursor-pointer">
                     <input
@@ -1194,7 +1248,7 @@ export const DirectSale: React.FC = () => {
                       onChange={() => setUseMarkup(true)}
                       className="mr-2"
                     />
-                    <span className="text-sm">Markup</span>
+                    <span className="text-sm">{t("pos.markup") || "Markup"}</span>
                   </label>
                 </div>
               </div>
@@ -1207,7 +1261,7 @@ export const DirectSale: React.FC = () => {
                     <button
                       onClick={() => setShowDiscountCalculator(true)}
                       className="ml-2 text-primary hover:text-primary-700 transition-colors"
-                      title="Calculate discount percentage"
+                      title={t("pos.calcDiscountPercent")}
                     >
                       <Calculator className="w-4 h-4" />
                     </button>
@@ -1231,7 +1285,7 @@ export const DirectSale: React.FC = () => {
                     <button
                       onClick={() => setShowMarkupCalculator(true)}
                       className="ml-2 text-primary hover:text-primary-700 transition-colors"
-                      title="Add fixed markup amount"
+                      title={t("pos.addFixedMarkup")}
                     >
                       <Calculator className="w-4 h-4" />
                     </button>
@@ -1311,7 +1365,7 @@ export const DirectSale: React.FC = () => {
                 )}
                 {useMarkup && markupAmount > 0 && (
                   <div className="flex justify-between text-sm text-blue-600">
-                    <span>Markup Amount</span>
+                    <span>{t("pos.markupAmount")}</span>
                     <span>+{markupAmount.toLocaleString()} MMK</span>
                   </div>
                 )}
@@ -1404,9 +1458,9 @@ export const DirectSale: React.FC = () => {
             </div>
 
             <div className="p-6 space-y-4">
-              {/* Current Subtotal */}
+              {/* {t("pos.currentSubtotal")} */}
               <div className="bg-slate-50 p-4 rounded-lg">
-                <p className="text-sm text-slate-500 mb-1">Current Subtotal</p>
+                <p className="text-sm text-slate-500 mb-1">{t("pos.currentSubtotal")}</p>
                 <p className="text-2xl font-bold text-slate-800">
                   {subtotal.toLocaleString()} MMK
                 </p>
@@ -1421,7 +1475,7 @@ export const DirectSale: React.FC = () => {
                   type="number"
                   min="0"
                   className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-primary outline-none"
-                  placeholder="Enter markup amount..."
+                  placeholder={t("pos.enterMarkupPlaceholder")}
                   value={markupAmount}
                   onChange={(e) => setMarkupAmount(Number(e.target.value))}
                 />
@@ -1504,9 +1558,9 @@ export const DirectSale: React.FC = () => {
             </div>
 
             <div className="p-6 space-y-4">
-              {/* Current Subtotal */}
+              {/* {t("pos.currentSubtotal")} */}
               <div className="bg-slate-50 p-4 rounded-lg">
-                <p className="text-sm text-slate-500 mb-1">Current Subtotal</p>
+                <p className="text-sm text-slate-500 mb-1">{t("pos.currentSubtotal")}</p>
                 <p className="text-2xl font-bold text-slate-800">
                   {subtotal.toLocaleString()} MMK
                 </p>
@@ -1522,7 +1576,7 @@ export const DirectSale: React.FC = () => {
                   min="0"
                   max={subtotal}
                   className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-primary outline-none"
-                  placeholder="Enter discount amount..."
+                  placeholder={t("pos.enterDiscountPlaceholder")}
                   value={discountAmount}
                   onChange={(e) => setDiscountAmount(e.target.value)}
                 />

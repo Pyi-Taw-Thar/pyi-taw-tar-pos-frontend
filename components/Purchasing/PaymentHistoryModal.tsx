@@ -54,7 +54,7 @@ export const PaymentHistoryModal: React.FC<PaymentHistoryModalProps> = ({
     try {
       const res = await deleteCreditPayment(paymentToDelete._id);
       if (res.success) {
-        toast.success("Payment record deleted successfully");
+        toast.success(t("purchasing.paymentDeletedSuccess"));
         setPayments((prev) => prev.filter((p) => p._id !== paymentToDelete._id));
         if (purchaseData) {
           setPurchaseData({
@@ -101,17 +101,17 @@ export const PaymentHistoryModal: React.FC<PaymentHistoryModalProps> = ({
               {purchaseData && (
                 <div className="bg-slate-50 p-3 rounded-lg border grid grid-cols-3 gap-2 text-xs">
                   <div>
-                    <span className="text-slate-500 block">PO Number</span>
+                    <span className="text-slate-500 block">{t("purchasing.poNumber")}</span>
                     <span className="font-bold text-slate-800">{purchaseData.poNumber}</span>
                   </div>
                   <div>
-                    <span className="text-slate-500 block">Total Amount</span>
+                    <span className="text-slate-500 block">{t("orders.finalAmount")}</span>
                     <span className="font-bold text-slate-800">
                       {purchaseData.totalAmount?.toLocaleString()} MMK
                     </span>
                   </div>
                   <div>
-                    <span className="text-slate-500 block">Paid / Remaining</span>
+                    <span className="text-slate-500 block">{t("purchasing.paidRemaining")}</span>
                     <span className="font-semibold text-green-600">
                       {purchaseData.paidAmount?.toLocaleString()}
                     </span>{" "}
@@ -132,11 +132,11 @@ export const PaymentHistoryModal: React.FC<PaymentHistoryModalProps> = ({
                   <table className="w-full text-xs text-left">
                     <thead className="bg-slate-100 border-b font-medium text-slate-700">
                       <tr>
-                        <th className="p-2.5">Date</th>
-                        <th className="p-2.5">Amount</th>
-                        <th className="p-2.5">Method</th>
-                        <th className="p-2.5">Notes</th>
-                        <th className="p-2.5 text-right">Actions</th>
+                        <th className="p-2.5">{t("common.date")}</th>
+                        <th className="p-2.5">{t("common.amount")}</th>
+                        <th className="p-2.5">{t("orders.method")}</th>
+                        <th className="p-2.5">{t("common.notes")}</th>
+                        <th className="p-2.5 text-right">{t("common.actions")}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y">
@@ -159,7 +159,7 @@ export const PaymentHistoryModal: React.FC<PaymentHistoryModalProps> = ({
                               onClick={() => setPaymentToDelete(p)}
                               disabled={deletingId === p._id}
                               className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
-                              title="Delete Payment"
+                              title={t("purchasing.deletePaymentTitle")}
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
@@ -177,7 +177,7 @@ export const PaymentHistoryModal: React.FC<PaymentHistoryModalProps> = ({
 
       <ConfirmModal
         isOpen={!!paymentToDelete}
-        title="Delete Payment Record"
+        title={t("purchasing.deletePaymentRecordTitle")}
         message={`Are you sure you want to delete the payment of ${paymentToDelete?.paidAmount?.toLocaleString()} MMK? The PO remaining balance will be restored.`}
         confirmText="Delete"
         cancelText="Cancel"

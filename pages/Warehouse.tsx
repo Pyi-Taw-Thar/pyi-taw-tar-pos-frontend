@@ -89,7 +89,7 @@ export const Warehouse: React.FC = () => {
       }
     } catch (error) {
       console.error("Error loading inventory:", error);
-      toast.error("Failed to load inventory");
+      toast.error(t("warehouse.failedToLoadInventory"));
     } finally {
       setLoadingInventory(false);
     }
@@ -359,12 +359,12 @@ export const Warehouse: React.FC = () => {
           {loadingInventory ? (
             <div className="p-8 text-center text-slate-500">
               <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-2" />
-              <p>Loading inventory...</p>
+              <p>{t("warehouse.loadingInventory")}</p>
             </div>
           ) : inventoryItems.length === 0 ? (
             <div className="p-8 text-center text-slate-500">
               <Package className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-              <p>No inventory items found.</p>
+              <p>{t("warehouse.noInventoryItems")}</p>
             </div>
           ) : (
             <div>
@@ -379,12 +379,12 @@ export const Warehouse: React.FC = () => {
                   <thead className="bg-slate-50 border-b">
                     <tr>
                       <th className="px-2 sm:px-4 py-3 font-medium text-slate-600">
-                        <span className="hidden sm:inline">Product Name</span>
-                        <span className="sm:hidden">Name</span>
+                        <span className="hidden sm:inline">{t("warehouse.productName")}</span>
+                        <span className="sm:hidden">{t("warehouse.nameShort")}</span>
                       </th>
                       <th className="px-2 sm:px-4 py-3 font-medium text-slate-600">
-                        <span className="hidden sm:inline">Product Code</span>
-                        <span className="sm:hidden">Code</span>
+                        <span className="hidden sm:inline">{t("warehouse.productCode")}</span>
+                        <span className="sm:hidden">{t("warehouse.codeShort")}</span>
                       </th>
                       <th className="px-2 sm:px-4 py-3 font-medium text-slate-600">
                         SKU
@@ -393,30 +393,30 @@ export const Warehouse: React.FC = () => {
                         Category
                       </th>
                       <th className="px-2 sm:px-4 py-3 font-medium text-slate-600">
-                        <span className="hidden sm:inline">Warehouse</span>
-                        <span className="sm:hidden">WH</span>
+                        <span className="hidden sm:inline">{t("warehouse.warehouse")}</span>
+                        <span className="sm:hidden">{t("warehouse.whShort")}</span>
                       </th>
                       <th className="px-2 sm:px-4 py-3 font-medium text-slate-600 text-right">
                         Qty
                       </th>
                       <th className="px-2 sm:px-4 py-3 font-medium text-slate-600 text-right">
-                        <span className="hidden sm:inline">Available</span>
-                        <span className="sm:hidden">Avail</span>
+                        <span className="hidden sm:inline">{t("warehouse.available")}</span>
+                        <span className="sm:hidden">{t("warehouse.availShort")}</span>
                       </th>
                       <th className="px-2 sm:px-4 py-3 font-medium text-slate-600 text-right">
-                        <span className="hidden sm:inline">Price</span>
+                        <span className="hidden sm:inline">{t("inventory.price")}</span>
                         <span className="sm:hidden">$</span>
                       </th>
                       <th className="px-2 sm:px-4 py-3 font-medium text-slate-600 text-right">
-                        <span className="hidden sm:inline">Total</span>
+                        <span className="hidden sm:inline">{t("common.total")}</span>
                         <span className="sm:hidden">T</span>
                       </th>
                       <th className="px-2 sm:px-4 py-3 font-medium text-slate-600">
-                        <span className="hidden sm:inline">Status</span>
+                        <span className="hidden sm:inline">{t("common.status")}</span>
                         <span className="sm:hidden">S</span>
                       </th>
                       <th className="px-2 sm:px-4 py-3 font-medium text-slate-600">
-                        <span className="hidden sm:inline">Updated</span>
+                        <span className="hidden sm:inline">{t("warehouse.updated")}</span>
                         <span className="sm:hidden">U</span>
                       </th>
                     </tr>
@@ -508,21 +508,21 @@ export const Warehouse: React.FC = () => {
                                 <span className="hidden sm:inline">
                                   Low Stock
                                 </span>
-                                <span className="sm:hidden">Low</span>
+                                <span className="sm:hidden">{t("warehouse.lowStock")}</span>
                               </span>
                             ) : item.quantity === 0 ? (
                               <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs font-medium">
                                 <span className="hidden sm:inline">
                                   Out of Stock
                                 </span>
-                                <span className="sm:hidden">Out</span>
+                                <span className="sm:hidden">{t("warehouse.outOfStock")}</span>
                               </span>
                             ) : (
                               <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-medium">
                                 <span className="hidden sm:inline">
                                   In Stock
                                 </span>
-                                <span className="sm:hidden">In</span>
+                                <span className="sm:hidden">{t("warehouse.inStock")}</span>
                               </span>
                             )}
                           </td>

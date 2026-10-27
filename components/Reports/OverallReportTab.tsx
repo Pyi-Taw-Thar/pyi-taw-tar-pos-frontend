@@ -1,4 +1,5 @@
 import React from "react";
+import { useLanguage } from "../../context/LanguageContext";
 import { Store } from "lucide-react";
 import { SaleReportResponse } from "../../services/Reports/fetchSaleReport";
 
@@ -24,6 +25,7 @@ export const OverallReportTab: React.FC<OverallReportTabProps> = ({
   allStorefrontsReport,
   selectedStorefront,
 }) => {
+  const { t } = useLanguage();
   // console.log(saleReports);
   // console.log(allStorefrontsReport);
 
@@ -83,7 +85,7 @@ export const OverallReportTab: React.FC<OverallReportTabProps> = ({
 
       {/* <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white p-4 rounded-xl shadow border border-amber-100">
-          <p className="text-slate-500 text-xs uppercase font-bold">Discount</p>
+          <p className="text-slate-500 text-xs uppercase font-bold">{t("reports.discount")}</p>
           <p className="text-2xl font-bold text-amber-600">
             {displayReport.discount.toLocaleString()} MMK
           </p>
@@ -105,7 +107,7 @@ export const OverallReportTab: React.FC<OverallReportTabProps> = ({
           </p>
         </div>
         <div className="bg-white p-4 rounded-xl shadow border border-slate-100">
-          <p className="text-slate-500 text-xs uppercase font-bold">Tax</p>
+          <p className="text-slate-500 text-xs uppercase font-bold">{t("reports.tax")}</p>
           <p className="text-2xl font-bold text-slate-600">
             {displayReport.tax.toLocaleString()} MMK
           </p>

@@ -81,7 +81,7 @@ export const AddItemsToEcommerceOrderModal: React.FC<
       setProducts(mapped.filter((p) => !!p._id));
     } catch (error) {
       console.error("Error loading inventory products:", error);
-      toast.error("Failed to load products");
+      toast.error(t("orders.failedToLoadProducts"));
       setProducts([]);
     } finally {
       setLoadingProducts(false);
@@ -182,7 +182,7 @@ export const AddItemsToEcommerceOrderModal: React.FC<
   const buildPayload = () => {
     if (!order) return;
     if (selectedItems.length === 0) {
-      toast.error("Please select at least one item");
+      toast.error(t("ecommerceOrders.selectAtLeastOneItem"));
       return;
     }
 
@@ -193,7 +193,7 @@ export const AddItemsToEcommerceOrderModal: React.FC<
           : Number(item.unitPriceInput);
 
       if (parsedPrice !== undefined && Number.isNaN(parsedPrice)) {
-        toast.error("Invalid unit price");
+        toast.error(t("ecommerceOrders.invalidUnitPrice"));
         return null;
       }
 

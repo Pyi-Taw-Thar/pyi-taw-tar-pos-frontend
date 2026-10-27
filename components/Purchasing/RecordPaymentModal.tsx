@@ -1,3 +1,4 @@
+import { useLanguage } from "../../context/LanguageContext";
 import React, { useState } from "react";
 import { X, CreditCard, DollarSign, Calendar, FileText, Loader2 } from "lucide-react";
 import { createCreditPayment } from "../../services/SupplierCreditPayment/createCreditPayment";
@@ -17,6 +18,7 @@ export const RecordPaymentModal: React.FC<RecordPaymentModalProps> = ({
   po,
   onPaymentSuccess,
 }) => {
+  const { t } = useLanguage();
   const [paidAmount, setPaidAmount] = useState<string>("");
   const [paymentMethod, setPaymentMethod] = useState<string>("cash");
   const [paymentDate, setPaymentDate] = useState<string>(
@@ -62,7 +64,7 @@ export const RecordPaymentModal: React.FC<RecordPaymentModalProps> = ({
       });
 
       if (res.success) {
-        toast.success("Supplier credit payment recorded successfully!");
+        toast.success(t("purchasing.paymentRecorded"));
         setPaidAmount("");
         setNotes("");
         onPaymentSuccess?.();
@@ -162,10 +164,10 @@ export const RecordPaymentModal: React.FC<RecordPaymentModalProps> = ({
                 className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none bg-white text-xs"
               >
                 <option value="cash">Cash (ငွေသား)</option>
-                <option value="bank_transfer">Bank Transfer</option>
-                <option value="mobile_payment">KPay / WavePay</option>
-                <option value="cheque">Cheque</option>
-                <option value="other">Other</option>
+                <option value="bank_transfer">{t("purchasing.bankTransfer")}</option>
+                <option value="mobile_payment">{t("purchasing.mobilePayment")}</option>
+                <option value="cheque">{t("purchasing.cheque")}</option>
+                <option value="other">{t("purchasing.otherPayment")}</option>
               </select>
             </div>
 
@@ -193,7 +195,7 @@ export const RecordPaymentModal: React.FC<RecordPaymentModalProps> = ({
               <FileText className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
               <input
                 type="text"
-                placeholder="Optional payment notes"
+                placeholder={t("purchasing.optionalPaymentNotesPlaceholder")}
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 className="w-full pl-9 pr-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none text-xs"

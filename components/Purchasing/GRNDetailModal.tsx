@@ -112,11 +112,11 @@ export const GRNDetailModal: React.FC<GRNDetailModalProps> = ({
         setSelectedLineItem(null);
       } else {
         console.error("Failed to update line item:", result.message);
-        toast.error("Failed to update line item: " + result.message);
+        toast.error(result.message || t("purchasing.failedToUpdateLineItem"));
       }
     } catch (error) {
       console.error("Error updating line item:", error);
-      toast.error("Error updating line item: " + error);
+      toast.error(t("purchasing.errorUpdatingLineItem"));
     } finally {
       setUpdating(false);
     }
@@ -127,7 +127,7 @@ export const GRNDetailModal: React.FC<GRNDetailModalProps> = ({
       {loading ? (
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
-          <span className="ml-3 text-slate-500">Loading GRN details...</span>
+          <span className="ml-3 text-slate-500">{t("purchasing.loadingGRNDetails")}</span>
         </div>
       ) : grn ? (
         <div className="space-y-6">
@@ -181,19 +181,19 @@ export const GRNDetailModal: React.FC<GRNDetailModalProps> = ({
               <div className="text-2xl font-bold text-blue-600">
                 {grn.totalReceivedQuantity}
               </div>
-              <div className="text-sm text-blue-600">Total Received</div>
+              <div className="text-sm text-blue-600">{t("purchasing.totalReceived")}</div>
             </div>
             <div className="bg-green-50 p-4 rounded-lg border border-green-200 text-center">
               <div className="text-2xl font-bold text-green-600">
                 {grn.totalGoodQuantity}
               </div>
-              <div className="text-sm text-green-600">Good Quantity</div>
+              <div className="text-sm text-green-600">{t("purchasing.goodQuantity")}</div>
             </div>
             <div className="bg-red-50 p-4 rounded-lg border border-red-200 text-center">
               <div className="text-2xl font-bold text-red-600">
                 {grn.totalBadQuantity}
               </div>
-              <div className="text-sm text-red-600">Bad Quantity</div>
+              <div className="text-sm text-red-600">{t("purchasing.badQuantity")}</div>
             </div>
           </div>
 
@@ -218,17 +218,17 @@ export const GRNDetailModal: React.FC<GRNDetailModalProps> = ({
               <table className="w-full text-sm">
                 <thead className="bg-slate-50 border-b">
                   <tr>
-                    <th className="p-3 text-left">Product</th>
+                    <th className="p-3 text-left">{t("common.product")}</th>
                     <th className="p-3 text-left">SKU</th>
-                    <th className="p-3 text-left">Batch / Barcode</th>
-                    <th className="p-3 text-left">Expiry</th>
-                    <th className="p-3 text-center">Received</th>
-                    <th className="p-3 text-center">Good</th>
-                    <th className="p-3 text-center">Bad</th>
-                    <th className="p-3 text-center">Available</th>
-                    <th className="p-3 text-right">Unit Price</th>
-                    <th className="p-3 text-right">Total Price</th>
-                    <th className="p-3 text-center">Actions</th>
+                    <th className="p-3 text-left">{t("purchasing.batchBarcode")}</th>
+                    <th className="p-3 text-left">{t("purchasing.expiry")}</th>
+                    <th className="p-3 text-center">{t("purchasing.received")}</th>
+                    <th className="p-3 text-center">{t("purchasing.good")}</th>
+                    <th className="p-3 text-center">{t("purchasing.bad")}</th>
+                    <th className="p-3 text-center">{t("warehouse.available")}</th>
+                    <th className="p-3 text-right">{t("orders.unitPrice")}</th>
+                    <th className="p-3 text-right">{t("common.total")}</th>
+                    <th className="p-3 text-center">{t("common.actions")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
@@ -325,7 +325,7 @@ export const GRNDetailModal: React.FC<GRNDetailModalProps> = ({
                           <button
                             onClick={() => handleUpdateLineItem(item)}
                             className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                            title="Update Line Item"
+                            title={t("purchasing.updateLineItem")}
                           >
                             <Edit2 className="w-4 h-4" />
                           </button>

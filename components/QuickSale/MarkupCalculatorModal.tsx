@@ -1,3 +1,4 @@
+import { useLanguage } from "../../context/LanguageContext";
 import React, { useState } from "react";
 import { X, Calculator } from "lucide-react";
 import { toast } from "sonner";
@@ -13,6 +14,7 @@ interface MarkupCalculatorModalProps {
 export const MarkupCalculatorModal: React.FC<MarkupCalculatorModalProps> = ({
   show, onClose, subtotal, markupAmount: currentMarkup, onApply,
 }) => {
+  const { t } = useLanguage();
   const [amount, setAmount] = useState(currentMarkup);
 
   if (!show) return null;
@@ -31,14 +33,14 @@ export const MarkupCalculatorModal: React.FC<MarkupCalculatorModalProps> = ({
         </div>
         <div className="p-6 space-y-4">
           <div className="bg-slate-50 p-4 rounded-lg">
-            <p className="text-sm text-slate-500 mb-1">Current Subtotal</p>
+            <p className="text-sm text-slate-500 mb-1">{t("pos.currentSubtotal")}</p>
             <p className="text-2xl font-bold text-slate-800">{subtotal.toLocaleString()} MMK</p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Markup Amount (MMK)</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">{t("pos.markupAmountLabel")}</label>
             <input type="number" min="0"
               className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-primary outline-none"
-              placeholder="Enter markup amount..."
+              placeholder={t("pos.enterMarkupPlaceholder")}
               value={amount} onChange={(e) => setAmount(Number(e.target.value))}
             />
           </div>
@@ -59,11 +61,11 @@ export const MarkupCalculatorModal: React.FC<MarkupCalculatorModalProps> = ({
             </div>
           )}
           <div className="flex justify-end gap-3 pt-4 border-t">
-            <button onClick={onClose} className="px-4 py-2 text-slate-700 hover:bg-slate-100 rounded-lg transition-colors">Cancel</button>
+            <button onClick={onClose} className="px-4 py-2 text-slate-700 hover:bg-slate-100 rounded-lg transition-colors">{t("common.cancel")}</button>
             <button onClick={() => { if (amount > 0) { onApply(amount); toast.success(`Markup set to ${amount.toLocaleString()} MMK`); } }}
               disabled={!amount || amount <= 0}
               className="px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >Apply Markup</button>
+            >{t("pos.applyMarkup")}</button>
           </div>
         </div>
       </div>

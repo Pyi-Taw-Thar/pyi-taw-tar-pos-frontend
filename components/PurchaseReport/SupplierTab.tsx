@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
+import { useLanguage } from "../../context/LanguageContext";
 import { Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { DateRangePicker } from "../Reports/DateRangePicker";
@@ -30,6 +31,7 @@ interface SupplierTabProps {
 }
 
 export const SupplierTab: React.FC<SupplierTabProps> = ({ onSupplierClick }) => {
+  const { t } = useLanguage();
   const [startDate, setStartDate] = useState<Date | null>(getToday());
   const [endDate, setEndDate] = useState<Date | null>(getToday());
   const [sortBy, setSortBy] = useState("totalAmount");
@@ -65,7 +67,7 @@ export const SupplierTab: React.FC<SupplierTabProps> = ({ onSupplierClick }) => 
         toast.error(res.message);
       }
     } catch {
-      toast.error("Failed to load supplier report");
+      toast.error(t("purchaseReport.failedToLoadSupplierReport"));
     } finally {
       setLoading(false);
     }
@@ -107,8 +109,8 @@ export const SupplierTab: React.FC<SupplierTabProps> = ({ onSupplierClick }) => 
           }}
           className="border rounded-lg px-3 py-2 text-sm"
         >
-          <option value="desc">Descending</option>
-          <option value="asc">Ascending</option>
+          <option value="desc">{t("purchaseReport.descending")}</option>
+          <option value="asc">{t("purchaseReport.ascending")}</option>
         </select>
         <button
           type="button"
@@ -129,33 +131,33 @@ export const SupplierTab: React.FC<SupplierTabProps> = ({ onSupplierClick }) => 
         <>
           <div className="grid grid-cols-2 lg:grid-cols-6 gap-3">
             <div className="bg-white p-4 rounded-xl border">
-              <p className="text-xs text-slate-500 uppercase font-bold">Suppliers</p>
+              <p className="text-xs text-slate-500 uppercase font-bold">{t("purchaseReport.suppliers")}</p>
               <p className="text-2xl font-bold">{totals.totalSuppliers}</p>
             </div>
             <div className="bg-white p-4 rounded-xl border">
-              <p className="text-xs text-slate-500 uppercase font-bold">Total POs</p>
+              <p className="text-xs text-slate-500 uppercase font-bold">{t("purchaseReport.totalPOs")}</p>
               <p className="text-2xl font-bold">{totals.totalPOs}</p>
             </div>
             <div className="bg-white p-4 rounded-xl border border-green-100">
-              <p className="text-xs text-slate-500 uppercase font-bold">Amount</p>
+              <p className="text-xs text-slate-500 uppercase font-bold">{t("purchaseReport.amount")}</p>
               <p className="text-lg font-bold text-green-700">
                 {formatMMK(totals.totalAmount)}
               </p>
             </div>
             <div className="bg-white p-4 rounded-xl border">
-              <p className="text-xs text-slate-500 uppercase font-bold">Ordered</p>
+              <p className="text-xs text-slate-500 uppercase font-bold">{t("purchaseReport.ordered")}</p>
               <p className="text-2xl font-bold text-blue-600">
                 {totals.totalOrdered.toLocaleString()}
               </p>
             </div>
             <div className="bg-white p-4 rounded-xl border">
-              <p className="text-xs text-slate-500 uppercase font-bold">Received</p>
+              <p className="text-xs text-slate-500 uppercase font-bold">{t("purchaseReport.received")}</p>
               <p className="text-2xl font-bold text-primary">
                 {totals.totalReceived.toLocaleString()}
               </p>
             </div>
             <div className="bg-white p-4 rounded-xl border">
-              <p className="text-xs text-slate-500 uppercase font-bold">Remaining</p>
+              <p className="text-xs text-slate-500 uppercase font-bold">{t("purchaseReport.remaining")}</p>
               <p className="text-2xl font-bold text-amber-600">
                 {totals.totalRemaining.toLocaleString()}
               </p>
@@ -167,9 +169,9 @@ export const SupplierTab: React.FC<SupplierTabProps> = ({ onSupplierClick }) => 
               <table className="w-full text-sm text-left min-w-[1000px]">
                 <thead className="bg-slate-50 border-b">
                   <tr>
-                    <th className="px-4 py-3 font-medium text-slate-600">Supplier</th>
-                    <th className="px-4 py-3 font-medium text-slate-600">Code</th>
-                    <th className="px-4 py-3 font-medium text-slate-600">Contact</th>
+                    <th className="px-4 py-3 font-medium text-slate-600">{t("purchaseReport.supplier")}</th>
+                    <th className="px-4 py-3 font-medium text-slate-600">{t("purchaseReport.code")}</th>
+                    <th className="px-4 py-3 font-medium text-slate-600">{t("purchaseReport.contact")}</th>
                     <th className="px-4 py-3 font-medium text-slate-600 text-right">
                       POs
                     </th>
@@ -185,7 +187,7 @@ export const SupplierTab: React.FC<SupplierTabProps> = ({ onSupplierClick }) => 
                     <th className="px-4 py-3 font-medium text-slate-600 text-right">
                       Remaining
                     </th>
-                    <th className="px-4 py-3 font-medium text-slate-600">Last PO</th>
+                    <th className="px-4 py-3 font-medium text-slate-600">{t("purchaseReport.lastPO")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">

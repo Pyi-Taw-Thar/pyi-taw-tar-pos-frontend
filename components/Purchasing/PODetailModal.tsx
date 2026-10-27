@@ -99,11 +99,11 @@ export const PODetailModal: React.FC<PODetailModalProps> = ({
     purchase?.products.reduce((sum, p) => sum + p.purchaseQuantity, 0) || 0;
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Purchase Order Details">
+    <Modal isOpen={isOpen} onClose={handleClose} title={t("purchasing.poDetailsTitle")}>
       {loading ? (
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
-          <span className="ml-3 text-slate-500">Loading PO details...</span>
+          <span className="ml-3 text-slate-500">{t("purchasing.loadingPODetails")}</span>
         </div>
       ) : purchase ? (
         <div className="space-y-6">
@@ -189,13 +189,13 @@ export const PODetailModal: React.FC<PODetailModalProps> = ({
               <div className="text-2xl font-bold text-purple-600">
                 {purchase.products.length}
               </div>
-              <div className="text-sm text-purple-600">Total Products</div>
+              <div className="text-sm text-purple-600">{t("purchasing.totalProducts")}</div>
             </div>
             <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-200 text-center">
               <div className="text-2xl font-bold text-indigo-600">
                 {totalQuantity}
               </div>
-              <div className="text-sm text-indigo-600">Total Quantity</div>
+              <div className="text-sm text-indigo-600">{t("inventory.totalQuantity")}</div>
             </div>
           </div>
 
@@ -221,14 +221,14 @@ export const PODetailModal: React.FC<PODetailModalProps> = ({
                 <table className="w-full text-sm min-w-[700px]">
                   <thead className="bg-slate-50 border-b">
                     <tr>
-                      <th className="p-3 text-left">Product Name</th>
-                      <th className="p-3 text-left">Product Code</th>
-                      <th className="p-3 text-center">Status</th>
-                      <th className="p-3 text-center">Quantity</th>
-                      <th className="p-3 text-center">Unit (Base Qty)</th>
+                      <th className="p-3 text-left">{t("inventory.productName")}</th>
+                      <th className="p-3 text-left">{t("inventory.productCode")}</th>
+                      <th className="p-3 text-center">{t("common.status")}</th>
+                      <th className="p-3 text-center">{t("common.quantity")}</th>
+                      <th className="p-3 text-center">{t("purchasing.unitBaseQty")}</th>
                       {/* <th className="p-3 text-center">Received</th> */}
-                      <th className="p-3 text-right">Buying Price</th>
-                      <th className="p-3 text-right">Subtotal</th>
+                      <th className="p-3 text-right">{t("inventory.buyingPrice")}</th>
+                      <th className="p-3 text-right">{t("common.subtotal")}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">

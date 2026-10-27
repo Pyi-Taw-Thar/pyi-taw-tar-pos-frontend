@@ -36,7 +36,7 @@ export const TransferList: React.FC<TransferListProps> = ({
         toast.error(result.message);
       }
     } catch (error) {
-      toast.error("Failed to update transfer status");
+      toast.error(t("warehouse.failedUpdateTransferStatus"));
     } finally {
       setUpdatingId(null);
     }
@@ -115,13 +115,13 @@ export const TransferList: React.FC<TransferListProps> = ({
           <table className="w-full text-sm text-left">
             <thead className="bg-slate-50 border-b sticky top-0 z-10">
               <tr>
-                <th className="p-4">Transfer Number</th>
-                <th className="p-4">Source Type</th>
-                <th className="p-4">Transfer Date</th>
-                <th className="p-4">Items</th>
-                <th className="p-4">Status</th>
+                <th className="p-4">{t("warehouse.transferNumber")}</th>
+                <th className="p-4">{t("warehouse.sourceType")}</th>
+                <th className="p-4">{t("warehouse.transferDate")}</th>
+                <th className="p-4">{t("orders.items")}</th>
+                <th className="p-4">{t("common.status")}</th>
                 {/* <th className="p-4">Notes</th> */}
-                <th className="p-4">Actions</th>
+                <th className="p-4">{t("common.actions")}</th>
               </tr>
             </thead>
             <tbody className="divide-y">

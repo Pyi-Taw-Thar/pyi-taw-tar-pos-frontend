@@ -133,7 +133,8 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
           </div>
           <div className="flex items-center gap-2">
             <button onClick={() => onPageChange(1)} disabled={currentPage === 1}
-              className="p-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors" title="First Page"
+              className="p-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors" title={t("common.firstPage") || "First Page"}
+              aria-label={t("common.firstPage") || "First Page"}
             ><ChevronDown className="w-4 h-4 rotate-90" /></button>
             <button onClick={() => onPageChange(Math.max(1, currentPage - 1))} disabled={currentPage === 1}
               className="px-3 py-1 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
@@ -150,7 +151,8 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
               className="px-3 py-1 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
             >{t("common.next") || "Next"}</button>
             <button onClick={() => onPageChange(totalPages)} disabled={currentPage === totalPages}
-              className="p-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors" title="Last Page"
+              className="p-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors" title={t("common.lastPage") || "Last Page"}
+              aria-label={t("common.lastPage") || "Last Page"}
             ><ChevronDown className="w-4 h-4 -rotate-90" /></button>
           </div>
         </div>

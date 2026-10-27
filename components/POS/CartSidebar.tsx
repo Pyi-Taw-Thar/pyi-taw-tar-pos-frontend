@@ -1,5 +1,5 @@
 import React from "react";
-import { Plus, Minus, Trash2 } from "lucide-react";
+import { Plus, Minus, Trash2, X } from "lucide-react";
 import { useLanguage } from "../../context/LanguageContext";
 import { CartUnitSelector } from "../UOM/CartUnitSelector";
 import {
@@ -24,6 +24,8 @@ interface CartSidebarProps {
   onSetCartLineUnit: (lineId: string, unit: string) => void;
   onRemoveFromCart: (lineId: string) => void;
   onOpenCheckout: () => void;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
 export const CartSidebar: React.FC<CartSidebarProps> = ({
@@ -37,14 +39,38 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
   onSetCartLineUnit,
   onRemoveFromCart,
   onOpenCheckout,
+  isOpen = false,
+  onClose,
 }) => {
   const { t } = useLanguage();
-  console.log("cart", cart[0]?.stockItem?.inventoryId?.uomConversions);
   return (
-    <div className="w-96 bg-white flex flex-col border-l border-[#E9ECEF] shadow-xl h-[calc(100vh-60px)] sticky top-0">
-      <div className="p-4 border-b">
-        <h2 className="font-bold text-lg">{t("pos.currentSale")}</h2>
-      </div>
+    <>
+      {/* Mobile backdrop */}
+      {isOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black/40 z-40 transition-opacity"
+          onClick={onClose}
+        />
+      )}
+
+      <div
+        className={`bg-white flex flex-col border-l border-[#E9ECEF] shadow-xl transition-transform duration-300 ease-in-out
+          lg:static lg:w-80 xl:w-96 lg:h-[calc(100vh-60px)] lg:sticky lg:top-0 lg:translate-y-0 lg:z-auto
+          fixed inset-x-0 bottom-0 z-50 h-[85vh] rounded-t-2xl lg:rounded-none
+          ${isOpen ? "translate-y-0" : "translate-y-full lg:translate-y-0"}`}
+      >
+        <div className="p-4 border-b flex items-center justify-between">
+          <h2 className="font-bold text-lg">{t("pos.currentSale")}</h2>
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="lg:hidden p-1 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
+              aria-label="Close cart"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
+        </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {cart.length === 0 ? (
@@ -220,5 +246,6 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
         </button>
       </div>
     </div>
+    </>
   );
 };

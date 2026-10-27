@@ -23,6 +23,7 @@ import {
 } from "./orderUtils";
 import { toast } from "sonner";
 import { useApp } from "../../context/AppContext";
+import { useLanguage } from "../../context/LanguageContext";
 
 interface OrdersTableProps {
   loading: boolean;
@@ -51,6 +52,7 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
   const [deletingOrderId, setDeletingOrderId] = useState<string | null>(null);
 
   // Check if user can delete orders (admin or owner only)
+  const { t } = useLanguage();
   const canDeleteOrder = userRole.role === "owner";
 
   const handleDeleteOrder = async (orderId: string, orderNumber: string) => {
@@ -67,12 +69,12 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
       const response = await deleteOrder(orderId);
 
       if (response.success) {
-        toast.success(`Order ${orderNumber} deleted successfully`);
+        toast.success(t("orders.deleteSuccess").replace("{order}", orderNumber));
         if (onOrderDeleted) {
           onOrderDeleted();
         }
       } else {
-        toast.error(response.message || "Failed to delete order");
+        toast.error(response.message || t("orders.deleteFailed"));
       }
     } catch (error: any) {
       console.error("Error deleting order:", error);
@@ -85,7 +87,7 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
     return (
       <div className="bg-white rounded-xl shadow-sm border p-8 text-center">
         <RefreshCw className="w-8 h-8 animate-spin text-primary mx-auto mb-2" />
-        <p className="text-slate-500">Loading orders...</p>
+        <p className="text-slate-500">{t("orders.loadingOrders")}</p>
       </div>
     );
   }
@@ -94,7 +96,7 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
     return (
       <div className="bg-white rounded-xl shadow-sm border p-12 text-center">
         <ShoppingBag className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-        <p className="text-slate-500">No orders found</p>
+        <p className="text-slate-500">{t("orders.noOrders")}</p>
       </div>
     );
   }
@@ -103,7 +105,7 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
     <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
       {/* Mobile scroll indicator */}
       <div className="sm:hidden px-4 py-2 bg-slate-50 text-xs text-slate-500 text-center">
-        ← Swipe to see more →
+        {t("common.swipeMore")}
       </div>
 
       {/* Table container with horizontal scroll on mobile */}
@@ -112,33 +114,33 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
           <thead className="bg-slate-50 border-b">
             <tr>
               <th className="px-2 sm:px-4 py-3 font-semibold text-slate-600">
-                <span className="hidden sm:inline">Order Number</span>
-                <span className="sm:hidden">Order #</span>
+                <span className="hidden sm:inline">{t("orders.orderNumber")}</span>
+                <span className="sm:hidden">{t("orders.orderNumber")}</span>
               </th>
               {/* <th className="p-4 font-semibold text-slate-600">Storefront</th> */}
               <th className="px-2 sm:px-4 py-3 font-semibold text-slate-600">
-                <span className="hidden sm:inline">Items</span>
-                <span className="sm:hidden">Items</span>
+                <span className="hidden sm:inline">{t("orders.items")}</span>
+                <span className="sm:hidden">{t("orders.items")}</span>
               </th>
               <th className="px-2 sm:px-4 py-3 font-semibold text-slate-600">
-                <span className="hidden sm:inline">Final Amount</span>
-                <span className="sm:hidden">Total</span>
+                <span className="hidden sm:inline">{t("orders.finalAmount")}</span>
+                <span className="sm:hidden">{t("common.total")}</span>
               </th>
               <th className="px-2 sm:px-4 py-3 font-semibold text-slate-600">
-                <span className="hidden sm:inline">Paid</span>
-                <span className="sm:hidden">Paid</span>
+                <span className="hidden sm:inline">{t("common.paid")}</span>
+                <span className="sm:hidden">{t("common.paid")}</span>
               </th>
               <th className="px-2 sm:px-4 py-3 font-semibold text-slate-600">
-                <span className="hidden sm:inline">Method</span>
-                <span className="sm:hidden">Method</span>
+                <span className="hidden sm:inline">{t("orders.method")}</span>
+                <span className="sm:hidden">{t("orders.method")}</span>
               </th>
               {/* <th className="p-4 font-semibold text-slate-600">Sold By</th> */}
               {/* <th className="p-4 font-semibold text-slate-600">Credit Person</th> */}
               {/* <th className="p-4 font-semibold text-slate-600">Status</th> */}
               {/* <th className="p-4 font-semibold text-slate-600">Date</th> */}
               <th className="px-2 sm:px-4 py-3 font-semibold text-slate-600">
-                <span className="hidden sm:inline">Actions</span>
-                <span className="sm:hidden">A</span>
+                <span className="hidden sm:inline">{t("common.actions")}</span>
+                <span className="sm:hidden">{t("common.actions")}</span>
               </th>
             </tr>
           </thead>
@@ -160,7 +162,7 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
               </td> */}
                 <td className="px-2 sm:px-4 py-3">
                   <span className="bg-slate-100 px-2 py-1 rounded text-xs font-medium">
-                    {order.ordersProducts?.length || 0} item(s)
+                    {order.ordersProducts?.length || 0} {t("pos.itemsLower") || "item(s)"}
                   </span>
                 </td>
                 <td className="px-2 sm:px-4 py-3 font-bold text-slate-800 text-xs sm:text-sm">
@@ -234,7 +236,7 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
                       className="text-xs bg-primary/20 text-yellow-800 px-2 py-1.5 sm:px-3 sm:py-1.5 rounded hover:bg-primary/30 border border-primary/30 font-medium transition-colors flex items-center gap-1"
                     >
                       <Eye className="w-3 h-3" />{" "}
-                      <span className="hidden xl:inline">View</span>
+                      <span className="hidden xl:inline">{t("common.view")}</span>
                       <span className="xl:hidden sm:hidden">V</span>
                     </button>
                     {canDeleteOrder && (
@@ -248,15 +250,13 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
                         {deletingOrderId === order._id ? (
                           <>
                             <Loader2 className="w-3 h-3 animate-spin" />
-                            <span className="hidden xl:inline">
-                              Deleting...
-                            </span>
+                            <span className="hidden xl:inline">{t("common.deleting")}</span>
                             <span className="xl:hidden sm:hidden">...</span>
                           </>
                         ) : (
                           <>
                             <Trash2 className="w-3 h-3" />
-                            <span className="hidden xl:inline">Delete</span>
+                            <span className="hidden xl:inline">{t("common.delete")}</span>
                             <span className="xl:hidden sm:hidden">D</span>
                           </>
                         )}

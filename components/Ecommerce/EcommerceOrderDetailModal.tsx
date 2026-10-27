@@ -234,7 +234,7 @@ export const EcommerceOrderDetailModal: React.FC<
             <button
               onClick={onClose}
               className="h-9 w-9 hover:bg-slate-200 rounded-lg transition-colors flex items-center justify-center text-slate-500 hover:text-slate-800"
-              title="Close"
+              title={t("common.close")}
             >
               <X className="w-5 h-5 shrink-0" />
             </button>
@@ -471,7 +471,7 @@ export const EcommerceOrderDetailModal: React.FC<
                     <span>{paymentLabel}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Payment Status</span>
+                    <span className="text-slate-500">{t("orders.paymentStatus")}</span>
                     <span
                       className={`px-2 py-0.5 rounded-full text-xs font-bold ${
                         order.paymentStatus === "paid"

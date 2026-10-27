@@ -132,7 +132,7 @@ export const SaleStatisticsTab: React.FC<SaleStatisticsTabProps> = ({
     return (
       <div className="bg-white rounded-xl shadow-sm border p-12 text-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
-        <p className="text-slate-600">Loading product sales statistics...</p>
+        <p className="text-slate-600">{t("reports.loadingSaleStats")}</p>
       </div>
     );
   }
@@ -141,7 +141,7 @@ export const SaleStatisticsTab: React.FC<SaleStatisticsTabProps> = ({
     return (
       <div className="bg-white rounded-xl shadow-sm border p-12 text-center">
         <Package className="w-12 h-12 text-slate-400 mx-auto mb-4" />
-        <p className="text-slate-600">No product sales data available</p>
+        <p className="text-slate-600">{t("reports.noProductSalesData")}</p>
       </div>
     );
   }
@@ -213,7 +213,7 @@ export const SaleStatisticsTab: React.FC<SaleStatisticsTabProps> = ({
         {products.length === 0 ? (
           <div className="p-12 text-center">
             <Package className="w-12 h-12 text-slate-400 mx-auto mb-4" />
-            <p className="text-slate-600">No products found in this period</p>
+            <p className="text-slate-600">{t("reports.noProductsInPeriod")}</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -357,7 +357,7 @@ export const SaleStatisticsTab: React.FC<SaleStatisticsTabProps> = ({
                 <div className="py-24 text-center">
                   <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
                   <p className="text-slate-600 font-bold text-lg animate-pulse">
-                    Searching Recent Orders...
+                    {t("reports.searchingRecentOrders")}
                   </p>
                 </div>
               ) : modalOrders.length === 0 ? (

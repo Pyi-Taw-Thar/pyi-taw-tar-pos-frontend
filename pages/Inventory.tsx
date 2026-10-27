@@ -520,7 +520,7 @@ export const Inventory: React.FC = () => {
       }
     } catch (error) {
       console.error("Error updating product status:", error);
-      toast.error("Failed to update product status");
+      toast.error(t("inventory.failedUpdateStatus"));
     }
   };
 
@@ -583,7 +583,7 @@ export const Inventory: React.FC = () => {
 
   const handleOpenTransferModal = () => {
     if (selectedProductIds.length === 0) {
-      toast.error("Please select at least one product to transfer");
+      toast.error(t("inventory.selectAtLeastOneTransfer"));
       return;
     }
     setIsTransferModalOpen(true);
@@ -596,7 +596,7 @@ export const Inventory: React.FC = () => {
 
   const handleOpenTransferStorefrontModal = () => {
     if (selectedProductIds.length === 0) {
-      toast.error("Please select at least one product to transfer");
+      toast.error(t("inventory.selectAtLeastOneTransfer"));
       return;
     }
     setIsTransferStorefrontModalOpen(true);
@@ -609,12 +609,12 @@ export const Inventory: React.FC = () => {
 
   const handleTransfer = async () => {
     if (!selectedWarehouseId) {
-      toast.error("Please select a warehouse");
+      toast.error(t("inventory.selectWarehouse"));
       return;
     }
 
     if (selectedProductIds.length === 0) {
-      toast.error("Please select at least one product to transfer");
+      toast.error(t("inventory.selectAtLeastOneTransfer"));
       return;
     }
 
@@ -631,7 +631,7 @@ export const Inventory: React.FC = () => {
         .filter((id): id is string => !!id);
 
       if (inventoryIds.length === 0) {
-        toast.error("No valid inventory items selected");
+        toast.error(t("inventory.noValidItemsSelected"));
         return;
       }
 
@@ -664,12 +664,12 @@ export const Inventory: React.FC = () => {
 
   const handleTransferToStorefront = async () => {
     if (!selectedStorefrontId) {
-      toast.error("Please select a storefront");
+      toast.error(t("inventory.selectStorefront"));
       return;
     }
 
     if (selectedProductIds.length === 0) {
-      toast.error("Please select at least one product to transfer");
+      toast.error(t("inventory.selectAtLeastOneTransfer"));
       return;
     }
 
@@ -686,7 +686,7 @@ export const Inventory: React.FC = () => {
         .filter((id): id is string => !!id);
 
       if (inventoryIds.length === 0) {
-        toast.error("No valid inventory items selected");
+        toast.error(t("inventory.noValidItemsSelected"));
         return;
       }
 
@@ -840,8 +840,8 @@ export const Inventory: React.FC = () => {
               ) : (
                 <FileUp className="w-4 h-4" />
               )}
-              <span className="hidden sm:inline">Import Excel</span>
-              <span className="sm:hidden">Import</span>
+              <span className="hidden sm:inline">{t("inventory.importExcel")}</span>
+              <span className="sm:hidden">{t("inventory.import")}</span>
             </button>
             <button
               onClick={() => {
@@ -855,7 +855,7 @@ export const Inventory: React.FC = () => {
                 {" "}
                 {t("inventory.addProduct")}
               </span>
-              <span className="sm:hidden"> Add</span>
+              <span className="sm:hidden"> {t("inventory.addItemShort")}</span>
             </button>
           </div>
         </div>
@@ -865,7 +865,7 @@ export const Inventory: React.FC = () => {
           <SearchInput
             value={searchQuery}
             onChange={setSearchQuery}
-            placeholder="Search by product name, barcode, or product code..."
+            placeholder={t("inventory.searchPlaceholderLong")}
           />
         </div>
       </div>
@@ -889,7 +889,7 @@ export const Inventory: React.FC = () => {
 
       {/* Status Filter */}
       <div className="mb-4 flex items-center gap-2">
-        <span className="text-sm font-medium text-slate-700 mr-1">Status:</span>
+        <span className="text-sm font-medium text-slate-700 mr-1">{t("common.status")}:</span>
         {["all", "active", "inactive"].map((status) => (
           <button
             key={status}
@@ -905,10 +905,10 @@ export const Inventory: React.FC = () => {
             }`}
           >
             {status === "all"
-              ? "All"
+              ? t("common.all")
               : status === "active"
-                ? "Active"
-                : "Inactive"}
+                ? t("common.active")
+                : t("common.inactive")}
           </button>
         ))}
       </div>
@@ -999,7 +999,7 @@ export const Inventory: React.FC = () => {
 
             <div className="p-6 space-y-4">
               <div className="bg-slate-50 p-4 rounded-lg">
-                <p className="text-sm text-slate-500 mb-1">Selected Products</p>
+                <p className="text-sm text-slate-500 mb-1">{t("inventory.selectedProducts")}</p>
                 <p className="font-bold text-slate-800">
                   {selectedProductIds.length} product(s) selected
                 </p>
@@ -1022,7 +1022,7 @@ export const Inventory: React.FC = () => {
                   onChange={(e) => setSelectedWarehouseId(e.target.value)}
                   disabled={isTransferring}
                 >
-                  <option value="">Select a warehouse</option>
+                  <option value="">{t("inventory.selectWarehouseOption")}</option>
                   {warehouses.map((warehouse) => (
                     <option key={warehouse._id} value={warehouse._id}>
                       {warehouse.locationName} ({warehouse.locationCode})
@@ -1091,7 +1091,7 @@ export const Inventory: React.FC = () => {
 
             <div className="p-6 space-y-4">
               <div className="bg-slate-50 p-4 rounded-lg">
-                <p className="text-sm text-slate-500 mb-1">Selected Products</p>
+                <p className="text-sm text-slate-500 mb-1">{t("inventory.selectedProducts")}</p>
                 <p className="font-bold text-slate-800">
                   {selectedProductIds.length} product(s) selected
                 </p>
@@ -1114,7 +1114,7 @@ export const Inventory: React.FC = () => {
                   onChange={(e) => setSelectedStorefrontId(e.target.value)}
                   disabled={isTransferringToStorefront}
                 >
-                  <option value="">Select a storefront</option>
+                  <option value="">{t("inventory.selectStorefrontOption")}</option>
                   {storefronts.map((storefront) => (
                     <option key={storefront._id} value={storefront._id}>
                       {storefront.locationName} ({storefront.locationCode})

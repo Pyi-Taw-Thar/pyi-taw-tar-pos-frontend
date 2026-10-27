@@ -1,3 +1,4 @@
+import { useLanguage } from "../context/LanguageContext";
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -52,6 +53,7 @@ const loadReceiptData = (
 };
 
 const PrintReceipt: React.FC = () => {
+  const { t } = useLanguage();
   const { orderId } = useParams<{ orderId: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -142,7 +144,7 @@ const PrintReceipt: React.FC = () => {
 
     preparePrint().catch(() => {
       if (!cancelled) {
-        toast.error("Failed to prepare voucher for printing");
+        toast.error(t("orders.failedToPreparePrint"));
         setLoadError("Failed to load print data");
       }
     });

@@ -215,7 +215,7 @@ export const BrandPanel: React.FC<BrandPanelProps> = ({
         {brandsLoading ? (
           <div className="col-span-4 flex flex-col items-center justify-center mt-10 gap-2">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            <p className="text-gray-400 text-sm">Loading brands...</p>
+            <p className="text-gray-400 text-sm">{t("pos.loadingBrands")}</p>
           </div>
         ) : brands.length === 0 ? (
           <div className="col-span-4 text-center text-gray-400 mt-10">

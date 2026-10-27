@@ -1,4 +1,5 @@
 import React from "react";
+import { useLanguage } from "../../context/LanguageContext";
 import { Package, Loader2 } from "lucide-react";
 import { FOCOrder } from "../../services/Reports/fetchFOCOrders";
 
@@ -16,6 +17,7 @@ interface AggregatedProduct {
 }
 
 export const FOCTab: React.FC<FOCTabProps> = ({ focOrders, loading }) => {
+  const { t } = useLanguage();
   // Aggregate products by name and calculate total quantities
   const aggregatedProducts = focOrders.reduce(
     (acc, order) => {
@@ -63,7 +65,7 @@ export const FOCTab: React.FC<FOCTabProps> = ({ focOrders, loading }) => {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-2" />
-          <p className="text-slate-500">Loading FOC products...</p>
+          <p className="text-slate-500">{t("reports.loadingFOC")}</p>
         </div>
       </div>
     );
@@ -79,7 +81,7 @@ export const FOCTab: React.FC<FOCTabProps> = ({ focOrders, loading }) => {
               <Package className="w-5 h-5 text-blue-600" />
             </div>
             <div>
-              <p className="text-sm text-slate-500">Total Products</p>
+              <p className="text-sm text-slate-500">{t("reports.totalProducts")}</p>
               <p className="text-2xl font-bold text-slate-800">
                 {totalProducts}
               </p>
@@ -93,7 +95,7 @@ export const FOCTab: React.FC<FOCTabProps> = ({ focOrders, loading }) => {
               <Package className="w-5 h-5 text-green-600" />
             </div>
             <div>
-              <p className="text-sm text-slate-500">Total Quantity</p>
+              <p className="text-sm text-slate-500">{t("reports.totalQuantity")}</p>
               <p className="text-2xl font-bold text-slate-800">
                 {totalQuantity}
               </p>
@@ -107,7 +109,7 @@ export const FOCTab: React.FC<FOCTabProps> = ({ focOrders, loading }) => {
               <Package className="w-5 h-5 text-purple-600" />
             </div>
             <div>
-              <p className="text-sm text-slate-500">Total Value</p>
+              <p className="text-sm text-slate-500">{t("reports.totalValue")}</p>
               <p className="text-2xl font-bold text-slate-800">
                 {totalValue.toLocaleString()} MMK
               </p>
@@ -119,7 +121,7 @@ export const FOCTab: React.FC<FOCTabProps> = ({ focOrders, loading }) => {
       {/* Products Table */}
       <div className="bg-white rounded-lg border overflow-hidden">
         <div className="p-4 border-b bg-slate-50">
-          <h3 className="font-semibold text-slate-800">FOC Products Details</h3>
+          <h3 className="font-semibold text-slate-800">{t("reports.focDetails")}</h3>
           <p className="text-sm text-slate-500 mt-1">
             Products given free of charge with quantities
           </p>
@@ -128,7 +130,7 @@ export const FOCTab: React.FC<FOCTabProps> = ({ focOrders, loading }) => {
         {productList.length === 0 ? (
           <div className="p-8 text-center text-slate-500">
             <Package className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-            <p>No FOC products found</p>
+            <p>{t("reports.noFOC")}</p>
           </div>
         ) : (
           <div className="overflow-x-auto">

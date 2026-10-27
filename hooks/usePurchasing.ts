@@ -138,7 +138,7 @@ export function usePurchasing() {
       }
     } catch (error) {
       console.error("Failed to load deleted POs", error);
-      toast.error("Failed to load deleted POs");
+      toast.error(t("purchasing.failedToLoadDeletedPOs"));
     }
   };
 

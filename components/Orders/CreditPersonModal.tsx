@@ -1,3 +1,4 @@
+import { useLanguage } from "../../context/LanguageContext";
 import React from "react";
 import { X, UserPlus, User } from "lucide-react";
 import { Order } from "../../services/Order/fetchOrders";
@@ -20,6 +21,7 @@ export const CreditPersonModal: React.FC<CreditPersonModalProps> = ({
   onClose,
   onAssign,
 }) => {
+  const { t } = useLanguage();
   if (!isOpen || !order) return null;
 
   return (
@@ -61,7 +63,7 @@ export const CreditPersonModal: React.FC<CreditPersonModalProps> = ({
           {creditPersonas.length === 0 ? (
             <div className="text-center py-8 text-slate-400">
               <User className="w-10 h-10 mx-auto mb-2 opacity-50" />
-              <p>No credit persons available</p>
+              <p>{t("orders.noCreditPersons")}</p>
             </div>
           ) : (
             <div className="max-h-64 overflow-y-auto space-y-2">

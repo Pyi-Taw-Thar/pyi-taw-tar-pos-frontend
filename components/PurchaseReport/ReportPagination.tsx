@@ -1,4 +1,5 @@
 import React from "react";
+import { useLanguage } from "../../context/LanguageContext";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { ReportPagination as PaginationType } from "../../services/Reports/fetchPurchaseReport";
 
@@ -13,12 +14,13 @@ export const ReportPagination: React.FC<ReportPaginationProps> = ({
   onPageChange,
   onLimitChange,
 }) => {
+  const { t } = useLanguage();
   const { currentPage, totalPages, totalItems, itemsPerPage } = pagination;
 
   return (
     <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t bg-slate-50">
       <p className="text-sm text-slate-600">
-        Page {currentPage} of {totalPages} ({totalItems} items)
+        {t("purchaseReport.pageOf").replace("{page}", String(currentPage)).replace("{total}", String(totalPages)).replace("{count}", String(totalItems))}
       </p>
       <div className="flex items-center gap-2">
         {onLimitChange && (
@@ -36,6 +38,7 @@ export const ReportPagination: React.FC<ReportPaginationProps> = ({
           type="button"
           disabled={currentPage <= 1}
           onClick={() => onPageChange(currentPage - 1)}
+          aria-label={t("common.previous") || "Previous"}
           className="p-2 border rounded-lg hover:bg-white disabled:opacity-50"
         >
           <ChevronLeft className="w-4 h-4" />

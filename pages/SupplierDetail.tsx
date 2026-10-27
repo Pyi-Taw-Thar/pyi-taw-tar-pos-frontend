@@ -1,3 +1,4 @@
+import { useLanguage } from "../context/LanguageContext";
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import {
@@ -28,6 +29,7 @@ import { RecordPaymentModal } from "../components/Purchasing/RecordPaymentModal"
 import { PaymentHistoryModal } from "../components/Purchasing/PaymentHistoryModal";
 
 export const SupplierDetail: React.FC = () => {
+  const { t } = useLanguage();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
@@ -136,7 +138,7 @@ export const SupplierDetail: React.FC = () => {
           <button
             onClick={() => navigate("/suppliers")}
             className="p-2 hover:bg-slate-200 rounded-lg text-slate-600 transition-colors"
-            title="Back to Suppliers"
+            title={t("suppliers.backToSuppliers")}
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
@@ -172,7 +174,7 @@ export const SupplierDetail: React.FC = () => {
           <button
             onClick={loadAllData}
             className="p-2 border rounded-lg hover:bg-slate-50 text-slate-600"
-            title="Reload Data"
+            title={t("suppliers.reloadData")}
           >
             <RefreshCw className="w-4 h-4" />
           </button>
@@ -222,7 +224,7 @@ export const SupplierDetail: React.FC = () => {
                   <CheckCircle className="w-3.5 h-3.5" /> Yes (Due: {supplier.dueInDays || 0} Days)
                 </span>
               ) : (
-                <span className="bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded">No</span>
+                <span className="bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded">{t("common.no")}</span>
               )}
             </div>
 
@@ -233,7 +235,7 @@ export const SupplierDetail: React.FC = () => {
                   <CheckCircle className="w-3.5 h-3.5" /> Yes
                 </span>
               ) : (
-                <span className="bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded">No</span>
+                <span className="bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded">{t("common.no")}</span>
               )}
             </div>
           </div>
@@ -369,13 +371,13 @@ export const SupplierDetail: React.FC = () => {
             <table className="w-full text-xs sm:text-sm text-left">
               <thead className="bg-slate-50 border-b font-semibold text-slate-700">
                 <tr>
-                  <th className="p-3">PO ID</th>
+                  <th className="p-3">{t("purchasing.poId")}</th>
                   <th className="p-3">ရက်စွဲ</th>
                   <th className="p-3">စုစုပေါင်း (Total)</th>
                   <th className="p-3">ပေးပြီး (Paid)</th>
                   <th className="p-3">ကျန်ငွေ (Balance)</th>
-                  <th className="p-3">Status</th>
-                  <th className="p-3 text-center">Actions</th>
+                  <th className="p-3">{t("common.status")}</th>
+                  <th className="p-3 text-center">{t("common.actions")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -420,7 +422,7 @@ export const SupplierDetail: React.FC = () => {
                           <button
                             onClick={() => setSelectedPoForHistory(po._id)}
                             className="p-1 bg-purple-50 text-purple-700 hover:bg-purple-100 rounded border border-purple-200 text-xs"
-                            title="Payment History"
+                            title={t("suppliers.paymentHistory")}
                           >
                             <History className="w-3.5 h-3.5" />
                           </button>

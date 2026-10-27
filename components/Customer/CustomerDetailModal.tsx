@@ -101,12 +101,12 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
               <div className="mb-4">
                 <div className="flex items-center gap-2 mb-2">
                   <Award className="w-4 h-4 text-slate-500" />
-                  <span className="text-sm text-slate-600">Tier</span>
+                  <span className="text-sm text-slate-600">{t("customers.tier")}</span>
                 </div>
                 {isUpdatingTier ? (
                   <div className="flex items-center gap-2">
                     <Loader2 className="w-4 h-4 animate-spin text-slate-400" />
-                    <span className="text-sm text-slate-500">Updating...</span>
+                    <span className="text-sm text-slate-500">{t("common.updating")}</span>
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
@@ -122,7 +122,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                     >
                       {TIER_OPTIONS.map((opt) => (
                         <option key={opt.value || "regular"} value={opt.value || ""}>
-                          {opt.label}
+                          {opt.value ? opt.label : t("common.regular")}
                         </option>
                       ))}
                     </select>

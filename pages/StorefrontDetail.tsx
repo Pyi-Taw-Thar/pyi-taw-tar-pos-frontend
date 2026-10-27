@@ -1,3 +1,4 @@
+import { useLanguage } from "../context/LanguageContext";
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
@@ -61,6 +62,7 @@ interface TransferFormItem {
 }
 
 export const StorefrontDetail: React.FC = () => {
+  const { t } = useLanguage();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -154,7 +156,7 @@ export const StorefrontDetail: React.FC = () => {
 
   const loadStorefrontStock = async () => {
     if (!id) {
-      toast.error("Storefront ID is missing");
+      toast.error(t("storefront.missingId"));
       setLoading(false);
       return;
     }
@@ -204,7 +206,7 @@ export const StorefrontDetail: React.FC = () => {
       }
     } catch (error) {
       console.error("Error loading storefront stock:", error);
-      toast.error("Failed to load storefront stock");
+      toast.error(t("warehouse.failedToLoadStock"));
     } finally {
       setLoading(false);
     }
@@ -321,17 +323,17 @@ export const StorefrontDetail: React.FC = () => {
 
   const handleSubmitTransfer = async () => {
     if (!id) {
-      toast.error("Storefront ID is missing");
+      toast.error(t("storefront.missingId"));
       return;
     }
 
     if (!selectedWarehouseId) {
-      toast.error("Please select a destination warehouse");
+      toast.error(t("warehouse.selectWarehouseFirst"));
       return;
     }
 
     if (transferItems.length === 0) {
-      toast.error("Please add at least one product to transfer");
+      toast.error(t("warehouse.addAtLeastOneProductTransfer"));
       return;
     }
 
@@ -368,7 +370,7 @@ export const StorefrontDetail: React.FC = () => {
       });
 
       if (result.success) {
-        toast.success("Transfer to warehouse created successfully!");
+        toast.success(t("warehouse.transferCreatedSuccess"));
         setIsTransferModalOpen(false);
         loadStorefrontStock();
       } else {
@@ -497,17 +499,17 @@ export const StorefrontDetail: React.FC = () => {
 
     const inventoryId = selectedStockItem.inventoryId._id;
     if (!inventoryId) {
-      toast.error("Cannot update — missing product id");
+      toast.error(t("storefront.missingProductId"));
       return;
     }
 
     if (ecommerceMaxPerUser <= 0) {
-      toast.error("Max per user must be greater than 0");
+      toast.error(t("storefront.maxPerUserPositive"));
       return;
     }
 
     if (resetMode === "timeline" && resetDays < 1) {
-      toast.error("Reset days must be at least 1");
+      toast.error(t("storefront.resetDaysMin"));
       return;
     }
 
@@ -532,7 +534,7 @@ export const StorefrontDetail: React.FC = () => {
       const result = await updateInventoryEcommerceLimit(inventoryId, payload);
 
       if (result.success) {
-        toast.success("Ecommerce purchase limit updated");
+        toast.success(t("warehouse.ecommerceLimitUpdated"));
         setIsEcommerceLimitModalOpen(false);
         setSelectedStockItem(null);
         loadStorefrontStock();
@@ -553,14 +555,14 @@ export const StorefrontDetail: React.FC = () => {
   const handleRemoveEcommerceLimit = async (item: StorefrontStockItem) => {
     const inventoryId = item.inventoryId._id;
     if (!inventoryId) {
-      toast.error("Cannot remove limit — missing product id");
+      toast.error(t("storefront.missingProductRemoveLimit"));
       return;
     }
 
     try {
       const result = await removeEcommerceLimit(inventoryId);
       if (result.success) {
-        toast.success("Ecommerce limit removed");
+        toast.success(t("warehouse.ecommerceLimitRemoved"));
         loadStorefrontStock();
       } else {
         toast.error(result.message || "Failed to remove ecommerce limit");
@@ -592,7 +594,7 @@ export const StorefrontDetail: React.FC = () => {
     if (!selectedStockItem) return;
 
     if (adjustmentQuantity <= 0) {
-      toast.error("Quantity must be greater than 0");
+      toast.error(t("storefront.quantityPositive"));
       return;
     }
 
@@ -682,8 +684,8 @@ export const StorefrontDetail: React.FC = () => {
               className="flex h-auto sm:h-10 items-center gap-2 px-3 py-2 sm:px-4 bg-primary hover:bg-primary/90 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
             >
               <ArrowRightLeft className="w-4 h-4" />
-              <span className="hidden sm:inline">Transfer to Warehouse</span>
-              <span className="sm:hidden">Transfer</span>
+              <span className="hidden sm:inline">{t("storefront.transferToWarehouse")}</span>
+              <span className="sm:hidden">{t("storefront.transfer")}</span>
             </button>
           )}
           <button
@@ -693,7 +695,7 @@ export const StorefrontDetail: React.FC = () => {
             className="hidden sm:flex items-center gap-2 px-3 py-2 sm:px-4 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors disabled:opacity-50 text-sm sm:text-base"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
-            <span className="hidden sm:inline">Refresh</span>
+            <span className="hidden sm:inline">{t("common.refresh")}</span>
           </button>
         </div>
       </div>
@@ -707,7 +709,7 @@ export const StorefrontDetail: React.FC = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
               <input
                 type="text"
-                placeholder="Search by product name or code..."
+                placeholder={t("warehouse.searchPlaceholderStock")}
                 value={searchTerm}
                 onChange={(e) => {
                   setSearchTerm(e.target.value);
@@ -730,7 +732,7 @@ export const StorefrontDetail: React.FC = () => {
                 }}
                 className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none appearance-none"
               >
-                <option value="all">All Categories</option>
+                <option value="all">{t("warehouse.allCategories")}</option>
                 {categories.map((category) => (
                   <option key={category} value={category}>
                     {category}
@@ -768,8 +770,8 @@ export const StorefrontDetail: React.FC = () => {
               className="px-3 py-2 sm:px-4 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors flex items-center gap-2 text-sm sm:text-base"
             >
               <X className="w-4 h-4" />
-              <span className="hidden sm:inline">Clear Filters</span>
-              <span className="sm:hidden">Clear</span>
+              <span className="hidden sm:inline">{t("storefront.clearFilters")}</span>
+              <span className="sm:hidden">{t("storefront.clear")}</span>
             </button>
           )}
         </div>
@@ -828,7 +830,7 @@ export const StorefrontDetail: React.FC = () => {
               <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600" />
             </div>
             <div className="min-w-0">
-              <p className="text-xs sm:text-sm text-slate-500">Low Stock</p>
+              <p className="text-xs sm:text-sm text-slate-500">{t("warehouse.lowStock")}</p>
               <p className="text-lg sm:text-2xl font-bold text-slate-800 truncate">
                 {searchTerm || selectedCategory !== "all"
                   ? filteredLowStockCount
@@ -844,7 +846,7 @@ export const StorefrontDetail: React.FC = () => {
               <Store className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600" />
             </div>
             <div className="min-w-0">
-              <p className="text-xs sm:text-sm text-slate-500">Total Amount</p>
+              <p className="text-xs sm:text-sm text-slate-500">{t("warehouse.totalAmount")}</p>
               <p className="text-lg sm:text-2xl font-bold text-indigo-600 truncate">
                 {/* {searchTerm || selectedCategory !== "all"
                   ? filteredStockItems
@@ -866,7 +868,7 @@ export const StorefrontDetail: React.FC = () => {
       {/* Stock Items Table */}
       <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
         <div className="p-4 border-b bg-slate-50">
-          <h2 className="font-semibold text-slate-800">Stock Items</h2>
+          <h2 className="font-semibold text-slate-800">{t("warehouse.stockItems")}</h2>
         </div>
 
         {loading ? (
@@ -909,27 +911,27 @@ export const StorefrontDetail: React.FC = () => {
                 <thead className="bg-slate-50 border-b">
                   <tr>
                     <th className="px-2 sm:px-4 py-3 font-medium text-slate-600">
-                      <span className="hidden sm:inline">Product Name</span>
-                      <span className="sm:hidden">Name</span>
+                      <span className="hidden sm:inline">{t("storefront.productName")}</span>
+                      <span className="sm:hidden">{t("storefront.nameShort")}</span>
                     </th>
                     <th className="px-2 sm:px-4 py-3 font-medium text-slate-600 text-right">
                       Qty
                     </th>
                     <th className="px-2 sm:px-4 py-3 font-medium text-slate-600 text-right">
-                      <span className="hidden sm:inline">Price</span>
+                      <span className="hidden sm:inline">{t("inventory.price")}</span>
                       <span className="sm:hidden">$</span>
                     </th>
                     <th className="px-2 sm:px-4 py-3 font-medium text-slate-600 text-right">
-                      <span className="hidden sm:inline">E-limit</span>
+                      <span className="hidden sm:inline">{t("warehouse.eLimit")}</span>
                       <span className="sm:hidden">E</span>
                     </th>
                     <th className="px-2 sm:px-4 py-3 font-medium text-slate-600">
-                      <span className="hidden sm:inline">Status</span>
+                      <span className="hidden sm:inline">{t("common.status")}</span>
                       <span className="sm:hidden">S</span>
                     </th>
                     {userRole === "owner" && (
                       <th className="px-2 sm:px-4 py-3 font-medium text-slate-600">
-                        <span className="hidden sm:inline">Actions</span>
+                        <span className="hidden sm:inline">{t("common.actions")}</span>
                         <span className="sm:hidden">A</span>
                       </th>
                     )}
@@ -964,20 +966,20 @@ export const StorefrontDetail: React.FC = () => {
                         {item.isLowStock ? (
                           <span className="bg-amber-100 text-amber-700 px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 w-fit">
                             <AlertTriangle className="w-3 h-3" />{" "}
-                            <span className="hidden sm:inline">Low Stock</span>
-                            <span className="sm:hidden">Low</span>
+                            <span className="hidden sm:inline">{t("warehouse.lowStock")}</span>
+                            <span className="sm:hidden">{t("warehouse.lowStock")}</span>
                           </span>
                         ) : item.quantity === 0 ? (
                           <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs font-medium">
                             <span className="hidden sm:inline">
                               Out of Stock
                             </span>
-                            <span className="sm:hidden">Out</span>
+                            <span className="sm:hidden">{t("warehouse.outOfStock")}</span>
                           </span>
                         ) : (
                           <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-medium">
-                            <span className="hidden sm:inline">In Stock</span>
-                            <span className="sm:hidden">In</span>
+                            <span className="hidden sm:inline">{t("warehouse.inStock")}</span>
+                            <span className="sm:hidden">{t("warehouse.inStock")}</span>
                           </span>
                         )}
                       </td>
@@ -1173,7 +1175,7 @@ export const StorefrontDetail: React.FC = () => {
                   value={selectedWarehouseId}
                   onChange={(e) => setSelectedWarehouseId(e.target.value)}
                 >
-                  <option value="">Select Warehouse...</option>
+                  <option value="">{t("inventory.selectWarehouseOption")}</option>
                   {warehouses.map((wh) => (
                     <option key={wh._id} value={wh._id}>
                       {wh.locationName} ({wh.locationCode})
@@ -1198,7 +1200,7 @@ export const StorefrontDetail: React.FC = () => {
 
                 {transferItems.length === 0 ? (
                   <div className="border-2 border-dashed rounded-lg p-8 text-center text-slate-400">
-                    <p>No products added yet.</p>
+                    <p>{t("warehouse.noProductsAddedYet")}</p>
                     <button
                       type="button"
                       onClick={addTransferItem}
@@ -1269,7 +1271,7 @@ export const StorefrontDetail: React.FC = () => {
                             <input
                               type="text"
                               className="w-full border rounded p-2 text-sm"
-                              placeholder="Item notes..."
+                              placeholder={t("warehouse.itemNotesPlaceholder")}
                               value={item.notes}
                               onChange={(e) =>
                                 updateTransferItem(
@@ -1315,7 +1317,7 @@ export const StorefrontDetail: React.FC = () => {
                   <input
                     type="text"
                     className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-primary outline-none"
-                    placeholder="Transfer notes..."
+                    placeholder={t("warehouse.transferNotesPlaceholder")}
                     value={transferNotes}
                     onChange={(e) => setTransferNotes(e.target.value)}
                   />
@@ -1378,7 +1380,7 @@ export const StorefrontDetail: React.FC = () => {
             <div className="p-6 space-y-4">
               {/* Product Info */}
               <div className="bg-slate-50 p-4 rounded-lg">
-                <p className="text-sm text-slate-500 mb-1">Product</p>
+                <p className="text-sm text-slate-500 mb-1">{t("common.product")}</p>
                 <p className="font-bold text-slate-800">
                   {selectedStockItem.inventoryId.productName}
                 </p>
@@ -1423,7 +1425,7 @@ export const StorefrontDetail: React.FC = () => {
                       : undefined
                   }
                   className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-primary outline-none"
-                  placeholder="Enter quantity"
+                  placeholder={t("warehouse.enterQuantity")}
                   value={adjustmentQuantity || ""}
                   onChange={(e) =>
                     setAdjustmentQuantity(Number(e.target.value) || 0)
@@ -1473,7 +1475,7 @@ export const StorefrontDetail: React.FC = () => {
                 <textarea
                   rows={3}
                   className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-primary outline-none"
-                  placeholder="Enter reason for stock adjustment (optional)..."
+                  placeholder={t("warehouse.stockAdjustmentReason")}
                   value={adjustmentReason}
                   onChange={(e) => setAdjustmentReason(e.target.value)}
                 />
@@ -1543,7 +1545,7 @@ export const StorefrontDetail: React.FC = () => {
 
             <div className="p-6 space-y-4">
               <div className="bg-slate-50 p-4 rounded-lg">
-                <p className="text-sm text-slate-500 mb-1">Product</p>
+                <p className="text-sm text-slate-500 mb-1">{t("common.product")}</p>
                 <p className="font-bold text-slate-800">
                   {selectedStockItem.inventoryId.productName}
                 </p>
@@ -1628,7 +1630,7 @@ export const StorefrontDetail: React.FC = () => {
                           onChange={() => setResetMode("manual")}
                           className="text-primary focus:ring-primary"
                         />
-                        <span className="text-sm text-slate-700">Manual</span>
+                        <span className="text-sm text-slate-700">{t("warehouse.manual")}</span>
                       </label>
                       <label className="flex items-center gap-2 cursor-pointer">
                         <input
@@ -1638,7 +1640,7 @@ export const StorefrontDetail: React.FC = () => {
                           onChange={() => setResetMode("timeline")}
                           className="text-primary focus:ring-primary"
                         />
-                        <span className="text-sm text-slate-700">Timeline</span>
+                        <span className="text-sm text-slate-700">{t("warehouse.timeline")}</span>
                       </label>
                     </div>
                     <p className="text-xs text-slate-500 mt-2">

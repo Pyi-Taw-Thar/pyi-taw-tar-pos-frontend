@@ -1,3 +1,4 @@
+import { useLanguage } from "../context/LanguageContext";
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
@@ -34,6 +35,7 @@ import { QuantityByUnitDisplay } from "../components/UOM/QuantityByUnitDisplay";
 import { getUnitOptions } from "../utils/uom";
 
 export const StorefrontProductDetail: React.FC = () => {
+  const { t } = useLanguage();
   const { storeId, productId } = useParams<{
     storeId: string;
     productId: string;
@@ -165,12 +167,12 @@ export const StorefrontProductDetail: React.FC = () => {
     if (!productId) return;
 
     if (ecommerceMaxPerUser <= 0) {
-      toast.error("Max per user must be greater than 0");
+      toast.error(t("storefront.maxPerUserPositive"));
       return;
     }
 
     if (resetMode === "timeline" && resetDays < 1) {
-      toast.error("Reset days must be at least 1");
+      toast.error(t("storefront.resetDaysMin"));
       return;
     }
 
@@ -194,7 +196,7 @@ export const StorefrontProductDetail: React.FC = () => {
 
       const result = await updateInventoryEcommerceLimit(productId, payload);
       if (result.success) {
-        toast.success("Ecommerce limit updated");
+        toast.success(t("warehouse.ecommerceLimitUpdated"));
         setIsEcommerceLimitModalOpen(false);
         loadData();
       } else {
@@ -217,7 +219,7 @@ export const StorefrontProductDetail: React.FC = () => {
     try {
       const result = await removeEcommerceLimit(productId);
       if (result.success) {
-        toast.success("Ecommerce limit removed");
+        toast.success(t("warehouse.ecommerceLimitRemoved"));
         loadData();
       } else {
         toast.error(result.message || "Failed to remove ecommerce limit");
@@ -338,7 +340,7 @@ export const StorefrontProductDetail: React.FC = () => {
           <button
             onClick={handleRefresh}
             className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
-            title="Refresh"
+            title={t("common.refresh")}
           >
             <RefreshCw className="w-5 h-5 text-slate-600" />
           </button>
@@ -413,13 +415,13 @@ export const StorefrontProductDetail: React.FC = () => {
           <div className="p-4 space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <p className="text-xs text-slate-500">Product Name</p>
+                <p className="text-xs text-slate-500">{t("inventory.productName")}</p>
                 <p className="font-medium text-slate-800 truncate">
                   {product.productName}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-slate-500">Product Code</p>
+                <p className="text-xs text-slate-500">{t("inventory.productCode")}</p>
                 <p className="font-medium text-slate-800 font-mono">
                   {product.productCode}
                 </p>
@@ -431,31 +433,31 @@ export const StorefrontProductDetail: React.FC = () => {
                 </p>
               </div>
               <div>
-                <p className="text-xs text-slate-500">Category</p>
+                <p className="text-xs text-slate-500">{t("inventory.category")}</p>
                 <p className="font-medium text-slate-800">
                   {product.category || "—"}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-slate-500">Base Unit</p>
+                <p className="text-xs text-slate-500">{t("warehouse.baseUnit")}</p>
                 <p className="font-medium text-slate-800">
                   {product.unitOfMeasure || "piece"}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-slate-500">Selling Price</p>
+                <p className="text-xs text-slate-500">{t("inventory.sellingPrice")}</p>
                 <p className="font-medium text-green-600">
                   {(product.sellingPrice || 0).toLocaleString()} MMK
                 </p>
               </div>
               <div>
-                <p className="text-xs text-slate-500">Buying Price</p>
+                <p className="text-xs text-slate-500">{t("inventory.buyingPrice")}</p>
                 <p className="font-medium text-slate-800">
                   {(product.buyingPrice || 0).toLocaleString()} MMK
                 </p>
               </div>
               <div>
-                <p className="text-xs text-slate-500">Profit</p>
+                <p className="text-xs text-slate-500">{t("inventory.profit")}</p>
                 <p className="font-medium text-slate-800">
                   {(
                     (product.sellingPrice || 0) - (product.buyingPrice || 0)
@@ -471,7 +473,7 @@ export const StorefrontProductDetail: React.FC = () => {
             </div>
             {product.description && (
               <div className="pt-2 border-t">
-                <p className="text-xs text-slate-500 mb-1">Description</p>
+                <p className="text-xs text-slate-500 mb-1">{t("common.description")}</p>
                 <p className="text-sm text-slate-700">{product.description}</p>
               </div>
             )}
@@ -489,13 +491,13 @@ export const StorefrontProductDetail: React.FC = () => {
           <div className="p-4 space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <p className="text-xs text-slate-500">Current Quantity</p>
+                <p className="text-xs text-slate-500">{t("warehouse.currentQuantity")}</p>
                 <p className="font-bold text-xl text-slate-800">
                   {stockItem.quantity.toLocaleString()}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-slate-500">Available Quantity</p>
+                <p className="text-xs text-slate-500">{t("warehouse.availableQuantity")}</p>
                 <p className="font-bold text-xl text-slate-800">
                   {stockItem.availableQuantity.toLocaleString()}
                 </p>
@@ -522,7 +524,7 @@ export const StorefrontProductDetail: React.FC = () => {
                 </div>
               )}
             <div className="pt-2 border-t">
-              <p className="text-xs text-slate-500">Last Updated</p>
+              <p className="text-xs text-slate-500">{t("warehouse.lastUpdated")}</p>
               <p className="text-sm text-slate-700">
                 {new Date(stockItem.lastUpdated).toLocaleString()}
               </p>
@@ -540,7 +542,7 @@ export const StorefrontProductDetail: React.FC = () => {
           </div>
           <div className="p-4">
             <div className="mb-3">
-              <p className="text-xs text-slate-500 mb-1">Current Limit</p>
+              <p className="text-xs text-slate-500 mb-1">{t("warehouse.currentLimit")}</p>
               <p className="text-lg font-bold text-slate-800">
                 {formatEcommerceLimit()}
               </p>
@@ -610,7 +612,7 @@ export const StorefrontProductDetail: React.FC = () => {
       {/* Actions Section */}
       {userRole === "owner" && (
         <div className="mt-6 bg-white rounded-xl shadow-sm border p-4">
-          <h3 className="font-semibold text-slate-800 mb-3">Actions</h3>
+          <h3 className="font-semibold text-slate-800 mb-3">{t("common.actions")}</h3>
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => openAdjustmentModal("increase")}
@@ -660,7 +662,7 @@ export const StorefrontProductDetail: React.FC = () => {
             </div>
             <div className="p-6 space-y-4">
               <div className="bg-slate-50 p-4 rounded-lg">
-                <p className="text-sm text-slate-500 mb-1">Product</p>
+                <p className="text-sm text-slate-500 mb-1">{t("common.product")}</p>
                 <p className="font-bold text-slate-800">
                   {product.productName}
                 </p>
@@ -682,7 +684,7 @@ export const StorefrontProductDetail: React.FC = () => {
                       : undefined
                   }
                   className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-primary outline-none"
-                  placeholder="Enter quantity"
+                  placeholder={t("warehouse.enterQuantity")}
                   value={adjustmentQuantity || ""}
                   onChange={(e) =>
                     setAdjustmentQuantity(Number(e.target.value) || 0)
@@ -724,7 +726,7 @@ export const StorefrontProductDetail: React.FC = () => {
                 <textarea
                   rows={3}
                   className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-primary outline-none"
-                  placeholder="Enter reason for stock adjustment..."
+                  placeholder={t("warehouse.stockAdjustmentReason")}
                   value={adjustmentReason}
                   onChange={(e) => setAdjustmentReason(e.target.value)}
                 />
@@ -786,7 +788,7 @@ export const StorefrontProductDetail: React.FC = () => {
             </div>
             <div className="p-6 space-y-4">
               <div className="bg-slate-50 p-4 rounded-lg">
-                <p className="text-sm text-slate-500 mb-1">Product</p>
+                <p className="text-sm text-slate-500 mb-1">{t("common.product")}</p>
                 <p className="font-bold text-slate-800">
                   {product.productName}
                 </p>
@@ -860,7 +862,7 @@ export const StorefrontProductDetail: React.FC = () => {
                       onChange={() => setResetMode("manual")}
                       className="text-primary focus:ring-primary"
                     />
-                    <span className="text-sm text-slate-700">Manual</span>
+                    <span className="text-sm text-slate-700">{t("warehouse.manual")}</span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -870,7 +872,7 @@ export const StorefrontProductDetail: React.FC = () => {
                       onChange={() => setResetMode("timeline")}
                       className="text-primary focus:ring-primary"
                     />
-                    <span className="text-sm text-slate-700">Timeline</span>
+                    <span className="text-sm text-slate-700">{t("warehouse.timeline")}</span>
                   </label>
                 </div>
                 <p className="text-xs text-slate-500 mt-2">

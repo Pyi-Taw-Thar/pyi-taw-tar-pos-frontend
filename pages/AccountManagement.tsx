@@ -21,6 +21,7 @@ import {
   EyeOff,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useLanguage } from "../context/LanguageContext";
 import {
   fetchAdminAccounts,
   AdminAccount,
@@ -36,6 +37,7 @@ import {
 } from "../services/Location/fetchLocationProfiles";
 
 export const AccountManagement: React.FC = () => {
+  const { t } = useLanguage();
   const [accounts, setAccounts] = useState<AdminAccount[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -134,7 +136,7 @@ export const AccountManagement: React.FC = () => {
       }
     } catch (error) {
       console.error("Error loading locations:", error);
-      toast.error("Failed to load locations");
+      toast.error(t("accountManagement.failedToLoadLocations"));
       setLocationProfiles([]);
     }
   };
@@ -150,7 +152,7 @@ export const AccountManagement: React.FC = () => {
       }
     } catch (error) {
       console.error("Error loading accounts:", error);
-      toast.error("Failed to load accounts");
+      toast.error(t("accountManagement.failedToLoadAccounts"));
     } finally {
       setLoading(false);
     }
@@ -246,12 +248,12 @@ export const AccountManagement: React.FC = () => {
     if (!selectedAccount) return;
 
     if (!editFormData.name.trim()) {
-      toast.error("Name is required");
+      toast.error(t("accountManagement.accountNameRequired"));
       return;
     }
 
     if (!editFormData.role) {
-      toast.error("Role is required");
+      toast.error(t("accountManagement.roleRequired"));
       return;
     }
 
@@ -263,7 +265,7 @@ export const AccountManagement: React.FC = () => {
       });
 
       if (response.success) {
-        toast.success("Account updated successfully!");
+        toast.success(t("accountManagement.accountUpdated"));
         handleCloseEditModal();
         loadAccounts(); // Refresh the list
       } else {
@@ -368,27 +370,27 @@ export const AccountManagement: React.FC = () => {
     e.preventDefault();
 
     if (!createFormData.name.trim()) {
-      toast.error("Account name is required");
+      toast.error(t("accountManagement.accountNameRequired"));
       return;
     }
 
     if (!createFormData.password) {
-      toast.error("Password is required");
+      toast.error(t("accountManagement.passwordRequired"));
       return;
     }
 
     if (createFormData.password.length < 6) {
-      toast.error("Password must be at least 6 characters");
+      toast.error(t("accountManagement.passwordMinLength"));
       return;
     }
 
     if (createFormData.password !== createFormData.confirmPassword) {
-      toast.error("Passwords do not match");
+      toast.error(t("accountManagement.passwordsDoNotMatch"));
       return;
     }
 
     if (!createFormData.role) {
-      toast.error("Role is required");
+      toast.error(t("accountManagement.roleRequired"));
       return;
     }
 
@@ -407,7 +409,7 @@ export const AccountManagement: React.FC = () => {
       const response = await createAdminAccount(payload);
 
       if (response.success) {
-        toast.success("Account created successfully!");
+        toast.success(t("accountManagement.accountCreated"));
         setIsCreateModalOpen(false);
         setCreateFormData({
           name: "",
@@ -418,11 +420,11 @@ export const AccountManagement: React.FC = () => {
         });
         loadAccounts(); // Refresh the list
       } else {
-        toast.error(response.message || "Failed to create account");
+        toast.error(response.message || t("accountManagement.failedToCreate"));
       }
     } catch (error: any) {
       console.error("Error creating account:", error);
-      toast.error(error.message || "Failed to create account");
+      toast.error(error.message || t("accountManagement.failedToCreate"));
     } finally {
       setIsCreating(false);
     }
@@ -457,7 +459,7 @@ export const AccountManagement: React.FC = () => {
             className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-3 py-2 sm:px-4 rounded-lg transition-colors text-sm sm:text-base"
           >
             <Plus className="w-4 h-4" />{" "}
-            <span className="hidden sm:inline">Create Account</span>
+            <span className="hidden sm:inline">{t("accountManagement.createAccount")}</span>
           </button>
           <button
             onClick={loadAccounts}
@@ -465,7 +467,7 @@ export const AccountManagement: React.FC = () => {
             className="hidden sm:flex items-center gap-2 bg-slate-600 text-white px-3 py-2 sm:px-4 rounded-lg hover:bg-slate-700 disabled:opacity-50 transition-colors text-sm sm:text-base"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
-            <span className="hidden sm:inline">Refresh</span>
+            <span className="hidden sm:inline">{t("common.refresh")}</span>
           </button>
         </div>
       </div>
@@ -494,7 +496,7 @@ export const AccountManagement: React.FC = () => {
               <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
             </div>
             <div>
-              <p className="text-xs sm:text-sm text-slate-500">Active</p>
+              <p className="text-xs sm:text-sm text-slate-500">{t("accountManagement.active")}</p>
               <p className="text-lg sm:text-2xl font-bold text-slate-800">
                 {activeCount}
               </p>
@@ -508,7 +510,7 @@ export const AccountManagement: React.FC = () => {
               <XCircle className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
             </div>
             <div>
-              <p className="text-xs sm:text-sm text-slate-500">Deleted</p>
+              <p className="text-xs sm:text-sm text-slate-500">{t("accountManagement.deleted")}</p>
               <p className="text-lg sm:text-2xl font-bold text-slate-800">
                 {deletedCount}
               </p>
@@ -522,7 +524,7 @@ export const AccountManagement: React.FC = () => {
               <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
             </div>
             <div>
-              <p className="text-xs sm:text-sm text-slate-500">Roles</p>
+              <p className="text-xs sm:text-sm text-slate-500">{t("accountManagement.roles")}</p>
               <p className="text-lg sm:text-2xl font-bold text-slate-800">
                 {uniqueRoles.length}
               </p>
@@ -539,7 +541,7 @@ export const AccountManagement: React.FC = () => {
             <User className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Search by name, role, or location..."
+              placeholder={t("accountManagement.searchAccountsPlaceholder")}
               className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -554,7 +556,7 @@ export const AccountManagement: React.FC = () => {
                 value={roleFilter}
                 onChange={(e) => setRoleFilter(e.target.value)}
               >
-                <option value="all">All Roles</option>
+                <option value="all">{t("accountManagement.allRoles")}</option>
                 {uniqueRoles.map((role) => (
                   <option key={String(role)} value={String(role)}>
                     {String(role).charAt(0).toUpperCase() +
@@ -571,9 +573,9 @@ export const AccountManagement: React.FC = () => {
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
               >
-                <option value="all">All Status</option>
-                <option value="active">Active</option>
-                <option value="deleted">Deleted</option>
+                <option value="all">{t("accountManagement.allStatus")}</option>
+                <option value="active">{t("accountManagement.active")}</option>
+                <option value="deleted">{t("accountManagement.deleted")}</option>
               </select>
             </div>
 
@@ -594,12 +596,12 @@ export const AccountManagement: React.FC = () => {
       {loading ? (
         <div className="bg-white rounded-xl shadow-sm border p-8 text-center">
           <RefreshCw className="w-8 h-8 animate-spin text-primary mx-auto mb-2" />
-          <p className="text-slate-500">Loading accounts...</p>
+          <p className="text-slate-500">{t("accountManagement.loading")}</p>
         </div>
       ) : filteredAccounts.length === 0 ? (
         <div className="bg-white rounded-xl shadow-sm border p-12 text-center">
           <Users className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-          <p className="text-slate-500">No accounts found</p>
+          <p className="text-slate-500">{t("accountManagement.noAccounts")}</p>
         </div>
       ) : (
         <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
@@ -614,31 +616,31 @@ export const AccountManagement: React.FC = () => {
               <thead className="bg-slate-50 border-b">
                 <tr>
                   <th className="px-2 sm:px-4 py-3 font-semibold text-slate-600">
-                    <span className="hidden sm:inline">Name</span>
-                    <span className="sm:hidden">Name</span>
+                    <span className="hidden sm:inline">{t("accountManagement.name")}</span>
+                    <span className="sm:hidden">{t("accountManagement.name")}</span>
                   </th>
                   <th className="px-2 sm:px-4 py-3 font-semibold text-slate-600">
-                    <span className="hidden sm:inline">Role</span>
-                    <span className="sm:hidden">Role</span>
+                    <span className="hidden sm:inline">{t("accountManagement.role")}</span>
+                    <span className="sm:hidden">{t("accountManagement.role")}</span>
                   </th>
                   <th className="px-2 sm:px-4 py-3 font-semibold text-slate-600">
-                    <span className="hidden sm:inline">Location</span>
-                    <span className="sm:hidden">Location</span>
+                    <span className="hidden sm:inline">{t("accountManagement.location")}</span>
+                    <span className="sm:hidden">{t("accountManagement.location")}</span>
                   </th>
                   <th className="px-2 sm:px-4 py-3 font-semibold text-slate-600">
-                    <span className="hidden sm:inline">Status</span>
-                    <span className="sm:hidden">Status</span>
+                    <span className="hidden sm:inline">{t("accountManagement.status")}</span>
+                    <span className="sm:hidden">{t("accountManagement.status")}</span>
                   </th>
                   <th className="px-2 sm:px-4 py-3 font-semibold text-slate-600">
-                    <span className="hidden sm:inline">Last Active</span>
-                    <span className="sm:hidden">Active</span>
+                    <span className="hidden sm:inline">{t("accountManagement.lastActive")}</span>
+                    <span className="sm:hidden">{t("accountManagement.active")}</span>
                   </th>
                   <th className="px-2 sm:px-4 py-3 font-semibold text-slate-600">
-                    <span className="hidden sm:inline">Created</span>
-                    <span className="sm:hidden">Created</span>
+                    <span className="hidden sm:inline">{t("common.date")}</span>
+                    <span className="sm:hidden">{t("common.date")}</span>
                   </th>
                   <th className="px-2 sm:px-4 py-3 font-semibold text-slate-600">
-                    <span className="hidden sm:inline">Actions</span>
+                    <span className="hidden sm:inline">{t("accountManagement.actions")}</span>
                     <span className="sm:hidden">A</span>
                   </th>
                 </tr>
@@ -687,8 +689,8 @@ export const AccountManagement: React.FC = () => {
                         </div>
                       ) : (
                         <span className="text-slate-400 italic text-xs">
-                          <span className="hidden sm:inline">No location</span>
-                          <span className="sm:hidden">No loc</span>
+                          <span className="hidden sm:inline">{t("accountManagement.noLocation")}</span>
+                          <span className="sm:hidden">{t("accountManagement.noLocation")}</span>
                         </span>
                       )}
                     </td>
@@ -716,7 +718,7 @@ export const AccountManagement: React.FC = () => {
                           className="text-xs bg-primary/20 text-primary-600 px-2 py-1.5 sm:px-3 sm:py-1.5 rounded hover:bg-primary/30 border border-primary/30 font-medium transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <Edit className="w-3 h-3" />{" "}
-                          <span className="hidden sm:inline">Edit</span>
+                          <span className="hidden sm:inline">{t("common.edit")}</span>
                           <span className="sm:hidden">E</span>
                         </button>
                         {!account.softDeleted ? (
@@ -725,8 +727,8 @@ export const AccountManagement: React.FC = () => {
                             className="text-xs bg-red-50 text-red-600 px-2 py-1.5 sm:px-3 sm:py-1.5 rounded hover:bg-red-100 border border-red-200 font-medium transition-colors flex items-center gap-1"
                           >
                             <Trash2 className="w-3 h-3" />{" "}
-                            <span className="hidden sm:inline">Deactivate</span>
-                            <span className="sm:hidden">Del</span>
+                            <span className="hidden sm:inline">{t("accountManagement.deactivate")}</span>
+                            <span className="sm:hidden">{t("common.delete")}</span>
                           </button>
                         ) : (
                           <div className="flex items-center gap-1 sm:gap-2">
@@ -819,7 +821,7 @@ export const AccountManagement: React.FC = () => {
                   required
                   maxLength={200}
                   className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-primary outline-none"
-                  placeholder="Enter account name"
+                  placeholder={t("accountManagement.enterAccountNamePlaceholder")}
                   value={editFormData.name}
                   onChange={(e) =>
                     setEditFormData({ ...editFormData, name: e.target.value })
@@ -839,7 +841,7 @@ export const AccountManagement: React.FC = () => {
                     setEditFormData({ ...editFormData, role: e.target.value })
                   }
                 >
-                  <option value="">Select Role</option>
+                  <option value="">{t("accountManagement.selectRole")}</option>
                   {availableRoles.map((role) => (
                     <option key={role} value={role}>
                       {role.charAt(0).toUpperCase() + role.slice(1)}
@@ -892,8 +894,8 @@ export const AccountManagement: React.FC = () => {
                   ) : (
                     <>
                       <Edit className="w-4 h-4" />{" "}
-                      <span className="hidden sm:inline">Update Account</span>
-                      <span className="sm:hidden">Update</span>
+                      <span className="hidden sm:inline">{t("accountManagement.updateAccount")}</span>
+                      <span className="sm:hidden">{t("common.update")}</span>
                     </>
                   )}
                 </button>
@@ -1051,7 +1053,7 @@ export const AccountManagement: React.FC = () => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500">Status:</span>
-                  <span className="font-medium text-red-600">Deactivated</span>
+                  <span className="font-medium text-red-600">{t("accountManagement.deactivatedStatus")}</span>
                 </div>
               </div>
 
@@ -1121,7 +1123,7 @@ export const AccountManagement: React.FC = () => {
                   required
                   maxLength={200}
                   className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-primary outline-none"
-                  placeholder="Enter account name"
+                  placeholder={t("accountManagement.enterAccountNamePlaceholder")}
                   value={createFormData.name}
                   onChange={(e) =>
                     setCreateFormData({
@@ -1147,8 +1149,8 @@ export const AccountManagement: React.FC = () => {
                     })
                   }
                 >
-                  <option value="cashier">Cashier</option>
-                  <option value="owner">Owner</option>
+                  <option value="cashier">{t("accountManagement.cashier")}</option>
+                  <option value="owner">{t("accountManagement.owner")}</option>
                 </select>
               </div>
 
@@ -1166,9 +1168,9 @@ export const AccountManagement: React.FC = () => {
                     })
                   }
                 >
-                  <option value="">No location</option>
+                  <option value="">{t("accountManagement.noLocation")}</option>
                   {locationProfiles.length === 0 ? (
-                    <option disabled>Loading locations...</option>
+                    <option disabled>{t("accountManagement.loadingLocations")}</option>
                   ) : (
                     <>
                       {locationProfiles.filter(
@@ -1227,7 +1229,7 @@ export const AccountManagement: React.FC = () => {
                     type={showPassword ? "text" : "password"}
                     required
                     className="w-full border rounded-lg p-2 pr-10 focus:ring-2 focus:ring-primary outline-none"
-                    placeholder="Enter password"
+                    placeholder={t("accountManagement.enterPasswordPlaceholder")}
                     value={createFormData.password}
                     onChange={(e) =>
                       setCreateFormData({
@@ -1259,7 +1261,7 @@ export const AccountManagement: React.FC = () => {
                     type={showConfirmPassword ? "text" : "password"}
                     required
                     className="w-full border rounded-lg p-2 pr-10 focus:ring-2 focus:ring-primary outline-none"
-                    placeholder="Confirm password"
+                    placeholder={t("accountManagement.confirmPasswordPlaceholder")}
                     value={createFormData.confirmPassword}
                     onChange={(e) =>
                       setCreateFormData({

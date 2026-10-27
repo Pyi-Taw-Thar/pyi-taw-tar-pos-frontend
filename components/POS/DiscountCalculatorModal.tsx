@@ -1,3 +1,4 @@
+import { useLanguage } from "../../context/LanguageContext";
 import React from "react";
 import { X, Calculator } from "lucide-react";
 
@@ -13,6 +14,7 @@ interface DiscountCalculatorModalProps {
 export const DiscountCalculatorModal: React.FC<DiscountCalculatorModalProps> = ({
   show, onClose, subtotal, discountAmount, onDiscountAmountChange, onApply,
 }) => {
+  const { t } = useLanguage();
   if (!show) return null;
 
   const numAmount = Number(discountAmount);
@@ -31,14 +33,14 @@ export const DiscountCalculatorModal: React.FC<DiscountCalculatorModalProps> = (
         </div>
         <div className="p-6 space-y-4">
           <div className="bg-slate-50 p-4 rounded-lg">
-            <p className="text-sm text-slate-500 mb-1">Current Subtotal</p>
+            <p className="text-sm text-slate-500 mb-1">{t("pos.currentSubtotal")}</p>
             <p className="text-2xl font-bold text-slate-800">{subtotal.toLocaleString()} MMK</p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Discount Amount (MMK)</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">{t("pos.discountAmountLabel")}</label>
             <input type="number" min="0" max={subtotal}
               className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-primary outline-none"
-              placeholder="Enter discount amount..."
+              placeholder={t("pos.enterDiscountPlaceholder")}
               value={discountAmount} onChange={(e) => onDiscountAmountChange(e.target.value)}
             />
           </div>
@@ -59,11 +61,11 @@ export const DiscountCalculatorModal: React.FC<DiscountCalculatorModalProps> = (
             </div>
           )}
           <div className="flex justify-end gap-3 pt-4 border-t">
-            <button onClick={() => { onClose(); onDiscountAmountChange(""); }} className="px-4 py-2 text-slate-700 hover:bg-slate-100 rounded-lg transition-colors">Cancel</button>
+            <button onClick={() => { onClose(); onDiscountAmountChange(""); }} className="px-4 py-2 text-slate-700 hover:bg-slate-100 rounded-lg transition-colors">{t("common.cancel")}</button>
             <button onClick={onApply}
               disabled={!discountAmount || numAmount <= 0 || numAmount > subtotal}
               className="px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >Apply Discount</button>
+            >{t("pos.applyDiscount")}</button>
           </div>
         </div>
       </div>

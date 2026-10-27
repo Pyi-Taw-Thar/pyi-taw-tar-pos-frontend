@@ -152,7 +152,7 @@ export const CreditDetail: React.FC = () => {
       }
     } catch (error) {
       console.error("Error loading payment records:", error);
-      toast.error("Failed to load payment records");
+      toast.error(t("creditDetail.failedToLoadPayments"));
     } finally {
       setPaymentsLoading(false);
     }
@@ -175,7 +175,7 @@ export const CreditDetail: React.FC = () => {
       }
     } catch (error) {
       console.error("Error loading credit details:", error);
-      toast.error("Failed to load credit details");
+      toast.error(t("creditDetail.failedToLoad"));
     } finally {
       setLoading(false);
     }
@@ -205,12 +205,12 @@ export const CreditDetail: React.FC = () => {
   };
 
   const paymentMethods = [
-    { value: "cash", label: "Cash" },
+    { value: "cash", label: t("common.cash") },
     { value: "kpay", label: "KBZ Pay" },
     { value: "wavepay", label: "Wave Pay" },
     { value: "ayapay", label: "AYA Pay" },
     { value: "uabpay", label: "UAB Pay" },
-    { value: "bank_transfer", label: "Bank Transfer" },
+    { value: "bank_transfer", label: t("common.bankTransfer") },
   ];
 
   const handleOpenAddPayment = () => {
@@ -265,7 +265,7 @@ export const CreditDetail: React.FC = () => {
 
   const handleAddCreditOrder = async () => {
     if (!creditForm.storefrontId) {
-      toast.error("Please select a storefront");
+      toast.error(t("creditDetail.selectStorefront"));
       return;
     }
 
@@ -289,7 +289,7 @@ export const CreditDetail: React.FC = () => {
 
       const response = await createOrder(payload);
       if (response.success) {
-        toast.success("Credit order created successfully");
+        toast.success(t("creditDetail.creditOrderCreated"));
         setShowAddCreditModal(false);
         setCreditForm({
           storefrontId: "",
@@ -301,11 +301,11 @@ export const CreditDetail: React.FC = () => {
         });
         await loadCreditDetail();
       } else {
-        toast.error(response.message || "Failed to create credit order");
+        toast.error(response.message || t("creditDetail.failedToCreateCreditOrder"));
       }
     } catch (error) {
       console.error("Error creating credit order:", error);
-      toast.error("Failed to create credit order");
+      toast.error(t("creditDetail.failedToCreateCreditOrder"));
     } finally {
       setIsCreatingCredit(false);
     }
@@ -358,7 +358,7 @@ export const CreditDetail: React.FC = () => {
       }
     } catch (error) {
       console.error("Error loading order details:", error);
-      toast.error("Failed to load order details");
+      toast.error(t("creditDetail.failedToLoadOrderDetails"));
     } finally {
       setLoadingOrderDetail(false);
     }
@@ -548,12 +548,12 @@ export const CreditDetail: React.FC = () => {
                     <table className="w-full text-sm text-left">
                       <thead className="bg-slate-50 text-slate-600 border-b">
                         <tr>
-                          <th className="px-4 py-3 font-medium">Order No</th>
-                          <th className="px-4 py-3 font-medium text-right">Amount (MMK)</th>
-                          <th className="px-4 py-3 font-medium text-right">Paid (MMK)</th>
-                          <th className="px-4 py-3 font-medium text-right">Remaining (MMK)</th>
-                          <th className="px-4 py-3 font-medium text-center">Status</th>
-                          <th className="px-4 py-3 font-medium text-center">Actions</th>
+                          <th className="px-4 py-3 font-medium">{t("creditDetail.orderNo")}</th>
+                          <th className="px-4 py-3 font-medium text-right">{t("creditDetail.amount")}</th>
+                          <th className="px-4 py-3 font-medium text-right">{t("creditDetail.amountPaid")}</th>
+                          <th className="px-4 py-3 font-medium text-right">{t("creditDetail.remaining")}</th>
+                          <th className="px-4 py-3 font-medium text-center">{t("creditDetail.status")}</th>
+                          <th className="px-4 py-3 font-medium text-center">{t("creditDetail.actions")}</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y">
@@ -656,7 +656,7 @@ export const CreditDetail: React.FC = () => {
                   ) : !productsReport ||
                     productsReport.data.products.length === 0 ? (
                     <div className="p-12 text-center text-slate-400 text-sm">
-                      No products found for this credit persona.
+                      {t("creditDetail.noProductsFound")}
                     </div>
                   ) : (
                     <table className="w-full text-sm text-left">
@@ -665,14 +665,14 @@ export const CreditDetail: React.FC = () => {
                           <th className="px-4 py-3 font-medium">
                             Product Name
                           </th>
-                          <th className="px-4 py-3 font-medium">SKU</th>
+                          <th className="px-4 py-3 font-medium">{t("creditDetail.sku")}</th>
                           <th className="px-4 py-3 font-medium text-right">
                             Quantity
                           </th>
                           <th className="px-4 py-3 font-medium text-right">
                             Order Count
                           </th>
-                          <th className="px-4 py-3 font-medium">Unit</th>
+                          <th className="px-4 py-3 font-medium">{t("common.unit")}</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y">
@@ -920,7 +920,7 @@ export const CreditDetail: React.FC = () => {
       ) : (
         <div className="bg-white rounded-xl shadow-sm border p-12 text-center">
           <AlertTriangle className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-          <p className="text-slate-500">Failed to load credit details</p>
+          <p className="text-slate-500">{t("creditDetail.failedToLoad")}</p>
           <button
             onClick={loadCreditDetail}
             className="mt-4 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/80 transition-colors font-medium"
@@ -1103,7 +1103,7 @@ export const CreditDetail: React.FC = () => {
                   <input
                     type="number"
                     min="0"
-                    placeholder="Enter subtotal amount..."
+                    placeholder={t("creditDetail.enterSubtotalAmount")}
                     className="w-full border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all shadow-sm font-bold text-lg"
                     value={creditForm.finalAmount}
                     onChange={(e) =>

@@ -49,15 +49,15 @@ export const ImportResultModal: React.FC<ImportResultModalProps> = ({
           {/* Stats Cards */}
           <div className="grid grid-cols-3 gap-4 mb-8">
             <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 text-center">
-              <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Total Rows</p>
+              <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">{t("inventory.totalRows")}</p>
               <p className="text-2xl font-black text-slate-800">{total}</p>
             </div>
             <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-100 text-center">
-              <p className="text-xs text-emerald-600 font-bold uppercase tracking-wider mb-1">Success</p>
+              <p className="text-xs text-emerald-600 font-bold uppercase tracking-wider mb-1">{t("common.success")}</p>
               <p className="text-2xl font-black text-emerald-700">{success}</p>
             </div>
             <div className="bg-rose-50 p-4 rounded-2xl border border-rose-100 text-center">
-              <p className="text-xs text-rose-600 font-bold uppercase tracking-wider mb-1">Failed</p>
+              <p className="text-xs text-rose-600 font-bold uppercase tracking-wider mb-1">{t("common.failed")}</p>
               <p className="text-2xl font-black text-rose-700">{failed}</p>
             </div>
           </div>
@@ -67,15 +67,15 @@ export const ImportResultModal: React.FC<ImportResultModalProps> = ({
             <div className="space-y-4">
               <div className="flex items-center gap-2 text-rose-600 font-bold">
                 <AlertCircle className="w-5 h-5" />
-                <h4>Detailed Error Log</h4>
+                <h4>{t("inventory.detailedErrorLog")}</h4>
               </div>
               <div className="border border-rose-100 rounded-2xl overflow-hidden bg-rose-50/30">
                 <div className="max-h-[300px] overflow-y-auto">
                   <table className="w-full text-left border-collapse">
                     <thead className="bg-rose-50 text-rose-700 text-xs uppercase sticky top-0">
                       <tr>
-                        <th className="px-4 py-3 font-black">Row</th>
-                        <th className="px-4 py-3 font-black">Error Message</th>
+                        <th className="px-4 py-3 font-black">{t("inventory.row")}</th>
+                        <th className="px-4 py-3 font-black">{t("inventory.errorMessage")}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-rose-100">

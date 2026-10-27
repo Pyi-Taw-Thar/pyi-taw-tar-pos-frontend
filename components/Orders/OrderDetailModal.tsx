@@ -137,17 +137,17 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
         <div className="flex flex-row justify-between items-start gap-4 p-4 border-b bg-slate-50">
           <h3 className="font-bold text-lg text-slate-800 flex items-center gap-2">
             <Receipt className="w-5 h-5 text-primary" />
-            Order Details
+            {t("orders.orderDetails")}
           </h3>
           <div className="flex flex-row items-center gap-2">
             {order && (
               <button
                 onClick={handlePrintOrder}
                 className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-                title="Print Order"
+                title={t("orders.printOrder")}
               >
                 <Printer className="w-4 h-4" />
-                <span className="hidden sm:inline">Print</span>
+                <span className="hidden sm:inline">{t("common.print")}</span>
               </button>
             )}
             {order && userRole === "owner" && (
@@ -186,7 +186,7 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
           {loading ? (
             <div className="flex flex-col items-center justify-center py-12">
               <RefreshCw className="w-8 h-8 animate-spin text-primary mb-3" />
-              <p className="text-slate-500">Loading order details...</p>
+              <p className="text-slate-500">{t("orders.loadingDetails")}</p>
             </div>
           ) : order ? (
             <>
@@ -194,13 +194,13 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                   <p className="text-xs text-blue-600 font-medium mb-1">
-                    Order Number
+                    {t("orders.orderNumber")}
                   </p>
                   <p className="font-bold text-blue-800">{order.orderNumber}</p>
                 </div>
                 <div className="bg-green-50 p-4 rounded-lg border border-green-200">
                   <p className="text-xs text-green-600 font-medium mb-1">
-                    Status
+                    {t("common.status")}
                   </p>
                   <span
                     className={`px-2 py-1 rounded-full text-xs font-bold ${getStatusColor(
@@ -263,7 +263,7 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                     <div className="flex items-center gap-2 mb-2">
                       <UserCircle className="w-4 h-4 text-purple-600" />
                       <p className="text-xs text-purple-600 font-medium">
-                        Sold By
+                        {t("orders.soldBy")}
                       </p>
                     </div>
                     <p className="font-bold text-purple-800">
@@ -280,7 +280,7 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                       <div className="flex items-center gap-2 mb-2">
                         <User className="w-4 h-4 text-orange-600" />
                         <p className="text-xs text-orange-600 font-medium">
-                          Credit Person
+                          {t("orders.creditPerson")}
                         </p>
                       </div>
                       <p className="font-bold text-orange-800">
@@ -297,26 +297,26 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
               <div className="mb-6">
                 <h4 className="font-semibold text-slate-700 mb-3 flex items-center gap-2">
                   <Package className="w-4 h-4" />
-                  Order Items
+                  {t("orders.orderItems")}
                 </h4>
                 <div className="border rounded-lg overflow-hidden">
                   <table className="w-full text-sm">
                     <thead className="bg-slate-50">
                       <tr>
                         <th className="p-3 text-left font-medium text-slate-600">
-                          Product
+                          {t("common.product")}
                         </th>
                         <th className="p-3 text-center font-medium text-slate-600">
-                          Qty
+                          {t("orders.qty")}
                         </th>
                         <th className="p-3 text-center font-medium text-slate-600">
-                          Unit
+                          {t("inventory.unit") || "Unit"}
                         </th>
                         <th className="p-3 text-right font-medium text-slate-600">
-                          Unit Price
+                          {t("orders.unitPrice")}
                         </th>
                         <th className="p-3 text-right font-medium text-slate-600">
-                          Subtotal
+                          {t("common.subtotal")}
                         </th>
                       </tr>
                     </thead>
@@ -359,29 +359,29 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
               <div className="bg-slate-50 p-4 rounded-lg border">
                 <h4 className="font-semibold text-slate-700 mb-3 flex items-center gap-2">
                   <CreditCard className="w-4 h-4" />
-                  Payment Summary
+                  {t("orders.paymentSummary")}
                 </h4>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Subtotal</span>
+                    <span className="text-slate-500">{t("common.subtotal")}</span>
                     <span>{order.subTotal?.toLocaleString()} MMK</span>
                   </div>
                   {order.tax > 0 && (
                     <div className="flex justify-between">
-                      <span className="text-slate-500">Tax</span>
+                      <span className="text-slate-500">{t("common.tax")}</span>
                       <span>{order.tax?.toLocaleString()} MMK</span>
                     </div>
                   )}
                   {order.discount > 0 && (
                     <div className="flex justify-between text-green-600">
-                      <span>Discount</span>
+                      <span>{t("common.discount")}</span>
                       <span>-{order.discount?.toLocaleString()} MMK</span>
                     </div>
                   )}
                   {order.discount === 0 &&
                     order.finalAmount > order.subTotal && (
                       <div className="flex justify-between text-green-600">
-                        <span>Markup</span>
+                        <span>{t("pos.markup")}</span>
                         <span>
                           {(
                             order.finalAmount - order.subTotal
@@ -391,21 +391,21 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                       </div>
                     )}
                   <div className="border-t pt-2 flex justify-between font-bold text-lg">
-                    <span>Final Amount</span>
+                    <span>{t("orders.finalAmount")}</span>
                     <span>{order.finalAmount?.toLocaleString()} MMK</span>
                   </div>
                   <div className="flex justify-between text-green-600">
-                    <span>Paid Amount</span>
+                    <span>{t("orders.paidAmount")}</span>
                     <span>{order.paidAmount?.toLocaleString()} MMK</span>
                   </div>
                   {order.extraChange > 0 && (
                     <div className="flex justify-between text-blue-600 font-medium">
-                      <span>Change</span>
+                      <span>{t("common.change")}</span>
                       <span>{order.extraChange?.toLocaleString()} MMK</span>
                     </div>
                   )}
                   <div className="flex justify-between pt-2 border-t">
-                    <span className="text-slate-500">Payment Type</span>
+                    <span className="text-slate-500">{t("orders.type")}</span>
                     <span
                       className={`px-2 py-0.5 rounded-full text-xs font-bold ${getPaymentTypeColor(
                         order.paymentType,
@@ -415,7 +415,7 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Payment Method</span>
+                    <span className="text-slate-500">{t("orders.method")}</span>
                     <span className="font-medium">
                       {getPaymentMethodLabel(order.paymentMethod)}
                     </span>
@@ -423,7 +423,7 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                   {order.remainingBalance !== undefined &&
                     order.remainingBalance > 0 && (
                       <div className="flex justify-between text-orange-600 font-medium">
-                        <span>Remaining Balance</span>
+                        <span>{t("orders.remainingBalance")}</span>
                         <span>
                           {order.remainingBalance?.toLocaleString()} MMK
                         </span>
