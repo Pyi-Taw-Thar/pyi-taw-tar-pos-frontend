@@ -61,11 +61,7 @@ const AppLayout: React.FC = () => {
   const pageTitle = currentMenuItem ? t(currentMenuItem.labelKey) : "";
 
   return (
-    <div
-      className={`min-h-screen flex flex-col bg-[#F8F9FA] ${
-        isMenuPage ? "h-screen max-h-screen overflow-hidden" : ""
-      }`}
-    >
+    <div className="min-h-screen flex flex-col bg-[#F8F9FA]">
       {/* Only show header if authenticated */}
       {token && (
         <header
@@ -126,11 +122,7 @@ const AppLayout: React.FC = () => {
 
       {/* Main Content */}
       <main
-        className={`flex-1 ${
-          isMenuPage
-            ? "h-screen max-h-screen overflow-hidden flex flex-col"
-            : "overflow-x-hidden"
-        }`}
+        className="flex-1 overflow-x-hidden"
         style={{ paddingTop: "56px" }}
       >
         <Routes>

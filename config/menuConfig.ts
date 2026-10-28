@@ -25,7 +25,6 @@ export interface MenuItem {
   icon: LucideIcon;
   roles?: string[]; // Allowed roles (e.g. ["admin", "owner"]). If undefined/empty, all roles allowed
   feature?: FeatureKey; // Feature flag. If false, item hidden
-  badge?: "ecommercePending" | "fulfillmentPending";
 }
 
 export interface MenuSection {
@@ -33,6 +32,69 @@ export interface MenuSection {
   titleKey: string;
   items: MenuItem[];
 }
+
+export type WorkQueueKey =
+  | "ecommercePending"
+  | "fulfillmentPending"
+  | "poPending"
+  | "outOfStock";
+
+export interface WorkQueueItemConfig {
+  key: WorkQueueKey;
+  path: string;
+  labelKey: string;
+  activeTextKey: string;
+  zeroTextKey: string;
+  actionKey: string;
+  roles?: string[];
+}
+
+export const WORK_QUEUE: WorkQueueItemConfig[] = [
+  {
+    key: "ecommercePending",
+    path: "/admin/ecommerce-orders",
+    labelKey: "menu.workQueue.ecommercePendingLabel",
+    activeTextKey: "menu.workQueue.ecommercePendingActive",
+    zeroTextKey: "menu.workQueue.ecommercePendingZero",
+    actionKey: "menu.workQueue.ecommercePendingAction",
+    roles: ["admin", "owner"],
+  },
+  {
+    key: "fulfillmentPending",
+    path: "/order-fulfillment",
+    labelKey: "menu.workQueue.fulfillmentPendingLabel",
+    activeTextKey: "menu.workQueue.fulfillmentPendingActive",
+    zeroTextKey: "menu.workQueue.fulfillmentPendingZero",
+    actionKey: "menu.workQueue.fulfillmentPendingAction",
+  },
+  {
+    key: "poPending",
+    path: "/purchasing",
+    labelKey: "menu.workQueue.poAwaitingLabel",
+    activeTextKey: "menu.workQueue.poAwaitingActive",
+    zeroTextKey: "menu.workQueue.poAwaitingZero",
+    actionKey: "menu.workQueue.poAwaitingAction",
+    roles: ["admin", "owner"],
+  },
+  {
+    key: "outOfStock",
+    path: "/storefront",
+    labelKey: "menu.workQueue.outOfStockLabel",
+    activeTextKey: "menu.workQueue.outOfStockActive",
+    zeroTextKey: "menu.workQueue.outOfStockZero",
+    actionKey: "menu.workQueue.outOfStockAction",
+  },
+];
+
+export const canSeeWorkQueueItem = (
+  item: WorkQueueItemConfig,
+  role: string
+): boolean => {
+  if (item.roles && item.roles.length > 0 && !item.roles.includes(role)) {
+    return false;
+  }
+  return true;
+};
 
 export const MENU_SECTIONS: MenuSection[] = [
   {
@@ -45,14 +107,12 @@ export const MENU_SECTIONS: MenuSection[] = [
         descKey: "menu.desc.ecommerceOrders",
         icon: ShoppingBag,
         roles: ["admin", "owner"],
-        badge: "ecommercePending",
       },
       {
         path: "/order-fulfillment",
         labelKey: "sidebar.orderFulfillment",
         descKey: "menu.desc.orderFulfillment",
         icon: PackageCheck,
-        badge: "fulfillmentPending",
       },
       {
         path: "/customers",
