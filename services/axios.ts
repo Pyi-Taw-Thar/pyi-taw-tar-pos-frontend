@@ -53,12 +53,31 @@ axios.interceptors.response.use(
   async (error) => {
     const config = error.config;
 
-    // 429 Too Many Requests — retry up to 2 times with delay
-    if (error.response?.status === 429 && !config._retryCount) {
+    // 429 Too Many Requests — /admin/login မဟုတ်လျှင် Retry-After (≤ 10s) အတိုင်း သို့မဟုတ် 2s/4s ဖြင့် ၂ ကြိမ်အထိ ပြန်ကြိုးစားမည်
+    const MAX_RETRY_WAIT_MS = 10000;
+    const isLoginRequest =
+      typeof config?.url === "string" && config.url.includes("/admin/login");
+
+    if (error.response?.status === 429 && config && !isLoginRequest) {
       config._retryCount = config._retryCount || 0;
       if (config._retryCount < 2) {
+        const retryAfterHeader = error.response.headers?.["retry-after"];
+        const retryAfterSeconds = retryAfterHeader ? Number(retryAfterHeader) : NaN;
+
+        let delay: number;
+        if (Number.isFinite(retryAfterSeconds) && retryAfterSeconds > 0) {
+          const retryAfterMs = retryAfterSeconds * 1000;
+          // Retry-After သည် ၁၀ စက္ကန့်ထက် များနေပါက retry မလုပ်ဘဲ ချက်ချင်း error ပြန်ပေးမည်
+          if (retryAfterMs > MAX_RETRY_WAIT_MS) {
+            return Promise.reject(error);
+          }
+          delay = retryAfterMs;
+        } else {
+          // Retry-After မရှိလျှင် ယခုအတိုင်း 2s, 4s
+          delay = (config._retryCount + 1) * 2000;
+        }
+
         config._retryCount += 1;
-        const delay = config._retryCount * 2000; // 2s, then 4s
         await new Promise((r) => setTimeout(r, delay));
         return axios(config);
       }

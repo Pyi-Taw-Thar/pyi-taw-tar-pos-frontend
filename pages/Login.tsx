@@ -59,7 +59,16 @@ export const Login: React.FC = () => {
       }
     } catch (error: any) {
       console.error("Login error:", error);
-      toast.error(error.message || t("login.checkCredentials"));
+      // 429 Too Many Requests ဖြစ်ပါက ဘာသာပြန်ထားသော သတိပေးစာသား ပြသမည်
+      const isRateLimited =
+        error?.response?.status === 429 ||
+        (typeof error?.message === "string" &&
+          error.message.toLowerCase().includes("too many requests"));
+      toast.error(
+        isRateLimited
+          ? t("login.tooManyAttempts")
+          : error.message || t("login.checkCredentials"),
+      );
     } finally {
       setIsSubmitting(false);
     }

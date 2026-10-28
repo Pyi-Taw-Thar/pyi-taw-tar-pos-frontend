@@ -88,6 +88,7 @@ export const en = {
     fillAllFields: "Please fill in all fields",
     loginFailed: "Login failed",
     checkCredentials: "Login failed. Please check your credentials.",
+    tooManyAttempts: "Too many attempts. Please try again in a few minutes.",
     welcomeBack: "Welcome back, {name}!",
     copyright: "© 2024 Pyi-Taw-Tar POS All rights reserved.",
   },
