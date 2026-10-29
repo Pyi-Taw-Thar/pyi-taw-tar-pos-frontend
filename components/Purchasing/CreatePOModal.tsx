@@ -224,6 +224,48 @@ export const CreatePOModal: React.FC<CreatePOModalProps> = ({
       note: poItemNote,
     };
 
+    // ပစ္စည်းတူ + unit တူ ရှိလျှင် အရေအတွက် auto ပေါင်းခြင်း (new- ပစ္စည်းအသစ် မဟုတ်ပါက)
+    const isNewProduct = productId.startsWith("new-");
+    const normalizedUnit = (selectedUnit || "").trim().toLowerCase();
+
+    if (!isNewProduct) {
+      const existingIndex = poItems.findIndex(
+        (item) =>
+          item.productId === productId &&
+          (item.unit || "").trim().toLowerCase() === normalizedUnit,
+      );
+
+      if (existingIndex !== -1) {
+        setPOItems((prev) => {
+          const updated = [...prev];
+          const existing = updated[existingIndex];
+          let mergedNote = existing.note || "";
+          if (poItemNote && poItemNote.trim()) {
+            mergedNote = existing.note
+              ? (existing.note === poItemNote.trim() ? existing.note : `${existing.note} / ${poItemNote.trim()}`)
+              : poItemNote.trim();
+          }
+          updated[existingIndex] = {
+            ...existing,
+            qty: existing.qty + poQty,
+            costPrice: buyingPrice,
+            note: mergedNote,
+          };
+          return updated;
+        });
+
+        toast.info(t("purchasing.mergedSameItem"));
+
+        setPOSelectedProduct("");
+        setPONewProductName("");
+        setPOQty(1);
+        setPOItemNote("");
+        setSelectedUnit("piece");
+        setProductSearchQuery("");
+        return;
+      }
+    }
+
     setPOItems((prev) => [...prev, newItem]);
     setPOSelectedProduct("");
     setPONewProductName("");

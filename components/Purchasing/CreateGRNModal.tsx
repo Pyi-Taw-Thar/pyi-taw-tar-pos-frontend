@@ -6,10 +6,15 @@ import { createGRN } from "../../services/Purchase/createGRN";
 import { toast } from "sonner";
 
 interface ExtendedGRNItem {
+  poProductId: string;
   productId: string;
   productCode: string;
   name: string;
   qtyOrdered: number;
+  unit?: string;
+  baseQuantity: number;
+  baseUnit: string;
+  remainingQuantity: number;
   qtyReceived: number;
   qtyGood: number;
   qtyBad: number;
@@ -68,19 +73,43 @@ export const CreateGRNModal: React.FC<CreateGRNModalProps> = ({
 
     const grnItemsForPO: ExtendedGRNItem[] = po.products
       .filter((item) => item.productStatus === "pending")
-      .map((item) => ({
-        productId: item.inventoryId,
-        productCode: item.productCode || "",
-        name: item.productName,
-        qtyOrdered: item.purchaseQuantity,
-        qtyReceived: item.remainingQuantity,
-        qtyGood: item.remainingQuantity,
-        qtyBad: 0,
-        costPrice: item.buyingPrice,
-        isSelected: true,
-        batchNumber: "",
-        expiryDate: "",
-      }));
+      .map((item) => {
+        const itemAny = item as any;
+        // Base unit ရှာဖွေခြင်း — unit မပါသော လိုင်း သို့မဟုတ် baseQuantity === purchaseQuantity ဖြစ်သော လိုင်း/unitOfMeasure မှ
+        const sameCodeItems = po.products.filter(
+          (p) => (p.productCode || "").toUpperCase() === (item.productCode || "").toUpperCase()
+        );
+        const baseLine =
+          sameCodeItems.find(
+            (p) => (p as any).baseQuantity != null && (p as any).baseQuantity === p.purchaseQuantity && (p as any).unit
+          ) || sameCodeItems.find((p) => !(p as any).unit);
+        const baseUnit =
+          (baseLine as any)?.unit ||
+          itemAny.unitOfMeasure ||
+          t("purchasing.baseUnitLabel");
+
+        const baseQty = itemAny.baseQuantity != null ? itemAny.baseQuantity : item.purchaseQuantity;
+        const remaining = itemAny.remainingQuantity != null ? itemAny.remainingQuantity : baseQty;
+
+        return {
+          poProductId: itemAny._id || "",
+          productId: item.inventoryId,
+          productCode: item.productCode || "",
+          name: item.productName,
+          qtyOrdered: item.purchaseQuantity,
+          unit: itemAny.unit || "",
+          baseQuantity: baseQty,
+          baseUnit,
+          remainingQuantity: remaining,
+          qtyReceived: remaining,
+          qtyGood: remaining,
+          qtyBad: 0,
+          costPrice: item.buyingPrice,
+          isSelected: true,
+          batchNumber: "",
+          expiryDate: "",
+        };
+      });
 
     setGRNItems(grnItemsForPO);
   };
@@ -168,6 +197,7 @@ export const CreateGRNModal: React.FC<CreateGRNModalProps> = ({
       const payload = {
         purchasingId: selectedPOId,
         lineItems: itemsToProcess.map((item) => ({
+          poProductId: item.poProductId,
           productCode: item.productCode,
           goodQuantity: item.qtyGood,
           badQuantity: item.qtyBad,
@@ -353,7 +383,12 @@ export const CreateGRNModal: React.FC<CreateGRNModalProps> = ({
                             </span>
                           </div>
                           <div className="text-xs text-slate-500">
-                            Ordered: {item.qtyOrdered} | Cost:{" "}
+                            {t("purchasing.orderedLabel")}: {item.qtyOrdered} {item.unit || item.baseUnit}
+                            {item.unit && item.unit.toLowerCase() !== item.baseUnit.toLowerCase()
+                              ? ` (${item.baseQuantity} ${item.baseUnit})`
+                              : ""}{" "}
+                            | {t("purchasing.remainingLabel")}: {item.remainingQuantity} {item.baseUnit} |{" "}
+                            {t("purchasing.costPerBaseUnitLabel", { baseUnit: item.baseUnit })}:{" "}
                             {item.costPrice.toFixed(2)}
                           </div>
                         </div>
@@ -363,7 +398,7 @@ export const CreateGRNModal: React.FC<CreateGRNModalProps> = ({
                       <div className="space-y-3 ml-7">
                         <div>
                           <label className="text-xs text-slate-500 block mb-1">
-                            Received Qty:
+                            {t("purchasing.receivedQtyWithUnit", { unit: item.baseUnit })}:
                           </label>
                           <input
                             type="number"
@@ -377,13 +412,13 @@ export const CreateGRNModal: React.FC<CreateGRNModalProps> = ({
                               )
                             }
                             min="0"
-                            max={item.qtyOrdered}
+                            max={item.remainingQuantity}
                           />
                         </div>
                         <div className="grid grid-cols-2 gap-3">
                           <div>
                             <label className="text-xs text-slate-500 block mb-1">
-                              Good:
+                              {t("purchasing.goodQtyWithUnit", { unit: item.baseUnit })}:
                             </label>
                             <input
                               type="number"
@@ -402,7 +437,7 @@ export const CreateGRNModal: React.FC<CreateGRNModalProps> = ({
                           </div>
                           <div>
                             <label className="text-xs text-slate-500 block mb-1">
-                              Bad:
+                              {t("purchasing.badQtyWithUnit", { unit: item.baseUnit })}:
                             </label>
                             <input
                               type="number"
