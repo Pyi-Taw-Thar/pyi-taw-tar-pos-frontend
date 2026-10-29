@@ -580,6 +580,7 @@ export const my = {
     itemsToPack: "ထုတ်ပိုးရမည့် ပစ္စည်းများစာရင်း",
     progress: "ပြီးစီးမှု",
     scannedBatches: "စကင်ဖတ်ပြီးသော အသုတ်များ (Batches):",
+    batchFromLocation: "{location} မှ",
     batchCode: "ကုဒ်",
     unit: "ယူနစ်",
     price: "ဈေးနှုန်း",

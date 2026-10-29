@@ -33,6 +33,8 @@ interface ScannedBatchEntry {
   batchBarcode: string;
   expiryDate?: string | null;
   quantity: number;
+  locationName?: string | null;
+  locationType?: string | null;
 }
 
 interface ProductFulfillmentState {
@@ -126,6 +128,8 @@ export const OrderFulfillmentModal: React.FC<OrderFulfillmentModalProps> = ({
           batchBarcode: b.batchBarcode || "",
           expiryDate: b.expiryDate,
           quantity: b.quantity || 1,
+          locationName: b.locationName || null,
+          locationType: b.locationType || null,
         }));
         return {
           inventoryId: inv._id || (inv as any).id,
@@ -280,12 +284,19 @@ export const OrderFulfillmentModal: React.FC<OrderFulfillmentModalProps> = ({
             quantity: batches[existingBatchIdx].quantity + scanFactor,
           };
         } else {
+          const locName =
+            scannedBatch.locationId?.locationName ||
+            scannedBatch.locationId?.name ||
+            scannedBatch.locationName ||
+            null;
           batches.push({
             batchStockId: scannedBatch._id,
             batchNumber: scannedBatch.batchNumber,
             batchBarcode: scannedBatch.batchBarcode,
             expiryDate: scannedBatch.expiryDate,
             quantity: scanFactor,
+            locationName: locName,
+            locationType: scannedBatch.locationType || null,
           });
         }
 
@@ -696,6 +707,11 @@ export const OrderFulfillmentModal: React.FC<OrderFulfillmentModalProps> = ({
                                 <span className="font-mono font-bold text-slate-800">
                                   {batch.batchNumber}
                                 </span>
+                                {batch.locationName && (
+                                  <span className="text-[10px] text-slate-500 font-medium">
+                                    ({t("fulfillment.batchFromLocation", { location: batch.locationName })})
+                                  </span>
+                                )}
                                 <span className="px-1.5 py-0.2 rounded bg-primary/10 text-primary font-semibold text-[10px]">
                                   {t("fulfillment.qty")}: {batch.quantity}
                                 </span>

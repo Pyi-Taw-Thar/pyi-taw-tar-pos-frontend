@@ -574,6 +574,7 @@ export const en = {
     itemsToPack: "Items to Pack",
     progress: "Progress",
     scannedBatches: "Scanned Batches:",
+    batchFromLocation: "from {location}",
     batchCode: "Code",
     unit: "Unit",
     price: "Price",
