@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   X,
   RefreshCw,
@@ -33,6 +34,7 @@ export const EcommerceOrderDetailModal: React.FC<
   EcommerceOrderDetailModalProps
 > = ({ isOpen, loading, order, onClose, onOrderUpdate }) => {
   console.log("order", order);
+  const navigate = useNavigate();
   const { t } = useLanguage();
   const [showAddItemsModal, setShowAddItemsModal] = useState(false);
   const [showRemoveItemsModal, setShowRemoveItemsModal] = useState(false);
@@ -127,9 +129,9 @@ export const EcommerceOrderDetailModal: React.FC<
       JSON.stringify(receiptData)
     );
 
-    window.open(
-      `/print-receipt/${encodeURIComponent(order.orderNumber)}?size=${getSavedPrintPaperSize()}&autoprint=1`,
-      "_blank"
+    // New tab မဖွင့်ဘဲ လက်ရှိ tab တွင်ပင် print receipt စာမျက်နှာသို့ navigate လုပ်ခြင်း
+    navigate(
+      `/print-receipt/${encodeURIComponent(order.orderNumber)}?size=${getSavedPrintPaperSize()}&autoprint=1`
     );
   };
 
@@ -429,9 +431,12 @@ export const EcommerceOrderDetailModal: React.FC<
                           <td className="p-3 text-center font-medium">
                             <div>{p.quantity.toLocaleString()}</div>
                             {(p as any).originalQuantity != null &&
-                              (p as any).originalQuantity > p.quantity && (
+                              ((p as any).originalQuantity !== p.quantity ||
+                                ((p as any).originalUnit || p.unit) !== p.unit) && (
                                 <span className="text-amber-600 text-xs block font-normal">
-                                  (မူလ: {(p as any).originalQuantity})
+                                  {/* မူလ မှာယူခဲ့သော unit ပါ ပြ (fulfillment တွင် base unit သို့ ပြောင်းနိုင်၍) */}
+                                  (မူလ: {(p as any).originalQuantity}{" "}
+                                  {(p as any).originalUnit || p.unit})
                                 </span>
                               )}
                           </td>

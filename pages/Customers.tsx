@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Users,
   RefreshCw,
@@ -50,6 +51,7 @@ const getTierDisplay = (tier?: string) => {
 
 export const Customers: React.FC = () => {
   const { t } = useLanguage();
+  const navigate = useNavigate();
 
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [pagination, setPagination] = useState<CustomerPagination | null>(null);
@@ -506,7 +508,12 @@ export const Customers: React.FC = () => {
                       {displayIndex}
                     </td>
                     <td className="px-3 py-2 font-medium text-slate-800">
-                      {customer.name}
+                      <button
+                        onClick={() => navigate(`/customers/${customer._id}`)}
+                        className="hover:text-primary hover:underline font-medium text-left transition-colors cursor-pointer"
+                      >
+                        {customer.name}
+                      </button>
                     </td>
                     <td className="px-3 py-2 text-slate-700">
                       {customer.phone}
@@ -550,6 +557,13 @@ export const Customers: React.FC = () => {
                     </td>
                     <td className="px-3 py-2 text-right">
                       <div className="inline-flex items-center gap-2 justify-end">
+                        <button
+                          onClick={() => navigate(`/customers/${customer._id}`)}
+                          className="px-2 py-1 text-xs rounded border border-primary/30 text-primary hover:bg-primary/5 font-medium transition-colors"
+                          title="View Customer Analytics & Orders"
+                        >
+                          အသေးစိတ်
+                        </button>
                         <button
                           onClick={() => handleOpenDetail(customer)}
                           className="px-2 py-1 text-xs rounded border border-slate-200 text-slate-700 hover:bg-slate-50"

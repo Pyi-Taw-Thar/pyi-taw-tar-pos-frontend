@@ -90,6 +90,8 @@ export const printFulfillmentReceipt = (
 
   const receiptData: VoucherReceiptData = {
     date: order.orderDate || (order as any).createdAt || new Date().toISOString(),
+    customerName: order.customerName || undefined,
+    customerPhone: order.customerPhone || creditPersonObj?.phone || undefined,
     creditPersonName: creditPersonObj?.name,
     creditPersonAddress: creditPersonObj?.address,
     creditPersonTownship: creditPersonObj?.township,

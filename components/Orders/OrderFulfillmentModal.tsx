@@ -316,7 +316,7 @@ export const OrderFulfillmentModal: React.FC<OrderFulfillmentModalProps> = ({
       );
     } catch (err: any) {
       playAudioCue(false);
-      toast.error(err?.message || t("fulfillment.scanError"));
+      toast.error(err?.response?.data?.message || err?.message || t("fulfillment.scanError"));
     } finally {
       setIsScanning(false);
       setBarcodeInput("");
@@ -380,7 +380,7 @@ export const OrderFulfillmentModal: React.FC<OrderFulfillmentModalProps> = ({
       onSuccess();
       onClose();
     } catch (err: any) {
-      toast.error(err?.message || t("fulfillment.savePartialFailed") || "Failed to save partial progress");
+      toast.error(err?.response?.data?.message || err?.message || t("fulfillment.savePartialFailed") || "Failed to save partial progress");
     } finally {
       setIsSavingPartial(false);
     }
@@ -483,7 +483,7 @@ export const OrderFulfillmentModal: React.FC<OrderFulfillmentModalProps> = ({
         `/print-receipt/${finalOrder.orderNumber}?size=${getSavedPrintPaperSize()}&autoprint=1`
       );
     } catch (err: any) {
-      toast.error(err?.message || t("fulfillment.fulfillmentFailed"));
+      toast.error(err?.response?.data?.message || err?.message || t("fulfillment.fulfillmentFailed"));
     } finally {
       setIsFulfilling(false);
     }

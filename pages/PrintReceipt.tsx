@@ -224,7 +224,7 @@ const PrintReceipt: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white print:bg-white">
+    <div className="min-h-screen bg-white print:bg-white print:min-h-0 print:m-0 print:p-0">
       <style>{`
         ${getPrintPaperStyles(paperSize)}
         ${getSharedTableStyles()}
@@ -293,7 +293,7 @@ const PrintReceipt: React.FC = () => {
         </div>
       )}
 
-      <div className="pb-8">
+      <div className="pb-8 print:pb-0 print:m-0 print:p-0">
         <VoucherContent
           receiptData={receiptData}
           shopBranding={shopBranding}

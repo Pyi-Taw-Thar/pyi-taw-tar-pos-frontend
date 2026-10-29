@@ -90,6 +90,15 @@ axios.interceptors.response.use(
         window.location.href = "/login";
       }
     }
+
+    // Backend API မှ ပြန်ပို့သော message အစစ်ကို error.message တွင် ထည့်ပေးခြင်း (Request failed with status code 400 အစား)
+    if (
+      error.response?.data?.message &&
+      typeof error.response.data.message === "string"
+    ) {
+      error.message = error.response.data.message;
+    }
+
     return Promise.reject(error);
   }
 );

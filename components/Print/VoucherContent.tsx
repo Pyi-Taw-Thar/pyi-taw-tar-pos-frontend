@@ -53,6 +53,10 @@ export interface VoucherReceiptData {
   change?: number;
   note?: string;
   documentType?: VoucherDocumentType;
+  /** Customer info (for retail / ecommerce orders) */
+  customerName?: string;
+  customerPhone?: string;
+  customerAddress?: string;
   /** Credit person info (for credit orders) */
   creditPersonName?: string;
   creditPersonOutstanding?: number;
@@ -116,7 +120,7 @@ export const VoucherContent: React.FC<VoucherContentProps> = ({
       return (
         <div className="voucher-container" data-paper={paperSize}>
           {/* Header Section */}
-          <div className="text-center mb-2 pb-1.5 border-b border-black">
+          <div className="text-center mb-2 pb-1.5 border-b border-black pt-0 mt-0">
             {shopBranding.logo ? (
               <img
                 src={shopBranding.logo}
@@ -322,7 +326,7 @@ export const VoucherContent: React.FC<VoucherContentProps> = ({
     return (
       <div className="voucher-container" data-paper={paperSize}>
         {/* Header Section */}
-        <div className="text-center mb-2 pb-2 border-b border-black">
+        <div className="text-center mb-2 pb-2 border-b border-black pt-0 mt-0">
           {shopBranding.logo ? (
             <img
               src={shopBranding.logo}
@@ -534,7 +538,405 @@ export const VoucherContent: React.FC<VoucherContentProps> = ({
     );
   }
 
-  // A4 / A5 Layout matching the image with React pagination
+  // A5 သီးသန့် ဒီဇိုင်း (148mm × 210mm အချိုးကျ သပ်ရပ်သော ဘောက်ချာပုံစံ)
+  if (paperSize === "A5") {
+    const a5Items = displayItems;
+    const getA5Pages = (): VoucherReceiptItem[][] => {
+      const maxSinglePage = 7;
+      if (a5Items.length <= maxSinglePage) {
+        return [a5Items];
+      }
+
+      const pagesList: VoucherReceiptItem[][] = [];
+      const firstPageLimit = 11;
+      const regularPageLimit = 8;
+      const tempItems = [...a5Items];
+
+      if (tempItems.length <= firstPageLimit) {
+        pagesList.push(tempItems.splice(0, maxSinglePage));
+        pagesList.push(tempItems);
+        return pagesList;
+      }
+
+      pagesList.push(tempItems.splice(0, firstPageLimit));
+      while (tempItems.length > 0) {
+        pagesList.push(tempItems.splice(0, regularPageLimit));
+      }
+      return pagesList;
+    };
+
+    const a5Pages = getA5Pages();
+    const customerDisplayName =
+      receiptData.creditPersonName ||
+      receiptData.customerName ||
+      (receiptData.storefrontName &&
+      receiptData.storefrontName !== "HONGCHI Myanmar" &&
+      receiptData.storefrontName !== "Ecommerce Order"
+        ? receiptData.storefrontName
+        : "") ||
+      "လက်လီဝယ်သူ";
+
+    const locationDisplay =
+      receiptData.customerAddress ||
+      [receiptData.creditPersonAddress, receiptData.creditPersonTownship]
+        .filter(Boolean)
+        .join("၊ ") ||
+      "—";
+
+    const discountTotal =
+      (receiptData.discountAmount ?? 0) +
+      (receiptData.subtotal * (receiptData.discountPercent ?? 0)) / 100;
+
+    return (
+      <div className="voucher-container" data-paper={paperSize}>
+        {a5Pages.map((pageItems, pageIdx) => {
+          const isFirstPage = pageIdx === 0;
+          const isLastPage = pageIdx === a5Pages.length - 1;
+          const currentPageNum = pageIdx + 1;
+
+          return (
+            <div key={pageIdx} className="voucher-page">
+              <div>
+                {/* Header ပိုင်း */}
+                {isFirstPage ? (
+                  <div className="flex justify-between items-start gap-3 border-b-2 border-slate-900 pb-2.5 mb-2.5">
+                    <div className="flex items-start gap-2.5 min-w-0">
+                      {shopBranding.logo ? (
+                        <img
+                          src={shopBranding.logo}
+                          alt={shopBranding.shopName}
+                          className="h-11 w-11 object-contain shrink-0 rounded-md"
+                        />
+                      ) : (
+                        <div className="h-11 w-11 shrink-0 flex items-center justify-center rounded-lg bg-slate-100 border border-slate-300 text-slate-900 font-black text-base">
+                          {shopBranding.shopName.charAt(0)}
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <h2 className="text-[17px] font-black text-slate-900 leading-tight tracking-tight">
+                          {shopBranding.shopName}
+                        </h2>
+                        <p className="text-[9.5px] text-slate-600 italic leading-snug mt-0.5">
+                          လုပ်ရပ်တိုင်းသည်၊ ရည်စူးချက် ရည်ရွယ်ချက်ပေါ် မူတည်၏။
+                        </p>
+                        {shopBranding.address && (
+                          <p className="text-[10px] text-slate-700 font-medium leading-snug mt-0.5">
+                            {shopBranding.address}
+                          </p>
+                        )}
+                        <p className="text-[10px] text-slate-800 font-medium leading-snug mt-0.5">
+                          {shopBranding.phone ? `Tel: ${shopBranding.phone} • ` : ""}
+                          Viber: {shopBranding.website || "09-960889290, 09-973989877"}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="text-right shrink-0">
+                      <span className="inline-block px-2.5 py-0.5 rounded border border-slate-900 bg-slate-100 text-slate-900 text-[10px] font-extrabold tracking-wider uppercase">
+                        {isQuotation ? "အဆိုပြုလွှာ / QUOTATION" : "အရောင်းဘောက်ချာ"}
+                      </span>
+                      <div className="text-[11px] font-extrabold text-slate-900 font-mono mt-1">
+                        {receiptData.invoiceNumber}
+                      </div>
+                      <div className="text-[10px] text-slate-700 font-medium mt-0.5">
+                        ရက်စွဲ: {formatToImageDate(receiptData.date)}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex justify-between items-center mb-2.5 border-b border-slate-400 pb-1.5">
+                    <h2 className="text-xs font-bold text-slate-900">
+                      {shopBranding.shopName} (စာမျက်နှာ {currentPageNum})
+                    </h2>
+                    <span className="text-[10.5px] font-mono font-semibold text-slate-700">
+                      {receiptData.invoiceNumber}
+                    </span>
+                  </div>
+                )}
+
+                {/* ဝယ်သူနှင့် အော်ဒါအချက်အလက် Box */}
+                {isFirstPage && (
+                  <div className="border border-slate-400 rounded-md px-3 py-2 mb-2.5 bg-slate-50/60 text-[10.5px] text-slate-900">
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                      <div className="space-y-1 min-w-0">
+                        <div className="flex items-baseline gap-1.5">
+                          <span className="w-[68px] shrink-0 font-semibold text-slate-600">
+                            ဝယ်သူအမည်
+                          </span>
+                          <span className="text-slate-400">:</span>
+                          <span className="font-bold text-slate-900 break-words">
+                            {customerDisplayName}
+                            {receiptData.customerPhone ? ` (${receiptData.customerPhone})` : ""}
+                          </span>
+                        </div>
+                        <div className="flex items-baseline gap-1.5">
+                          <span className="w-[68px] shrink-0 font-semibold text-slate-600">
+                            မြို့နယ်/လိပ်စာ
+                          </span>
+                          <span className="text-slate-400">:</span>
+                          <span className="text-slate-800 break-words">
+                            {locationDisplay}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-1 min-w-0">
+                        <div className="flex items-baseline gap-1.5">
+                          <span className="w-[68px] shrink-0 font-semibold text-slate-600">
+                            ငွေချေပုံ
+                          </span>
+                          <span className="text-slate-400">:</span>
+                          <span className="font-semibold text-slate-900">
+                            {receiptData.paymentMethod || "—"}
+                          </span>
+                        </div>
+                        <div className="flex items-baseline gap-1.5">
+                          <span className="w-[68px] shrink-0 font-semibold text-slate-600">
+                            ပုံနှိပ်ရက်စွဲ
+                          </span>
+                          <span className="text-slate-400">:</span>
+                          <span className="text-slate-800">
+                            {formatToImageDate(new Date().toISOString())}
+                            {printedByName ? ` • ${printedByName}` : ""}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* မှတ်ချက် ရှိမှသာ အကျယ်အပြည့် (Full width) ဖော်ပြခြင်း */}
+                    {receiptData.note && (
+                      <div className="mt-1.5 pt-1.5 border-t border-dashed border-slate-300 flex items-start gap-1.5 text-[10px]">
+                        <span className="font-bold text-slate-700 shrink-0">မှတ်ချက်:</span>
+                        <span className="text-slate-800 leading-relaxed break-words">
+                          {receiptData.note}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* ကုန်ပစ္စည်း ဇယား (၆ ကော်လံ အတိအကျ) */}
+                <div className="mb-2.5">
+                  <table className="voucher-a5-table">
+                    <thead>
+                      <tr>
+                        <th style={{ width: "6%" }} className="text-center">စဉ်</th>
+                        <th style={{ width: "44%" }} className="text-left">အမျိုးအမည်</th>
+                        <th style={{ width: "10%" }} className="text-center">ခုရေ</th>
+                        <th style={{ width: "10%" }} className="text-center">ယူနစ်</th>
+                        <th style={{ width: "14%" }} className="text-right">ဈေးနှုန်း</th>
+                        <th style={{ width: "16%" }} className="text-right">သင့်ငွေ</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pageItems.map((item, idx) => {
+                        let prevItemsCount = 0;
+                        for (let p = 0; p < pageIdx; p++) {
+                          prevItemsCount += a5Pages[p].length;
+                        }
+                        const absoluteIndex = prevItemsCount + idx + 1;
+                        return (
+                          <tr key={idx}>
+                            <td className="text-center tabular-nums">{absoluteIndex}</td>
+                            <td className="text-left">
+                              <div className="font-semibold text-slate-900 leading-snug">
+                                {item.name}
+                              </div>
+                              {item.batches &&
+                                item.batches.length > 0 &&
+                                item.batches.some((b) => b.expiryDate) && (
+                                  <div className="text-[9.5px] text-slate-600 font-mono mt-0.5 space-y-0.5">
+                                    {Array.from(
+                                      new Set(
+                                        item.batches
+                                          .filter((b) => b.expiryDate)
+                                          .map((b) => formatToImageDate(b.expiryDate))
+                                      )
+                                    ).map((exp, expIdx) => (
+                                      <div key={expIdx}>↳ Exp: {exp}</div>
+                                    ))}
+                                  </div>
+                                )}
+                            </td>
+                            <td className="text-center font-medium tabular-nums">
+                              {formatReceiptQty(item)}
+                            </td>
+                            <td className="text-center">{formatReceiptUnit(item)}</td>
+                            <td className="text-right tabular-nums">
+                              {item.price.toLocaleString()}
+                            </td>
+                            <td className="text-right font-bold tabular-nums">
+                              {(item.price * item.qty).toLocaleString()}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* ငွေစာရင်းချုပ် နှင့် အသိပေးချက် (နောက်ဆုံးစာမျက်နှာတွင်သာ) */}
+                {isLastPage && (
+                  <div className="flex justify-between items-start gap-4 mb-2.5">
+                    <div className="flex-1 space-y-1.5 pt-0.5">
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-100 border border-slate-300 text-[10px] font-bold text-slate-800">
+                        <span>စုစုပေါင်း အရေအတွက်:</span>
+                        <span className="font-mono text-[11px]">{totalQty}</span>
+                      </div>
+                      <p className="text-[9.5px] font-semibold text-slate-700 leading-relaxed">
+                        စာရင်းဇယား၊ ပစ္စည်းအစုံ၊ အလိုများရှိပါက (7)ရက်အတွင်း ကျေးဇူးပြု၍ အကြောင်းကြားပေးပါရန်။
+                      </p>
+                    </div>
+
+                    <div className="w-[225px] shrink-0 border border-slate-800 rounded-md overflow-hidden text-[10.5px] text-slate-900">
+                      <div className="px-2.5 py-1.5 space-y-1 bg-white">
+                        <div className="flex justify-between items-center">
+                          <span className="font-semibold text-slate-600">ကျသင့်ငွေ:</span>
+                          <span className="font-semibold tabular-nums">
+                            {receiptData.subtotal.toLocaleString()}
+                          </span>
+                        </div>
+                        {discountTotal > 0 && (
+                          <div className="flex justify-between items-center text-red-600">
+                            <span className="font-semibold">လျှော့ပေးငွေ:</span>
+                            <span className="font-semibold tabular-nums">
+                              -{discountTotal.toLocaleString()}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="bg-slate-100 border-t border-slate-800 px-2.5 py-1.5 flex justify-between items-center font-extrabold text-[11.5px] text-slate-900">
+                        <span>စုစုပေါင်း:</span>
+                        <span className="tabular-nums">
+                          {receiptData.total.toLocaleString()} {shopBranding.currency || "MMK"}
+                        </span>
+                      </div>
+
+                      {receiptData.creditPersonName ? (
+                        <div className="px-2.5 py-1.5 space-y-1 border-t border-slate-300 bg-white text-[10px]">
+                          <div className="flex justify-between">
+                            <span className="font-semibold text-slate-600">ပေးငွေ:</span>
+                            <span className="tabular-nums">
+                              {(receiptData.paidAmount ?? 0).toLocaleString()}
+                            </span>
+                          </div>
+                          <div className="flex justify-between font-semibold">
+                            <span className="text-slate-700">ကျန်ငွေ:</span>
+                            <span className="tabular-nums">
+                              {(receiptData.total - (receiptData.paidAmount ?? 0)).toLocaleString()}{" "}
+                              {shopBranding.currency || "MMK"}
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-slate-600">
+                            <span>ယခင်ကျန်ငွေ:</span>
+                            <span className="tabular-nums">
+                              {(
+                                (receiptData.creditPersonOutstanding ?? 0) -
+                                (receiptData.total - (receiptData.paidAmount ?? 0))
+                              ).toLocaleString()}{" "}
+                              {shopBranding.currency || "MMK"}
+                            </span>
+                          </div>
+                          <div className="flex justify-between border-t border-slate-300 pt-1 font-bold text-[10.5px] text-red-700">
+                            <span>စုစုပေါင်းကျန်ငွေ:</span>
+                            <span className="tabular-nums">
+                              {(receiptData.creditPersonOutstanding ?? 0).toLocaleString()}{" "}
+                              {shopBranding.currency || "MMK"}
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        receiptData.paidAmount !== undefined &&
+                        (receiptData.paidAmount > 0 || (receiptData.change ?? 0) > 0) && (
+                          <div className="px-2.5 py-1.5 space-y-1 border-t border-slate-300 bg-white text-[10px]">
+                            <div className="flex justify-between">
+                              <span className="font-semibold text-slate-600">ပေးငွေ:</span>
+                              <span className="tabular-nums">
+                                {receiptData.paidAmount.toLocaleString()}
+                              </span>
+                            </div>
+                            {(receiptData.change ?? 0) > 0 ? (
+                              <div className="flex justify-between font-semibold text-slate-800">
+                                <span>ပြန်အမ်းငွေ:</span>
+                                <span className="tabular-nums">
+                                  {(receiptData.change ?? 0).toLocaleString()}{" "}
+                                  {shopBranding.currency || "MMK"}
+                                </span>
+                              </div>
+                            ) : (
+                              receiptData.paidAmount < receiptData.total && (
+                                <div className="flex justify-between font-semibold text-red-700">
+                                  <span>ကျန်ငွေ:</span>
+                                  <span className="tabular-nums">
+                                    {(receiptData.total - receiptData.paidAmount).toLocaleString()}{" "}
+                                    {shopBranding.currency || "MMK"}
+                                  </span>
+                                </div>
+                              )
+                            )}
+                          </div>
+                        )
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* အောက်ခြေ စစ်ဆေးရေးဇယား နှင့် Footer */}
+              <div className="mt-auto pt-1">
+                {isLastPage && (
+                  <div className="mb-2">
+                    <table className="voucher-a5-checklist">
+                      <thead>
+                        <tr>
+                          <th style={{ width: "12%" }}>ပုံး</th>
+                          <th style={{ width: "12%" }}>အိတ်</th>
+                          <th style={{ width: "12%" }}>ဆွဲ</th>
+                          <th style={{ width: "20%" }}>CCTV Time</th>
+                          <th style={{ width: "22%" }}>ပစ္စည်းစစ်သူ</th>
+                          <th style={{ width: "22%" }}>စာရင်းစစ်သူ</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr style={{ height: "28px" }}>
+                          <td></td>
+                          <td></td>
+                          <td></td>
+                          <td></td>
+                          <td></td>
+                          <td></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                <div className="border-t border-slate-300 pt-1.5">
+                  <p className="text-center text-[10px] font-bold text-slate-800 leading-snug">
+                    အဆင်မပြေမှုများရှိပါက 09-955255972 သို့ တိုင်ကြားနိုင်ပါသည်။ • ဝယ်ယူအားပေးမှုကို ကျေးဇူးတင်ပါသည်။
+                  </p>
+                  <div className="flex justify-between items-center text-[9px] text-slate-500 mt-1">
+                    <span>Vr.No - {receiptData.invoiceNumber}</span>
+                    {printedByName && (
+                      <span>
+                        Printed by: {printedByName} ({printedByRole})
+                      </span>
+                    )}
+                    <span>
+                      Page {currentPageNum} / {a5Pages.length}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  // A4 Layout matching the image with React pagination
   const items = displayItems;
 
   const getPages = (): VoucherReceiptItem[][] => {

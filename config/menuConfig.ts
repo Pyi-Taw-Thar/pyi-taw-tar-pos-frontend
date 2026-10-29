@@ -121,6 +121,13 @@ export const MENU_SECTIONS: MenuSection[] = [
         icon: Users,
         roles: ["admin", "owner"],
       },
+      {
+        path: "/admin/ecommerce-reports",
+        labelKey: "sidebar.ecommerceReports",
+        descKey: "menu.desc.ecommerceReports",
+        icon: PieChart,
+        roles: ["admin", "owner"],
+      },
     ],
   },
   {

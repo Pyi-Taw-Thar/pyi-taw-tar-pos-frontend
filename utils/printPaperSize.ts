@@ -109,8 +109,19 @@ export const getPrintPaperStyles = (paperSize: PrintPaperSize): string => {
     case "A5":
       return `
         ${base}
+        @page {
+          size: A5 portrait;
+          margin: 0;
+        }
         @media print {
-          @page { size: A5; margin: 0; }
+          @page {
+            size: A5 portrait;
+            margin: 0;
+          }
+          html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+          }
           .voucher-container {
             width: 100% !important;
             max-width: 100% !important;
@@ -121,33 +132,98 @@ export const getPrintPaperStyles = (paperSize: PrintPaperSize): string => {
             max-width: 148mm;
           }
         }
-        .voucher-container { font-size: 11px; }
-        .voucher-logo { width: 80px !important; height: 80px !important; }
-        .voucher-shop-name { font-size: 1rem !important; }
-        .voucher-table th { padding: 8px; font-size: 9px; }
-        .voucher-table td { padding: 8px; font-size: 10px; }
-        .voucher-total-bar { font-size: 13px !important; padding: 8px 12px !important; }
-        .voucher-footer-title { font-size: 1rem !important; }
-        .voucher-summary-grid { gap: 1rem !important; }
+        .voucher-container {
+          font-family: Arial, "Myanmar Text", "Padauk", sans-serif;
+          font-size: 11px;
+          color: #0f172a;
+        }
+        .voucher-a5-table {
+          width: 100%;
+          border-collapse: collapse;
+          border: 1.5px solid #0f172a;
+        }
+        .voucher-a5-table th {
+          background-color: #f1f5f9 !important;
+          border-bottom: 1.5px solid #0f172a;
+          border-right: 1px solid #94a3b8;
+          padding: 5px 6px;
+          font-size: 10.5px;
+          font-weight: 700;
+          color: #0f172a;
+        }
+        .voucher-a5-table th:last-child,
+        .voucher-a5-table td:last-child {
+          border-right: none;
+        }
+        .voucher-a5-table td {
+          border-bottom: 1px solid #cbd5e1;
+          border-right: 1px solid #cbd5e1;
+          padding: 5px 6px;
+          font-size: 10.5px;
+          color: #0f172a;
+          vertical-align: top;
+        }
+        .voucher-a5-table tbody tr:last-child td {
+          border-bottom: none;
+        }
+        .voucher-a5-checklist {
+          width: 100%;
+          border-collapse: collapse;
+          border: 1px solid #0f172a;
+        }
+        .voucher-a5-checklist th {
+          background-color: #f8fafc !important;
+          border-bottom: 1px solid #0f172a;
+          border-right: 1px solid #94a3b8;
+          padding: 3.5px 4px;
+          font-size: 9.5px;
+          font-weight: 700;
+          color: #0f172a;
+          text-align: center;
+        }
+        .voucher-a5-checklist td {
+          border-right: 1px solid #94a3b8;
+          padding: 4px;
+          font-size: 9.5px;
+          text-align: center;
+        }
+        .voucher-a5-checklist th:last-child,
+        .voucher-a5-checklist td:last-child {
+          border-right: none;
+        }
       `;
     case "thermal-80mm":
     case "thermal-72mm":
       return `
         ${base}
+        @page {
+          size: 72mm auto;
+          margin: 0;
+          margin-top: 0;
+          margin-bottom: 0;
+        }
         @media print {
           @page {
             size: 72mm auto;
-            margin: 0 !important;
+            margin: 0;
+            margin-top: 0;
+            margin-bottom: 0;
           }
           html, body {
             margin: 0 !important;
             padding: 0 !important;
+            padding-top: 0 !important;
             width: 72mm !important;
+          }
+          body {
+            padding-top: 0 !important;
+            margin-top: 0 !important;
           }
           .voucher-container {
             width: 72mm !important;
             max-width: 72mm !important;
-            padding: 1.5mm 2mm !important;
+            padding: 0 2mm 1.5mm 2mm !important;
+            padding-top: 0 !important;
             margin: 0 auto !important;
             box-sizing: border-box !important;
           }
@@ -157,7 +233,9 @@ export const getPrintPaperStyles = (paperSize: PrintPaperSize): string => {
             width: 72mm !important;
             min-width: 72mm !important;
             max-width: 72mm !important;
-            padding: 3mm !important;
+            padding: 0 3mm 3mm 3mm !important;
+            padding-top: 0 !important;
+            margin-top: 0 !important;
             box-shadow: 0 2px 8px rgba(0,0,0,0.12);
             box-sizing: border-box !important;
           }
@@ -169,7 +247,7 @@ export const getPrintPaperStyles = (paperSize: PrintPaperSize): string => {
           overflow-x: hidden;
           color: #000;
         }
-        .voucher-logo { width: 48px !important; height: 48px !important; }
+        .voucher-logo { width: 48px !important; height: 48px !important; margin-top: 0 !important; }
         .voucher-shop-name { font-size: 17px !important; font-weight: 800 !important; }
         .voucher-address { font-size: 11px !important; }
         .voucher-fame-table {
@@ -252,6 +330,9 @@ export const getSharedTableStyles = (): string => `
     page-break-inside: avoid;
     break-inside: avoid;
   }
+  .voucher-page:last-child {
+    page-break-after: auto;
+  }
   @media screen {
     .voucher-page {
       background: white;
@@ -266,7 +347,8 @@ export const getSharedTableStyles = (): string => `
     .voucher-container[data-paper="A5"] .voucher-page {
       width: 148mm;
       min-height: 210mm;
-      padding: 10mm;
+      padding: 6mm 8mm;
+      margin: 12px auto;
     }
   }
   @media print {
@@ -281,7 +363,11 @@ export const getSharedTableStyles = (): string => `
       padding: 15mm !important;
     }
     .voucher-container[data-paper="A5"] .voucher-page {
-      padding: 10mm !important;
+      width: 148mm !important;
+      min-height: 206mm !important;
+      height: auto !important;
+      padding: 6mm 8mm !important;
+      margin: 0 auto !important;
     }
   }
 
