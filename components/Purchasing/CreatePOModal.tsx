@@ -37,6 +37,12 @@ export const CreatePOModal: React.FC<CreatePOModalProps> = ({
   const [selectedUnit, setSelectedUnit] = useState("piece");
   const productDropdownRef = useRef<HTMLDivElement>(null);
 
+  // Payment states (Plan §2.2)
+  const [paymentType, setPaymentType] = useState<"credit" | "paid" | "partial">("credit");
+  const [initialPaidAmount, setInitialPaidAmount] = useState<string>("");
+  const [paymentMethod, setPaymentMethod] = useState<string>("cash");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   // Product Search & Pagination States
   const [localProducts, setLocalProducts] = useState<Product[]>([]);
   const [productPage, setProductPage] = useState(1);
@@ -279,18 +285,35 @@ export const CreatePOModal: React.FC<CreatePOModalProps> = ({
     setPOItems((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const totalAmount = poItems.reduce(
+    (sum, item) => sum + item.qty * item.costPrice,
+    0
+  );
+
+  const parsedInitial = Number(initialPaidAmount);
+  const isPartialInvalid =
+    paymentType === "partial" &&
+    (isNaN(parsedInitial) || parsedInitial <= 0 || parsedInitial >= totalAmount);
+
+  const remainingBalance =
+    paymentType === "paid"
+      ? 0
+      : paymentType === "partial"
+      ? Math.max(0, totalAmount - (isNaN(parsedInitial) ? 0 : parsedInitial))
+      : totalAmount;
+
   const submitPO = async () => {
     if (!poSupplierId || poItems.length === 0) {
       toast.error(t("purchasing.selectSupplierAndItem"));
       return;
     }
 
-    const totalAmount = poItems.reduce(
-      (sum, item) => sum + item.qty * item.costPrice,
-      0,
-    );
+    if (isPartialInvalid) {
+      toast.error(t("purchasing.partialAmountInvalid"));
+      return;
+    }
 
-    const payload = {
+    const payload: any = {
       products: poItems.map((item) => ({
         inventoryId: item.productId,
         purchaseQuantity: item.qty,
@@ -299,15 +322,39 @@ export const CreatePOModal: React.FC<CreatePOModalProps> = ({
       supplierId: poSupplierId,
       note: poNote,
       totalAmount,
+      paymentType,
     };
 
+    if (paymentType === "paid" || paymentType === "partial") {
+      payload.paymentMethod = paymentMethod;
+    }
+
+    if (paymentType === "partial") {
+      payload.initialPaidAmount = parsedInitial;
+    }
+
+    setIsSubmitting(true);
     try {
       const response = await createPurchase(payload);
       if (response.success) {
-        toast.success(t("purchasing.poCreatedSuccess"));
+        if (paymentType === "paid") {
+          toast.success(t("purchasing.poCreatedPaidSuccess"));
+        } else if (paymentType === "partial") {
+          toast.success(
+            t("purchasing.poCreatedPartialSuccess", {
+              amount: parsedInitial.toLocaleString(),
+              remaining: remainingBalance.toLocaleString(),
+            })
+          );
+        } else {
+          toast.success(t("purchasing.poCreatedSuccess"));
+        }
         setPOSupplierId("");
         setPOItems([]);
         setPONote("");
+        setPaymentType("credit");
+        setInitialPaidAmount("");
+        setPaymentMethod("cash");
         onSuccess();
         onClose();
       } else {
@@ -316,8 +363,10 @@ export const CreatePOModal: React.FC<CreatePOModalProps> = ({
     } catch (error: any) {
       console.error("Failed to create PO:", error);
       toast.error(
-        error.message || "An error occurred while creating the Purchase Order",
+        error.message || "An error occurred while creating the Purchase Order"
       );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -596,12 +645,120 @@ export const CreatePOModal: React.FC<CreatePOModalProps> = ({
               <p className="text-gray-800">{poNote}</p>
             </div>
           )}
+          {/* ငွေချေပုံ ရွေးချယ်မှုအပိုင်း (Plan §2.2) */}
+          <div className="mb-4 p-3 bg-slate-50 border rounded-lg space-y-3 text-xs">
+            <div>
+              <label className="block font-bold text-slate-700 mb-2">
+                {t("purchasing.paymentTypeLabel")}
+              </label>
+              <div className="flex flex-wrap gap-4">
+                <label className="inline-flex items-center gap-1.5 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="poPaymentType"
+                    value="credit"
+                    checked={paymentType === "credit"}
+                    onChange={() => setPaymentType("credit")}
+                    className="text-primary focus:ring-primary"
+                  />
+                  <span className="font-medium text-slate-700">
+                    {t("purchasing.paymentTypeCredit")}
+                  </span>
+                </label>
+                <label className="inline-flex items-center gap-1.5 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="poPaymentType"
+                    value="paid"
+                    checked={paymentType === "paid"}
+                    onChange={() => setPaymentType("paid")}
+                    className="text-primary focus:ring-primary"
+                  />
+                  <span className="font-medium text-slate-700">
+                    {t("purchasing.paymentTypePaid")}
+                  </span>
+                </label>
+                <label className="inline-flex items-center gap-1.5 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="poPaymentType"
+                    value="partial"
+                    checked={paymentType === "partial"}
+                    onChange={() => setPaymentType("partial")}
+                    className="text-primary focus:ring-primary"
+                  />
+                  <span className="font-medium text-slate-700">
+                    {t("purchasing.paymentTypePartial")}
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            {/* Partial အတွက် ပေးမည့်ငွေ ပမာဏ Input */}
+            {paymentType === "partial" && (
+              <div>
+                <label className="block font-medium text-slate-700 mb-1">
+                  {t("purchasing.initialPaidAmount")}{" "}
+                  <span className="text-slate-400 font-normal">
+                    (Max: {(Math.max(0, totalAmount - 1)).toLocaleString()} MMK)
+                  </span>
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max={Math.max(0, totalAmount - 1)}
+                  value={initialPaidAmount}
+                  onChange={(e) => setInitialPaidAmount(e.target.value)}
+                  placeholder="50,000"
+                  className={`w-full p-2 border rounded-lg text-xs outline-none focus:ring-2 ${
+                    isPartialInvalid
+                      ? "border-red-400 focus:ring-red-300"
+                      : "border-slate-300 focus:ring-primary"
+                  }`}
+                />
+                {isPartialInvalid && (
+                  <p className="text-[11px] text-red-600 mt-1 font-medium">
+                    {t("purchasing.partialAmountInvalid")}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Paid သို့မဟုတ် Partial အတွက် Payment Method Select */}
+            {(paymentType === "paid" || paymentType === "partial") && (
+              <div>
+                <label className="block font-medium text-slate-700 mb-1">
+                  {t("purchasing.paymentMethod")}
+                </label>
+                <select
+                  value={paymentMethod}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                  className="w-full p-2 border rounded-lg bg-white text-xs outline-none focus:ring-2 focus:ring-primary"
+                >
+                  <option value="cash">{t("purchasing.cash") || "Cash (ငွေသား)"}</option>
+                  <option value="bank_transfer">{t("purchasing.bankTransfer")}</option>
+                  <option value="mobile_payment">{t("purchasing.mobilePayment")}</option>
+                  <option value="cheque">{t("purchasing.cheque")}</option>
+                  <option value="other">{t("purchasing.otherPayment")}</option>
+                </select>
+              </div>
+            )}
+
+            {/* ကျန်ငွေ (အကြွေး) အလိုအလျောက် ပြသခြင်း */}
+            <div className="flex justify-between items-center pt-2 border-t text-xs font-semibold">
+              <span className="text-slate-600">{t("purchasing.remainingCredit")}:</span>
+              <span className={`text-sm ${remainingBalance > 0 ? "text-amber-700" : "text-emerald-700"}`}>
+                {remainingBalance.toLocaleString()} MMK
+              </span>
+            </div>
+          </div>
+
           <button
             onClick={submitPO}
-            disabled={poItems.length === 0 || !poSupplierId}
-            className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 disabled:opacity-50"
+            disabled={poItems.length === 0 || !poSupplierId || isSubmitting || isPartialInvalid}
+            className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 disabled:opacity-50 font-semibold text-sm transition-all shadow-sm"
           >
-            Create Purchase Order
+            {isSubmitting ? "Creating..." : "Create Purchase Order"}
           </button>
           <p className="text-xs text-slate-500 mt-2">
             Note: PO does NOT update stock. Use GRN to receive goods.

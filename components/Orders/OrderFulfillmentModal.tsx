@@ -25,6 +25,7 @@ import {
 } from "../../services/Fulfillment/fulfillOrder";
 import { getSavedPrintPaperSize } from "../../utils/printPaperSize";
 import { VoucherReceiptData } from "../Print/VoucherContent";
+import { printFulfillmentReceipt } from "../../utils/fulfillmentPrint";
 import { useLanguage } from "../../context/LanguageContext";
 
 interface ScannedBatchEntry {
@@ -449,12 +450,14 @@ export const OrderFulfillmentModal: React.FC<OrderFulfillmentModalProps> = ({
           qty: autoAdjust ? (p as any).scannedQty : p.requiredQty,
           unit: p.unit,
           price: p.price,
-          batches: p.scannedBatches.map((b) => ({
-            batchNumber: b.batchNumber,
-            batchBarcode: b.batchBarcode,
-            expiryDate: b.expiryDate,
-            quantity: b.quantity,
-          })),
+          batches: (p.scannedBatches || [])
+            .filter((b) => (Number(b.quantity) || 0) > 0)
+            .map((b) => ({
+              batchNumber: b.batchNumber,
+              batchBarcode: b.batchBarcode,
+              expiryDate: b.expiryDate || null,
+              quantity: Number(b.quantity) || 0,
+            })),
         })),
         subtotal: finalOrder.subTotal ?? (autoAdjust ? estimatedNewSubtotal : (order.subTotal || 0)),
         discountPercent:
@@ -486,6 +489,12 @@ export const OrderFulfillmentModal: React.FC<OrderFulfillmentModalProps> = ({
     }
   };
 
+  // Scan ဖတ်ထားပြီးသော အခြေအနေအတိုင်း ကြိုက်သည့်အချိန် Print ထုတ်ရန် (Scan ပြီးသော batch များအတွက်သာ expiry ပြမည်)
+  const handleDirectPrint = () => {
+    if (!order) return;
+    printFulfillmentReceipt(order, productStates, navigate);
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden border border-slate-200">
@@ -507,12 +516,23 @@ export const OrderFulfillmentModal: React.FC<OrderFulfillmentModalProps> = ({
               </p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleDirectPrint}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-all shadow-sm"
+              title={t("fulfillment.printSlip") || "ဘောက်ချာ ပုံနှိပ်မည်"}
+            >
+              <Printer className="w-4 h-4" />
+              <span className="hidden sm:inline">{t("fulfillment.printSlip") || "ဘောက်ချာ ပုံနှိပ်မည်"}</span>
+            </button>
+            <button
+              onClick={onClose}
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Info & Scanner Bar */}
@@ -757,6 +777,17 @@ export const OrderFulfillmentModal: React.FC<OrderFulfillmentModalProps> = ({
               className="px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-700 hover:bg-slate-100 transition-colors font-medium disabled:opacity-50"
             >
               {t("fulfillment.close")}
+            </button>
+            {/* Complete မဖြစ်သေးလည်း ကြိုက်သည့်အချိန် Print ထုတ်နိုင်သော ခလုတ် */}
+            <button
+              type="button"
+              onClick={handleDirectPrint}
+              disabled={isFulfilling || isSavingPartial}
+              className="px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-1.5 transition-all shadow-sm bg-slate-700 hover:bg-slate-800 text-white disabled:opacity-50"
+              title={t("fulfillment.printSlip") || "ဘောက်ချာ ထုတ်မည်"}
+            >
+              <Printer className="w-4 h-4" />
+              <span>{t("fulfillment.printSlip") || "ဘောက်ချာ ထုတ်မည်"}</span>
             </button>
             <button
               onClick={handleSavePartialOrder}

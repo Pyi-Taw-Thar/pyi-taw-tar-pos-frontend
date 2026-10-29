@@ -236,11 +236,7 @@ const AppLayout: React.FC = () => {
           />
           <Route
             path="/print-receipt/:orderId"
-            element={
-              <FeatureRoute feature="posSales">
-                <PrintReceipt />
-              </FeatureRoute>
-            }
+            element={<PrintReceipt />}
           />
 
           {/* E-commerce, Inventory, Warehouse, Purchasing & System routes */}

@@ -11,6 +11,10 @@ export interface CreatePurchasePayload {
   supplierId: string;
   note?: string;
   totalAmount: number;
+  paymentType?: "credit" | "paid" | "partial";
+  initialPaidAmount?: number;
+  paymentMethod?: string;
+  paymentNotes?: string;
 }
 
 interface CreatePurchaseResponse {

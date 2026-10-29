@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   PackageCheck,
   Search,
@@ -12,6 +13,7 @@ import {
   AlertCircle,
   Filter,
   PlayCircle,
+  Printer,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -24,9 +26,11 @@ import {
 } from "../services/Storefront/fetchStorefrontProfiles";
 import { OrderFulfillmentModal } from "../components/Orders/OrderFulfillmentModal";
 import { useLanguage } from "../context/LanguageContext";
+import { printFulfillmentReceipt } from "../utils/fulfillmentPrint";
 
 export const OrderFulfillment: React.FC = () => {
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -34,6 +38,11 @@ export const OrderFulfillment: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "partially_fulfilled">("all");
   const [storefronts, setStorefronts] = useState<StorefrontProfile[]>([]);
   const [selectedOrderForFulfill, setSelectedOrderForFulfill] = useState<Order | null>(null);
+
+  // Complete မဖြစ်သေးသည့် မည်သည့် order မဆို ကြိုက်သည့်အချိန် Print ထုတ်ရန် (Scan ပြီးသော batch များအတွက်သာ expiry ပြမည်)
+  const handlePrintOrder = (ord: Order) => {
+    printFulfillmentReceipt(ord, undefined, navigate);
+  };
 
   // Load storefront profiles once on mount
   useEffect(() => {
@@ -399,27 +408,38 @@ export const OrderFulfillment: React.FC = () => {
                         {ord.finalAmount?.toLocaleString()} MMK
                       </td>
                       <td className="py-4 px-4 text-center whitespace-nowrap w-[1%]">
-                        <button
-                          onClick={() => setSelectedOrderForFulfill(ord)}
-                          title={isPartial ? t("fulfillment.continuePacking") : t("fulfillment.btnFulfillPack")}
-                          className={`inline-flex items-center justify-center gap-1.5 p-2 sm:px-3 sm:py-2 sm:w-[160px] text-white rounded-xl text-xs font-semibold shadow-sm transition-all whitespace-nowrap ${
-                            isPartial
-                              ? "bg-amber-600 hover:bg-amber-700"
-                              : "bg-emerald-600 hover:bg-emerald-700"
-                          }`}
-                        >
-                          {isPartial ? (
-                            <>
-                              <PlayCircle className="w-4 h-4 shrink-0" />
-                              <span className="hidden sm:inline">{t("fulfillment.continuePacking")}</span>
-                            </>
-                          ) : (
-                            <>
-                              <Barcode className="w-4 h-4 shrink-0" />
-                              <span className="hidden sm:inline">{t("fulfillment.btnFulfillPack")}</span>
-                            </>
-                          )}
-                        </button>
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handlePrintOrder(ord)}
+                            title={t("fulfillment.printSlip") || "ဘောက်ချာ ပုံနှိပ်မည်"}
+                            className="inline-flex items-center justify-center gap-1.5 p-2 sm:px-3 sm:py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 hover:text-blue-800 border border-blue-200 rounded-xl text-xs font-semibold shadow-sm transition-all whitespace-nowrap"
+                          >
+                            <Printer className="w-4 h-4 shrink-0" />
+                            <span className="hidden sm:inline">{t("fulfillment.printSlip") || "ဘောက်ချာ ထုတ်မည်"}</span>
+                          </button>
+                          <button
+                            onClick={() => setSelectedOrderForFulfill(ord)}
+                            title={isPartial ? t("fulfillment.continuePacking") : t("fulfillment.btnFulfillPack")}
+                            className={`inline-flex items-center justify-center gap-1.5 p-2 sm:px-3 sm:py-2 sm:w-[160px] text-white rounded-xl text-xs font-semibold shadow-sm transition-all whitespace-nowrap ${
+                              isPartial
+                                ? "bg-amber-600 hover:bg-amber-700"
+                                : "bg-emerald-600 hover:bg-emerald-700"
+                            }`}
+                          >
+                            {isPartial ? (
+                              <>
+                                <PlayCircle className="w-4 h-4 shrink-0" />
+                                <span className="hidden sm:inline">{t("fulfillment.continuePacking")}</span>
+                              </>
+                            ) : (
+                              <>
+                                <Barcode className="w-4 h-4 shrink-0" />
+                                <span className="hidden sm:inline">{t("fulfillment.btnFulfillPack")}</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );

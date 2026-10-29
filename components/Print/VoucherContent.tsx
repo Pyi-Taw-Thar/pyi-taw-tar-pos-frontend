@@ -184,10 +184,10 @@ export const VoucherContent: React.FC<VoucherContentProps> = ({
             <table className="voucher-fame-table">
               <thead>
                 <tr className="tracking-wide">
-                  <th style={{ width: "48%" }} className="text-left"># Product</th>
-                  <th style={{ width: "16%" }} className="text-center">Qty</th>
-                  <th style={{ width: "18%" }} className="text-right">Price</th>
-                  <th style={{ width: "18%" }} className="text-right">Amount</th>
+                  <th style={{ width: "36%" }} className="text-left"># Product</th>
+                  <th style={{ width: "14%" }} className="text-center">Qty</th>
+                  <th style={{ width: "22%" }} className="text-right">Price</th>
+                  <th style={{ width: "28%" }} className="text-right">Amount</th>
                 </tr>
               </thead>
               <tbody>
@@ -206,7 +206,7 @@ export const VoucherContent: React.FC<VoucherContentProps> = ({
                                 .map((b) => formatToImageDate(b.expiryDate))
                             )
                           ).map((exp, expIdx) => (
-                            <div key={expIdx}>↳ Exp: {exp}</div>
+                            <div key={expIdx}>Exp: {exp}</div>
                           ))}
                         </div>
                       )}
