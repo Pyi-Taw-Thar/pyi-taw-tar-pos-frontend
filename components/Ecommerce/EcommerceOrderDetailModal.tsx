@@ -371,74 +371,79 @@ export const EcommerceOrderDetailModal: React.FC<
                       </tr>
                     </thead>
                     <tbody className="divide-y">
-                      {order.products.map((p, idx) => (
-                        <tr key={idx} className="bg-white">
-                          <td className="p-3">
-                            {p.inventoryId.images?.[0]?.url ? (
-                              <img
-                                src={
-                                  p.inventoryId.images.find(
-                                    (img) => img.isPrimary,
-                                  )?.url || p.inventoryId.images[0].url
-                                }
-                                alt={p.inventoryId.productName}
-                                className="w-10 h-10 rounded object-cover border"
-                              />
-                            ) : (
-                              <div className="w-10 h-10 rounded border bg-slate-100" />
-                            )}
-                          </td>
-                          <td className="p-3 font-medium text-slate-800">
-                            <div>{p.inventoryId.productName}</div>
-                            {(() => {
-                              let batches = p.batches;
-                              if (
-                                (!batches || batches.length === 0) &&
-                                typeof order.fulfillmentOrderId === "object" &&
-                                order.fulfillmentOrderId
-                              ) {
-                                const fulfillmentOp = (
-                                  order.fulfillmentOrderId as any
-                                ).ordersProducts?.find(
-                                  (fop: any) =>
-                                    (fop.inventoryId?._id || fop.inventoryId)?.toString() ===
-                                    (p.inventoryId?._id || (p as any)._id || (p.inventoryId as any))?.toString()
-                                );
-                                if (fulfillmentOp?.batches?.length) {
-                                  batches = fulfillmentOp.batches;
-                                }
-                              }
-                              const expBatches = (batches || []).filter((b: any) => b.expiryDate);
-                              if (expBatches.length === 0) return null;
+                      {order.products.map((p, idx) => {
+                        const inv = typeof p.inventoryId === "object" && p.inventoryId !== null ? p.inventoryId : null;
+                        const productName = inv?.productName || (p as any).productName || "Product";
+                        const productCode = inv?.productCode || (p as any).productCode || "-";
+                        const images = inv?.images;
+                        const imageUrl = images?.find((img) => img.isPrimary)?.url || images?.[0]?.url;
 
-                              const formattedDates = Array.from(
-                                new Set(
-                                  expBatches.map((b: any) => {
-                                    const d = new Date(b.expiryDate);
-                                    const day = String(d.getDate()).padStart(2, "0");
-                                    const month = String(d.getMonth() + 1).padStart(2, "0");
-                                    return `${day}/${month}/${d.getFullYear()}`;
-                                  })
-                                )
-                              );
-
-                              return (
-                                <div className="flex flex-wrap gap-1 mt-1">
-                                  {formattedDates.map((exp, expIdx) => (
-                                    <span
-                                      key={expIdx}
-                                      className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-200 font-mono"
-                                    >
-                                      Exp: {exp}
-                                    </span>
-                                  ))}
+                        return (
+                          <tr key={idx} className="bg-white">
+                            <td className="p-3">
+                              {imageUrl ? (
+                                <img
+                                  src={imageUrl}
+                                  alt={productName}
+                                  className="w-10 h-10 rounded object-cover border"
+                                />
+                              ) : (
+                                <div className="w-10 h-10 rounded border bg-slate-100 flex items-center justify-center text-[10px] text-slate-400 font-semibold">
+                                  PTT
                                 </div>
-                              );
-                            })()}
-                          </td>
-                          <td className="p-3 text-slate-600">
-                            {p.inventoryId.productCode}
-                          </td>
+                              )}
+                            </td>
+                            <td className="p-3 font-medium text-slate-800">
+                              <div>{productName}</div>
+                              {(() => {
+                                let batches = p.batches;
+                                if (
+                                  (!batches || batches.length === 0) &&
+                                  typeof order.fulfillmentOrderId === "object" &&
+                                  order.fulfillmentOrderId
+                                ) {
+                                  const fulfillmentOp = (
+                                    order.fulfillmentOrderId as any
+                                  ).ordersProducts?.find(
+                                    (fop: any) =>
+                                      (fop.inventoryId?._id || fop.inventoryId)?.toString() ===
+                                      (inv?._id || (p as any)._id || (p.inventoryId as any))?.toString()
+                                  );
+                                  if (fulfillmentOp?.batches?.length) {
+                                    batches = fulfillmentOp.batches;
+                                  }
+                                }
+                                const expBatches = (batches || []).filter((b: any) => b.expiryDate);
+                                if (expBatches.length === 0) return null;
+
+                                const formattedDates = Array.from(
+                                  new Set(
+                                    expBatches.map((b: any) => {
+                                      const d = new Date(b.expiryDate);
+                                      const day = String(d.getDate()).padStart(2, "0");
+                                      const month = String(d.getMonth() + 1).padStart(2, "0");
+                                      return `${day}/${month}/${d.getFullYear()}`;
+                                    })
+                                  )
+                                );
+
+                                return (
+                                  <div className="flex flex-wrap gap-1 mt-1">
+                                    {formattedDates.map((exp, expIdx) => (
+                                      <span
+                                        key={expIdx}
+                                        className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-200 font-mono"
+                                      >
+                                        Exp: {exp}
+                                      </span>
+                                    ))}
+                                  </div>
+                                );
+                              })()}
+                            </td>
+                            <td className="p-3 text-slate-600 font-mono text-xs">
+                              {productCode}
+                            </td>
                           <td className="p-3 text-center font-medium">
                             <div>{p.quantity.toLocaleString()}</div>
                             {(p as any).originalQuantity != null &&
@@ -461,7 +466,8 @@ export const EcommerceOrderDetailModal: React.FC<
                             {p.subtotal.toLocaleString()} MMK
                           </td>
                         </tr>
-                      ))}
+                      );
+                    })}
                     </tbody>
                   </table>
                 </div>
