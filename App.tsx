@@ -124,10 +124,8 @@ const AppLayout: React.FC = () => {
       )}
 
       {/* Main Content */}
-      <main
-        className="flex-1 overflow-x-hidden"
-        style={{ paddingTop: "56px" }}
-      >
+      {/* Fixed header အတွက် 56px — header မပြသော print တွင် ဖယ် (A5 footer စာမျက်နှာကွဲခြင်း ကာကွယ်ရန်) */}
+      <main className="flex-1 overflow-x-hidden pt-[56px] print:pt-0">
         <Routes>
           <Route path="/" element={<Navigate to="/menu" replace />} />
           <Route path="/menu" element={<MenuPage />} />

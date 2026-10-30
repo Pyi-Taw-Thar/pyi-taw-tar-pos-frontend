@@ -7,6 +7,7 @@ import {
   getPrintShopBranding,
   preloadImage,
   PrintShopBranding,
+  A5_VOUCHER_LOGO,
 } from "../utils/printShopBranding";
 import {
   getPrintPaperStyles,
@@ -131,6 +132,8 @@ const PrintReceipt: React.FC = () => {
         setLoadingMessage("Loading shop logo...");
         await preloadImage(branding.logo);
       }
+      // A5 ဘောက်ချာ logo — print ခလုတ်ဖြင့် A5 သို့ ပြောင်းနိုင်၍ paper size မခွဲဘဲ ကြိုတင် load (ဖိုင်သေး၊ cache ဝင်)
+      await preloadImage(A5_VOUCHER_LOGO);
 
       if (!cancelled) {
         setLoadingMessage(

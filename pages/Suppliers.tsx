@@ -31,7 +31,7 @@ import { updateSupplier } from "../services/Supplier/updateSupplier";
 import { softDeleteSupplier } from "../services/Supplier/softDeleteSupplier";
 import { restoreSupplier } from "../services/Supplier/restoreSupplier";
 import { deleteSupplier } from "../services/Supplier/deleteSupplier";
-import { fetchSuppliers, PaginationMeta } from "../services/Supplier/fetchSuppliers";
+import { fetchSuppliers, PaginationMeta, FetchSuppliersResponse } from "../services/Supplier/fetchSuppliers";
 import { fetchTownships } from "../services/Supplier/fetchTownships";
 import { ConfirmModal } from "../components/Common/ConfirmModal";
 import { toast } from "sonner";
@@ -75,6 +75,7 @@ export const Suppliers: React.FC = () => {
   const [limit, setLimit] = useState(10);
   const [townships, setTownships] = useState<string[]>([]);
   const [pagination, setPagination] = useState<PaginationMeta | null>(null);
+  const [summary, setSummary] = useState<FetchSuppliersResponse["summary"] | null>(null);
 
   const [formData, setFormData] = useState<SupplierFormData>({
     supplierName: "",
@@ -129,6 +130,7 @@ export const Suppliers: React.FC = () => {
 
       if (response.success && response.data) {
         setSuppliers(response.data);
+        setSummary(response.summary ?? null);
         if (response.pagination) {
           setPagination(response.pagination);
         } else {
@@ -319,6 +321,47 @@ export const Suppliers: React.FC = () => {
           <span className="sm:hidden">{t("common.add")}</span>
         </button>
       </div>
+
+      {/* Supplier အားလုံး၏ ဝယ်ယူငွေ / ပေးချေပြီး / ပေးရန်ကျန်ငွေ စုစုပေါင်း (ဖျက်ထားသော view တွင် မပြ) */}
+      {!showDeleted && (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+            <span className="text-xs font-medium text-slate-500">
+              {t("suppliers.totalPurchaseAmount")}
+            </span>
+            <div className="text-xl sm:text-2xl font-extrabold text-slate-800 mt-1">
+              {summary ? summary.totalPurchaseAmount.toLocaleString() : "—"}{" "}
+              <span className="text-xs font-normal">MMK</span>
+            </div>
+            {summary && (
+              <div className="text-xs text-slate-500 mt-1">
+                {summary.supplierCount} {t("suppliers.supplierCount")} · {summary.poCount}{" "}
+                {t("suppliers.poCount")}
+              </div>
+            )}
+          </div>
+
+          <div className="bg-white p-4 rounded-xl shadow-sm border border-green-200 bg-green-50/20">
+            <span className="text-xs font-medium text-green-700">
+              {t("suppliers.totalPaidAmount")}
+            </span>
+            <div className="text-xl sm:text-2xl font-extrabold text-green-700 mt-1">
+              {summary ? summary.totalPaidAmount.toLocaleString() : "—"}{" "}
+              <span className="text-xs font-normal">MMK</span>
+            </div>
+          </div>
+
+          <div className="bg-white p-4 rounded-xl shadow-sm border border-red-200 bg-red-50/20">
+            <span className="text-xs font-medium text-red-700">
+              {t("suppliers.totalPayable")}
+            </span>
+            <div className="text-xl sm:text-2xl font-extrabold text-red-600 mt-1">
+              {summary ? summary.payableAmount.toLocaleString() : "—"}{" "}
+              <span className="text-xs font-normal">MMK</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Suppliers List */}
       <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border">
@@ -671,6 +714,29 @@ export const Suppliers: React.FC = () => {
                       </div>
                     </div>
                   </div>
+                  {/* ဤ supplier ၏ ဝယ်ယူငွေ / ပေးရန်ကျန်ငွေ */}
+                  {supplier.purchaseSummary && (
+                    <div className="mt-3 pt-3 border-t grid grid-cols-2 gap-2 text-xs">
+                      <div className="min-w-0">
+                        <div className="text-slate-500">{t("suppliers.purchased")}</div>
+                        <div className="font-semibold text-slate-800 truncate">
+                          {supplier.purchaseSummary.totalPurchaseAmount.toLocaleString()} MMK
+                        </div>
+                      </div>
+                      <div className="min-w-0 text-right">
+                        <div className="text-slate-500">{t("suppliers.payable")}</div>
+                        {supplier.purchaseSummary.payableAmount > 0 ? (
+                          <div className="font-semibold text-red-600 truncate">
+                            {supplier.purchaseSummary.payableAmount.toLocaleString()} MMK
+                          </div>
+                        ) : (
+                          <div className="font-semibold text-green-700">
+                            {t("suppliers.noPayable")}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                   <div className="mt-3 pt-3 border-t text-xs text-slate-400 space-y-1">
                     {supplier.createdAt && (
                       <div>

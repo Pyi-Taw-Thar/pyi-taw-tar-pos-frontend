@@ -217,6 +217,15 @@ export interface Supplier {
   deletedAt?: string | null;
   createdAt?: string;
   updatedAt?: string;
+  // Supplier list API မှ ထည့်ပေးသော ဝယ်ယူငွေ / ပေးရန်ငွေ (cancel PO မပါ)
+  purchaseSummary?: SupplierPurchaseSummary;
+}
+
+export interface SupplierPurchaseSummary {
+  poCount: number;
+  totalPurchaseAmount: number;
+  totalPaidAmount: number;
+  payableAmount: number;
 }
 
 export interface AppState {

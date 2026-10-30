@@ -1,5 +1,5 @@
 import axios from "../axios";
-import { Supplier } from "../../types";
+import { Supplier, SupplierPurchaseSummary } from "../../types";
 
 export interface SupplierQueryParams {
   page?: number;
@@ -24,6 +24,8 @@ export interface FetchSuppliersResponse {
   success: boolean;
   message: string;
   data: Supplier[];
+  // Filter ကိုက်ညီသော supplier အားလုံး၏ စုစုပေါင်း (page တစ်ခုတည်း မဟုတ်)
+  summary?: SupplierPurchaseSummary & { supplierCount: number };
   pagination?: PaginationMeta;
 }
 

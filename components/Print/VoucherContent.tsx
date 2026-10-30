@@ -1,5 +1,5 @@
 import React from "react";
-import { PrintShopBranding } from "../../utils/printShopBranding";
+import { PrintShopBranding, A5_VOUCHER_LOGO } from "../../utils/printShopBranding";
 import {
   PrintPaperSize,
   ThermalLayout,
@@ -570,8 +570,8 @@ export const VoucherContent: React.FC<VoucherContentProps> = ({
       receiptData.creditPersonName ||
       receiptData.customerName ||
       (receiptData.storefrontName &&
-      receiptData.storefrontName !== "HONGCHI Myanmar" &&
-      receiptData.storefrontName !== "Ecommerce Order"
+        receiptData.storefrontName !== "Pyi Taw Tar" &&
+        receiptData.storefrontName !== "Ecommerce Order"
         ? receiptData.storefrontName
         : "") ||
       "လက်လီဝယ်သူ";
@@ -601,31 +601,28 @@ export const VoucherContent: React.FC<VoucherContentProps> = ({
                 {isFirstPage ? (
                   <div className="flex justify-between items-start gap-3 border-b-2 border-slate-900 pb-2.5 mb-2.5">
                     <div className="flex items-start gap-2.5 min-w-0">
-                      {shopBranding.logo ? (
-                        <img
-                          src={shopBranding.logo}
-                          alt={shopBranding.shopName}
-                          className="h-11 w-11 object-contain shrink-0 rounded-md"
-                        />
-                      ) : (
-                        <div className="h-11 w-11 shrink-0 flex items-center justify-center rounded-lg bg-slate-100 border border-slate-300 text-slate-900 font-black text-base">
-                          {shopBranding.shopName.charAt(0)}
-                        </div>
-                      )}
+                      {/* PTT logo — ပုံ၏ အပေါ်/အောက် အဖြူနေရာကိုသာ ဖြတ်ရန် object-cover */}
+                      <img
+                        src={A5_VOUCHER_LOGO}
+                        alt={shopBranding.shopName}
+                        className="w-[26mm] h-[11mm] object-cover object-center shrink-0"
+                      />
                       <div className="min-w-0">
                         <h2 className="text-[17px] font-black text-slate-900 leading-tight tracking-tight">
                           {shopBranding.shopName}
                         </h2>
-                        <p className="text-[9.5px] text-slate-600 italic leading-snug mt-0.5">
+                        <p className="text-[9.5px] text-slate-600 italic leading-snug mt-2">
                           လုပ်ရပ်တိုင်းသည်၊ ရည်စူးချက် ရည်ရွယ်ချက်ပေါ် မူတည်၏။
                         </p>
                         {shopBranding.address && (
-                          <p className="text-[10px] text-slate-700 font-medium leading-snug mt-0.5">
+                          <p className="text-[10px] text-slate-700 font-medium leading-snug mt-2">
                             {shopBranding.address}
                           </p>
                         )}
-                        <p className="text-[10px] text-slate-800 font-medium leading-snug mt-0.5">
-                          {shopBranding.phone ? `Tel: ${shopBranding.phone} • ` : ""}
+                        <p className="text-[10px] text-slate-800 font-medium leading-snug mt-1">
+                          {shopBranding.phone ? `Tel: 09-250148552, 09-250512975 ` : ""}
+                        </p>
+                        <p className="text-[10px] text-slate-800 font-medium leading-snug mt-1">
                           Viber: {shopBranding.website || "09-960889290, 09-973989877"}
                         </p>
                       </div>

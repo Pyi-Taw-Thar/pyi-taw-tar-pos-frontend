@@ -9,6 +9,9 @@ export interface PrintShopBranding {
   currency: string;
 }
 
+// A5 ဘောက်ချာ header တွင် အမြဲပြမည့် PTT logo (public folder)
+export const A5_VOUCHER_LOGO = "/pyi-taw-tar.jpg";
+
 export const getPrintShopBranding = (
   settings: ShopSettings | null,
 ): PrintShopBranding => ({
