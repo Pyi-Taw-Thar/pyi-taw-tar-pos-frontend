@@ -39,6 +39,7 @@ import { Orders } from "./pages/Orders";
 import { DirectSaleOrders } from "./pages/DirectSaleOrders";
 import { EcommerceOrders } from "./pages/EcommerceOrders";
 import { EcommerceReports } from "./pages/EcommerceReports";
+import { EcommerceProductOrdersReport } from "./pages/EcommerceProductOrdersReport";
 import { CustomerDetail } from "./pages/CustomerDetail";
 import { Customers } from "./pages/Customers";
 import { CreditOrders } from "./pages/CreditOrders";
@@ -244,6 +245,7 @@ const AppLayout: React.FC = () => {
           {/* E-commerce, Inventory, Warehouse, Purchasing & System routes */}
           <Route path="/admin/ecommerce-orders" element={<EcommerceOrders />} />
           <Route path="/admin/ecommerce-reports" element={<EcommerceReports />} />
+          <Route path="/admin/ecommerce-product-orders" element={<EcommerceProductOrdersReport />} />
           <Route path="/order-fulfillment" element={<OrderFulfillment />} />
           <Route path="/customers" element={<Customers />} />
           <Route path="/customers/:id" element={<CustomerDetail />} />
