@@ -20,9 +20,13 @@ export const formatDate = (iso?: string | null) => {
   });
 };
 
+// Purchase order မှ supplier အချက်အလက် (နာမည်နှင့် code) ကို ရယူသည် (null သို့မဟုတ် undefined ဖြစ်ပါက safe ဖြစ်အောင် စစ်ဆေးသည်)
 export const getSupplierFromPurchase = (
-  supplierId: { supplierName?: string; supplierCode?: string } | string,
+  supplierId?: { supplierName?: string; supplierCode?: string } | string | null,
 ): { name: string; code: string } => {
+  if (!supplierId) {
+    return { name: "—", code: "" };
+  }
   if (typeof supplierId === "string") {
     return { name: supplierId, code: "" };
   }
