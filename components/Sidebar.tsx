@@ -28,6 +28,7 @@ import { removeAuthToken } from "../services/axios";
 import { performLogout } from "../utils/logout";
 import { toast } from "sonner";
 import { useLanguage } from "../context/LanguageContext";
+import { FEATURES, type FeatureKey } from "../config/features";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -40,6 +41,7 @@ type MenuChild = {
   icon: LucideIcon;
   /** Hide unless user role is in this list */
   roles?: string[];
+  feature?: FeatureKey;
 };
 
 type MenuGroup = {
@@ -50,6 +52,7 @@ type MenuGroup = {
 };
 
 const canAccessChild = (child: MenuChild, role: string) => {
+  if (child.feature && !FEATURES[child.feature]) return false;
   if (!child.roles?.length) return true;
   return child.roles.includes(role);
 };
@@ -206,6 +209,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             path: "/ai-chat",
             label: t("sidebar.aiAssistant"),
             icon: MessageSquare,
+            feature: "aiAssistant",
           },
           {
             path: "/accounts",

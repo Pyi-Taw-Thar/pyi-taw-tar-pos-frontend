@@ -266,7 +266,14 @@ const AppLayout: React.FC = () => {
           <Route path="/purchase-report" element={<PurchaseReport />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/accounts" element={<AccountManagement />} />
-          <Route path="/ai-chat" element={<AIChat />} />
+          <Route
+            path="/ai-chat"
+            element={
+              <FeatureRoute feature="aiAssistant">
+                <AIChat />
+              </FeatureRoute>
+            }
+          />
         </Routes>
       </main>
     </div>

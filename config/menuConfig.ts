@@ -218,6 +218,7 @@ export const MENU_SECTIONS: MenuSection[] = [
         labelKey: "sidebar.aiAssistant",
         descKey: "menu.desc.aiAssistant",
         icon: MessageSquare,
+        feature: "aiAssistant",
       },
       {
         path: "/accounts",
