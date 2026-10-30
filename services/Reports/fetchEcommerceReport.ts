@@ -3,6 +3,8 @@ import axios from "../axios";
 export interface EcommerceReportSummary {
   totalRevenue?: number;
   totalOrders?: number;
+  totalOrderedQuantity?: number;
+  totalItemsQuantity?: number;
   deliveredOrders?: number;
   deliveredCount?: number;
   cancelledOrders?: number;

@@ -15,6 +15,7 @@ import {
   ShoppingCart,
   Receipt,
   CreditCard,
+  PackageSearch,
 } from "lucide-react";
 import { FEATURES, type FeatureKey } from "./features";
 
@@ -126,6 +127,13 @@ export const MENU_SECTIONS: MenuSection[] = [
         labelKey: "sidebar.ecommerceReports",
         descKey: "menu.desc.ecommerceReports",
         icon: PieChart,
+        roles: ["admin", "owner"],
+      },
+      {
+        path: "/admin/ecommerce-product-orders",
+        labelKey: "sidebar.ecommerceProductOrders",
+        descKey: "menu.desc.ecommerceProductOrders",
+        icon: PackageSearch,
         roles: ["admin", "owner"],
       },
     ],

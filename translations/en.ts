@@ -115,6 +115,7 @@ export const en = {
     directSaleOrders: "Direct Sale Orders",
     ecommerceOrders: "Ecommerce Orders",
     ecommerceReports: "Ecommerce Reports",
+    ecommerceProductOrders: "Product Orders Report",
     customers: "Customers",
     creditOrder: "Credit Orders",
     quotations: "Quotations",
@@ -1724,6 +1725,7 @@ export const en = {
     desc: {
       ecommerceOrders: "Review orders and dispatch to warehouse",
       ecommerceReports: "View online sales and customer purchase analytics",
+      ecommerceProductOrders: "View ordered quantity breakdown for each product",
       orderFulfillment: "Packing and verification with barcode scanning",
       customers: "Customer profiles and membership tiers",
       inventory: "Manage products, prices, and units",

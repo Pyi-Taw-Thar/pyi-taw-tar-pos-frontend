@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   ShoppingBag,
   RefreshCw,
   TrendingUp,
   Package,
+  PackageSearch,
   CheckCircle2,
   XCircle,
   CreditCard,
@@ -12,6 +14,8 @@ import {
   Loader2,
   DollarSign,
   Layers,
+  Clock,
+  Truck,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useLanguage } from "../context/LanguageContext";
@@ -58,6 +62,7 @@ type ReportTabType = "overview" | "topProducts" | "recentOrders";
 
 export const EcommerceReports: React.FC = () => {
   const { t } = useLanguage();
+  const navigate = useNavigate();
 
   // Date filters
   const [startDate, setStartDate] = useState<Date | null>(getToday());
@@ -123,6 +128,10 @@ export const EcommerceReports: React.FC = () => {
   const summary = reportData?.summary || {};
   const totalRevenue = summary.totalRevenue ?? 0;
   const totalOrders = summary.totalOrders ?? 0;
+  const totalOrderedQuantity = summary.totalOrderedQuantity ?? summary.totalItemsQuantity ?? 0;
+  const pendingOrders = summary.pendingOrders ?? summary.pendingCount ?? 0;
+  const confirmedOrders = summary.confirmedOrders ?? summary.confirmedCount ?? 0;
+  const shippedOrders = summary.shippedOrders ?? summary.shippedCount ?? 0;
   const deliveredOrders = summary.deliveredOrders ?? summary.deliveredCount ?? 0;
   const cancelledOrders = summary.cancelledOrders ?? summary.cancelledCount ?? 0;
   const avgOrderValue = summary.avgOrderValue ?? 0;
@@ -184,6 +193,16 @@ export const EcommerceReports: React.FC = () => {
             }}
           />
 
+          {/* Product Orders Report shortcut */}
+          <button
+            onClick={() => navigate("/admin/ecommerce-product-orders")}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 rounded-lg text-xs sm:text-sm font-semibold transition-colors"
+            title="ဘယ်ပစ္စည်းက ဘယ်လောက် Order တင်ထားသည်ကို အသေးစိတ် ကြည့်ရှုရန်"
+          >
+            <PackageSearch className="w-4 h-4" />
+            <span className="hidden sm:inline">ပစ္စည်းအလိုက် စာရင်း</span>
+          </button>
+
           {/* Refresh Button */}
           <button
             onClick={loadReport}
@@ -197,8 +216,8 @@ export const EcommerceReports: React.FC = () => {
         </div>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      {/* KPI Cards (6 Cards) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3.5 sm:gap-4">
         {/* Total Revenue */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 relative overflow-hidden">
           <div className="flex items-center justify-between">
@@ -209,10 +228,10 @@ export const EcommerceReports: React.FC = () => {
               <DollarSign className="w-5 h-5" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-slate-800 mt-2">
-            {formatNumber(totalRevenue)} <span className="text-sm font-normal text-slate-500">MMK</span>
+          <p className="text-xl sm:text-2xl font-bold text-slate-800 mt-2 truncate">
+            {formatNumber(totalRevenue)} <span className="text-xs font-normal text-slate-500">MMK</span>
           </p>
-          <div className="mt-2 text-xs text-emerald-600 font-medium">
+          <div className="mt-2 text-xs text-emerald-600 font-medium truncate">
             ပယ်ဖျက်မှုမပါ ဝင်ငွေ
           </div>
         </div>
@@ -227,11 +246,29 @@ export const EcommerceReports: React.FC = () => {
               <Package className="w-5 h-5" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-slate-800 mt-2">
-            {formatNumber(totalOrders)} <span className="text-sm font-normal text-slate-500">ခု</span>
+          <p className="text-xl sm:text-2xl font-bold text-slate-800 mt-2">
+            {formatNumber(totalOrders)} <span className="text-xs font-normal text-slate-500">ခု</span>
           </p>
           <div className="mt-2 text-xs text-slate-500">
             ကာလအတွင်း အော်ဒါအရေအတွက်
+          </div>
+        </div>
+
+        {/* Total Ordered Quantity (Items Count) */}
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 bg-gradient-to-br from-white to-purple-50/30">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-medium text-purple-700 uppercase tracking-wider font-semibold">
+              မှာယူထားသော ပစ္စည်းပေါင်း
+            </p>
+            <div className="p-2 bg-purple-100 text-purple-700 rounded-lg">
+              <Layers className="w-5 h-5" />
+            </div>
+          </div>
+          <p className="text-xl sm:text-2xl font-bold text-purple-700 mt-2">
+            {formatNumber(totalOrderedQuantity)} <span className="text-xs font-normal text-purple-600">ခု</span>
+          </p>
+          <div className="mt-2 text-xs text-purple-600 font-medium">
+            ကုန်ပစ္စည်း စုစုပေါင်း အရေအတွက်
           </div>
         </div>
 
@@ -245,8 +282,8 @@ export const EcommerceReports: React.FC = () => {
               <CheckCircle2 className="w-5 h-5" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-slate-800 mt-2">
-            {formatNumber(deliveredOrders)} <span className="text-sm font-normal text-slate-500">ခု</span>
+          <p className="text-xl sm:text-2xl font-bold text-slate-800 mt-2">
+            {formatNumber(deliveredOrders)} <span className="text-xs font-normal text-slate-500">ခု</span>
           </p>
           <div className="mt-2 text-xs text-emerald-600 font-medium">
             အောင်မြင်စွာ ပို့ပြီး
@@ -263,8 +300,8 @@ export const EcommerceReports: React.FC = () => {
               <XCircle className="w-5 h-5" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-slate-800 mt-2">
-            {formatNumber(cancelledOrders)} <span className="text-sm font-normal text-slate-500">ခု</span>
+          <p className="text-xl sm:text-2xl font-bold text-slate-800 mt-2">
+            {formatNumber(cancelledOrders)} <span className="text-xs font-normal text-slate-500">ခု</span>
           </p>
           <div className="mt-2 text-xs text-rose-600 font-medium">
             ဖျက်သိမ်းခဲ့သော အော်ဒါ
@@ -281,11 +318,70 @@ export const EcommerceReports: React.FC = () => {
               <TrendingUp className="w-5 h-5" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-slate-800 mt-2">
-            {formatNumber(avgOrderValue)} <span className="text-sm font-normal text-slate-500">MMK</span>
+          <p className="text-xl sm:text-2xl font-bold text-slate-800 mt-2 truncate">
+            {formatNumber(avgOrderValue)} <span className="text-xs font-normal text-slate-500">MMK</span>
           </p>
-          <div className="mt-2 text-xs text-amber-600 font-medium">
+          <div className="mt-2 text-xs text-amber-600 font-medium truncate">
             တစ်အော်ဒါ ပျမ်းမျှ
+          </div>
+        </div>
+      </div>
+
+      {/* Order Status Breakdown Bar */}
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+          <h3 className="text-xs font-semibold uppercase text-slate-500 tracking-wider flex items-center gap-1.5">
+            <Clock className="w-4 h-4 text-primary" />
+            အော်ဒါ အခြေအနေအလိုက် အရေအတွက်များ
+          </h3>
+          <span className="text-xs font-medium text-slate-500">
+            စုစုပေါင်း မှာယူမှု: <strong className="text-slate-800">{formatNumber(totalOrders)} အော်ဒါ</strong> (ကုန်ပစ္စည်း <strong className="text-purple-700">{formatNumber(totalOrderedQuantity)} ခု</strong>)
+          </span>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+          {/* Pending */}
+          <div className="p-2.5 rounded-lg border border-amber-200 bg-amber-50/60 flex items-center justify-between">
+            <div>
+              <p className="text-xs font-medium text-amber-800">ဆိုင်းငံ့ / စစ်ဆေးဆဲ</p>
+              <p className="text-lg font-bold text-amber-700 mt-0.5">{formatNumber(pendingOrders)}</p>
+            </div>
+            <Clock className="w-5 h-5 text-amber-500 opacity-80" />
+          </div>
+
+          {/* Confirmed */}
+          <div className="p-2.5 rounded-lg border border-blue-200 bg-blue-50/60 flex items-center justify-between">
+            <div>
+              <p className="text-xs font-medium text-blue-800">အတည်ပြုပြီး</p>
+              <p className="text-lg font-bold text-blue-700 mt-0.5">{formatNumber(confirmedOrders)}</p>
+            </div>
+            <Package className="w-5 h-5 text-blue-500 opacity-80" />
+          </div>
+
+          {/* Shipped */}
+          <div className="p-2.5 rounded-lg border border-indigo-200 bg-indigo-50/60 flex items-center justify-between">
+            <div>
+              <p className="text-xs font-medium text-indigo-800">ပို့ဆောင်ဆဲ</p>
+              <p className="text-lg font-bold text-indigo-700 mt-0.5">{formatNumber(shippedOrders)}</p>
+            </div>
+            <Truck className="w-5 h-5 text-indigo-500 opacity-80" />
+          </div>
+
+          {/* Delivered */}
+          <div className="p-2.5 rounded-lg border border-emerald-200 bg-emerald-50/60 flex items-center justify-between">
+            <div>
+              <p className="text-xs font-medium text-emerald-800">ပို့ဆောင်ပြီး</p>
+              <p className="text-lg font-bold text-emerald-700 mt-0.5">{formatNumber(deliveredOrders)}</p>
+            </div>
+            <CheckCircle2 className="w-5 h-5 text-emerald-500 opacity-80" />
+          </div>
+
+          {/* Cancelled */}
+          <div className="p-2.5 rounded-lg border border-rose-200 bg-rose-50/60 flex items-center justify-between col-span-2 sm:col-span-1">
+            <div>
+              <p className="text-xs font-medium text-rose-800">ပယ်ဖျက်</p>
+              <p className="text-lg font-bold text-rose-700 mt-0.5">{formatNumber(cancelledOrders)}</p>
+            </div>
+            <XCircle className="w-5 h-5 text-rose-500 opacity-80" />
           </div>
         </div>
       </div>
@@ -431,7 +527,7 @@ export const EcommerceReports: React.FC = () => {
                   အဝယ်အများဆုံး ပစ္စည်းများ စာရင်း
                 </h3>
                 <span className="text-xs text-slate-500">
-                  စုစုပေါင်း {reportData?.topProducts?.length || 0} မျိုး
+                  စုစုပေါင်း {reportData?.topProducts?.length || 0} မျိုး (မှာယူထားသော စုစုပေါင်း: {formatNumber(totalOrderedQuantity)} ခု)
                 </span>
               </div>
               <div className="overflow-x-auto">

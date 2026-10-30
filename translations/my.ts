@@ -116,6 +116,7 @@ export const my = {
     directSaleOrders: "တိုက်ရိုက် ရောင်းချမှု အော်ဒါများ",
     ecommerceOrders: "အီးကော်မတ် အော်ဒါများ",
     ecommerceReports: "အီးကော်မတ် အစီရင်ခံစာ",
+    ecommerceProductOrders: "ပစ္စည်းအလိုက် မှာယူမှု စာရင်း",
     customers: "ဖောက်သည်များ",
     creditOrder: "အကြွေး အော်ဒါများ",
     quotations: "ယာယီ Order (Quotation)",
@@ -1730,6 +1731,7 @@ export const my = {
     desc: {
       ecommerceOrders: "အော်ဒါ စစ်ဆေး / ဂိုဒေါင်သို့ ပို့",
       ecommerceReports: "အီးကော်မတ် ရောင်းအားနှင့် ဝယ်ယူမှု အစီရင်ခံစာများ",
+      ecommerceProductOrders: "ကုန်ပစ္စည်းတစ်ခုချင်းစီ၏ မှာယူထားသော အရေအတွက် စာရင်း",
       orderFulfillment: "barcode scan ဖြင့် ထုပ်ပိုးစစ်ဆေး",
       customers: "ဖောက်သည် အကောင့် / tier အချက်အလက်",
       inventory: "ပစ္စည်း၊ ဈေးနှုန်း၊ ယူနစ် စီမံခန့်ခွဲမှု",
