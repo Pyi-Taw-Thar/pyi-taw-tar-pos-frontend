@@ -71,6 +71,7 @@ export interface EcommerceOrder {
       batches: EcommerceOrderBatch[];
     }>;
   } | string | null;
+  customerCreditOutstanding?: number;
   isSentToFulfillment?: boolean;
   sentToFulfillmentAt?: string | null;
   createdAt: string;

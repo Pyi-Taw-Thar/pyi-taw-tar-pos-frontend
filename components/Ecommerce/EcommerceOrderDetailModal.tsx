@@ -79,12 +79,23 @@ export const EcommerceOrderDetailModal: React.FC<
           .join(", ")
       : customer?.address || "";
 
+    // Calculate credit balance if customer has outstanding credit
+    const previousCreditOutstanding = (order as any).customerCreditOutstanding || 0;
+    const isPaid = order.paymentStatus === "paid";
+    const thisOrderRemaining = isPaid ? 0 : order.totalAmount;
+    const totalOutstandingIncludingThisOrder = previousCreditOutstanding + thisOrderRemaining;
+
     const receiptData: VoucherReceiptData = {
       documentType: "invoice",
       invoiceNumber: order.orderNumber,
       storefrontName: customer?.name || "Ecommerce Order",
       customerPhone: customer?.phone || "",
       customerAddress: customerAddress || undefined,
+      creditPersonName: previousCreditOutstanding > 0 ? (customer?.name || "Customer") : undefined,
+      creditPersonAddress: previousCreditOutstanding > 0 ? (customerAddress || undefined) : undefined,
+      creditPersonTownship: previousCreditOutstanding > 0 ? (customer?.township || undefined) : undefined,
+      creditPersonOutstanding: previousCreditOutstanding > 0 ? totalOutstandingIncludingThisOrder : undefined,
+      paidAmount: isPaid ? order.totalAmount : 0,
       date: order.createdAt || new Date().toISOString(),
       items: (order.products || []).map((p) => {
         let batches = p.batches;

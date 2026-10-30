@@ -95,6 +95,7 @@ export const printFulfillmentReceipt = (
     creditPersonName: creditPersonObj?.name,
     creditPersonAddress: creditPersonObj?.address,
     creditPersonTownship: creditPersonObj?.township,
+    creditPersonOutstanding: (order as any).creditPersonTotalOutstanding || undefined,
     invoiceNumber: order.orderNumber,
     storefrontName:
       typeof order.storefrontId === "object"

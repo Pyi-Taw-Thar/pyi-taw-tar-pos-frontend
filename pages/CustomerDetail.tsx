@@ -14,13 +14,19 @@ import {
   Award,
   Layers,
   RefreshCw,
+  CreditCard,
+  AlertCircle,
+  X,
+  History,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useLanguage } from "../context/LanguageContext";
 import {
   fetchCustomerAnalytics,
   CustomerAnalyticsData,
+  CustomerCreditPaymentRecord,
 } from "../services/Customer/fetchCustomerAnalytics";
+import { payCustomerCredit } from "../services/Customer/payCustomerCredit";
 import { fetchEcommerceOrderById } from "../services/Ecommerce/fetchEcommerceOrderById";
 import type { EcommerceOrder } from "../services/Ecommerce/fetchEcommerceOrders";
 import { EcommerceOrderDetailModal } from "../components/Ecommerce/EcommerceOrderDetailModal";
@@ -32,6 +38,18 @@ const formatDisplayDate = (iso?: string) => {
     day: "2-digit",
     month: "short",
     year: "numeric",
+  });
+};
+
+const formatDisplayDateTime = (iso?: string) => {
+  if (!iso) return "-";
+  const d = new Date(iso);
+  return d.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 };
 
@@ -76,12 +94,19 @@ export const CustomerDetail: React.FC = () => {
 
   const [loading, setLoading] = useState<boolean>(true);
   const [data, setData] = useState<CustomerAnalyticsData | null>(null);
-  const [activeTab, setActiveTab] = useState<"orders" | "topProducts">("orders");
+  const [activeTab, setActiveTab] = useState<"orders" | "topProducts" | "creditPayments">("orders");
 
   // Modal states for Order Detail
   const [selectedOrder, setSelectedOrder] = useState<EcommerceOrder | null>(null);
   const [orderModalOpen, setOrderModalOpen] = useState<boolean>(false);
   const [loadingOrderDetail, setLoadingOrderDetail] = useState<boolean>(false);
+
+  // Pay Credit Modal states
+  const [showPayCreditModal, setShowPayCreditModal] = useState<boolean>(false);
+  const [isSubmittingPayment, setIsSubmittingPayment] = useState<boolean>(false);
+  const [payAmountInput, setPayAmountInput] = useState<string>("");
+  const [payMethod, setPayMethod] = useState<string>("cash");
+  const [payNotes, setPayNotes] = useState<string>("");
 
   const loadData = async () => {
     if (!id) return;
@@ -125,6 +150,53 @@ export const CustomerDetail: React.FC = () => {
     }
   };
 
+  const handleOpenPayCredit = () => {
+    const outstanding = data?.metrics?.creditOutstanding ?? 0;
+    setPayAmountInput(outstanding > 0 ? String(outstanding) : "");
+    setPayMethod("cash");
+    setPayNotes("");
+    setShowPayCreditModal(true);
+  };
+
+  const handleSubmitPayCredit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!id) return;
+
+    const amount = Number(payAmountInput);
+    if (!amount || amount <= 0) {
+      toast.error("ကျေးဇူးပြု၍ ပေးဆပ်မည့် ငွေပမာဏကို မှန်ကန်စွာ ထည့်သွင်းပါ");
+      return;
+    }
+
+    const outstanding = data?.metrics?.creditOutstanding ?? 0;
+    if (amount > outstanding) {
+      toast.error(`ပေးဆပ်ငွေသည် လက်ကျန်အကြွေး (${formatNumber(outstanding)} MMK) ထက် မကျော်လွန်ရပါ`);
+      return;
+    }
+
+    setIsSubmittingPayment(true);
+    try {
+      const res = await payCustomerCredit(id, {
+        paidAmount: amount,
+        paymentMethod: payMethod,
+        notes: payNotes.trim() || undefined,
+      });
+
+      if (res.success) {
+        toast.success(`အကြွေး ${formatNumber(amount)} MMK အောင်မြင်စွာ ဆပ်ပြီးပါပြီ`);
+        setShowPayCreditModal(false);
+        await loadData();
+      } else {
+        toast.error(res.message || "Failed to process credit payment");
+      }
+    } catch (err: any) {
+      console.error("Error submitting credit payment:", err);
+      toast.error(err?.response?.data?.message || err?.message || "Failed to record credit payment");
+    } finally {
+      setIsSubmittingPayment(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="p-6 max-w-7xl mx-auto flex flex-col items-center justify-center min-h-[400px]">
@@ -151,17 +223,18 @@ export const CustomerDetail: React.FC = () => {
     );
   }
 
-  const { customer, metrics, orders = [], topProducts = [] } = data;
+  const { customer, metrics, orders = [], topProducts = [], creditPayments = [] } = data;
 
   const totalSpent = metrics?.totalSpent ?? 0;
   const totalOrders = metrics?.totalOrders ?? 0;
   const deliveredOrders = metrics?.deliveredOrders ?? metrics?.deliveredCount ?? 0;
   const avgOrderValue = metrics?.avgOrderValue ?? 0;
+  const creditOutstanding = metrics?.creditOutstanding ?? 0;
 
   return (
     <div className="p-4 sm:p-6 space-y-6 max-w-7xl mx-auto">
       {/* Top Navigation & Back */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <button
           onClick={() => navigate("/customers")}
           className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-primary transition-colors"
@@ -169,14 +242,25 @@ export const CustomerDetail: React.FC = () => {
           <ArrowLeft className="w-4 h-4" />
           <span>ဖောက်သည်များ စာရင်း (Customers)</span>
         </button>
-        <button
-          onClick={loadData}
-          disabled={loading}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-medium transition-colors"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
-          Refresh
-        </button>
+        <div className="flex items-center gap-2">
+          {creditOutstanding > 0 && (
+            <button
+              onClick={handleOpenPayCredit}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors"
+            >
+              <CreditCard className="w-3.5 h-3.5" />
+              အကြွေးဆပ်မည်
+            </button>
+          )}
+          <button
+            onClick={loadData}
+            disabled={loading}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-medium transition-colors"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
+            Refresh
+          </button>
+        </div>
       </div>
 
       {/* Customer Profile Card */}
@@ -228,11 +312,34 @@ export const CustomerDetail: React.FC = () => {
               </div>
             </div>
           </div>
+
+          {/* Quick Credit Status Pill on Right */}
+          {creditOutstanding > 0 ? (
+            <div className="bg-rose-50 border border-rose-200 rounded-xl p-3 flex items-center gap-3 self-start md:self-center">
+              <div>
+                <p className="text-xs text-rose-600 font-medium">လက်ကျန်အကြွေး</p>
+                <p className="text-lg font-bold text-rose-700">
+                  {formatNumber(creditOutstanding)} MMK
+                </p>
+              </div>
+              <button
+                onClick={handleOpenPayCredit}
+                className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold transition-colors"
+              >
+                ဆပ်မည်
+              </button>
+            </div>
+          ) : (
+            <div className="bg-emerald-50 border border-emerald-200 rounded-xl px-3.5 py-2 text-center self-start md:self-center">
+              <p className="text-xs text-emerald-600 font-medium">အကြွေးလက်ကျန်</p>
+              <p className="text-sm font-bold text-emerald-700">အကြွေးမရှိပါ (0 MMK)</p>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* KPI Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* KPI Stat Cards (5 Cards) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {/* Total Spent */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
           <div className="flex items-center justify-between">
@@ -248,7 +355,36 @@ export const CustomerDetail: React.FC = () => {
             <span className="text-sm font-normal text-slate-500">MMK</span>
           </p>
           <div className="mt-2 text-xs text-emerald-600 font-medium">
-            ပယ်ဖျက်မှုမပါ ဝယ်ယူငွေ စုစုပေါင်း
+            ပယ်ဖျက်မှုမပါ စုစုပေါင်း
+          </div>
+        </div>
+
+        {/* Credit Outstanding */}
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+              လက်ကျန်အကြွေး
+            </p>
+            <div className={`p-2 rounded-lg ${creditOutstanding > 0 ? "bg-rose-50 text-rose-600" : "bg-slate-100 text-slate-500"}`}>
+              <CreditCard className="w-5 h-5" />
+            </div>
+          </div>
+          <p className={`text-2xl font-bold mt-2 ${creditOutstanding > 0 ? "text-rose-600" : "text-slate-800"}`}>
+            {formatNumber(creditOutstanding)}{" "}
+            <span className="text-sm font-normal text-slate-500">MMK</span>
+          </p>
+          <div className="mt-2 flex items-center justify-between">
+            <span className={`text-xs font-medium ${creditOutstanding > 0 ? "text-rose-600" : "text-emerald-600"}`}>
+              {creditOutstanding > 0 ? "ဆပ်ရန်ကျန်ရှိ" : "ရှင်းလင်းပြီး"}
+            </span>
+            {creditOutstanding > 0 && (
+              <button
+                onClick={handleOpenPayCredit}
+                className="text-xs text-primary hover:underline font-semibold"
+              >
+                ဆပ်မည် →
+              </button>
+            )}
           </div>
         </div>
 
@@ -332,6 +468,16 @@ export const CustomerDetail: React.FC = () => {
             }`}
           >
             အဝယ်များဆုံး ပစ္စည်းများ ({topProducts.length})
+          </button>
+          <button
+            onClick={() => setActiveTab("creditPayments")}
+            className={`pb-3 text-sm font-semibold transition-colors relative ${
+              activeTab === "creditPayments"
+                ? "text-primary border-b-2 border-primary"
+                : "text-slate-500 hover:text-slate-700"
+            }`}
+          >
+            အကြွေးဆပ် မှတ်တမ်းများ ({creditPayments.length})
           </button>
         </nav>
       </div>
@@ -493,6 +639,195 @@ export const CustomerDetail: React.FC = () => {
                 )}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 3: CREDIT PAYMENTS */}
+      {activeTab === "creditPayments" && (
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+          <div className="p-4 border-b border-slate-200 flex justify-between items-center">
+            <h3 className="font-semibold text-slate-800 flex items-center gap-2">
+              <History className="w-4 h-4 text-primary" />
+              အကြွေးဆပ် မှတ်တမ်းများ
+            </h3>
+            <span className="text-xs text-slate-500">
+              စုစုပေါင်း {creditPayments.length} ကြိမ်
+            </span>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-50 text-slate-600 text-xs">
+                <tr>
+                  <th className="px-4 py-3 text-left">#</th>
+                  <th className="px-4 py-3 text-left">ရက်စွဲ နှင့် အချိန်</th>
+                  <th className="px-4 py-3 text-right">ဆပ်ငွေ (MMK)</th>
+                  <th className="px-4 py-3 text-center">ပေးချေမှု နည်းလမ်း</th>
+                  <th className="px-4 py-3 text-left">သက်ဆိုင်သည့် အော်ဒါ</th>
+                  <th className="px-4 py-3 text-left">မှတ်ချက်</th>
+                  <th className="px-4 py-3 text-left">မှတ်တမ်းတင်သူ</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {creditPayments && creditPayments.length > 0 ? (
+                  creditPayments.map((record, idx) => (
+                    <tr key={record._id || idx} className="hover:bg-slate-50">
+                      <td className="px-4 py-3 text-xs font-semibold text-slate-400">
+                        {idx + 1}
+                      </td>
+                      <td className="px-4 py-3 text-slate-700 text-xs">
+                        {formatDisplayDateTime(record.paymentDate)}
+                      </td>
+                      <td className="px-4 py-3 text-right font-bold text-emerald-600">
+                        +{formatNumber(record.paidAmount)}
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700 capitalize">
+                          {record.paymentMethod}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 font-medium text-primary text-xs">
+                        {record.orderId?.orderNumber || "-"}
+                      </td>
+                      <td className="px-4 py-3 text-slate-500 text-xs max-w-[200px] truncate">
+                        {record.notes || "-"}
+                      </td>
+                      <td className="px-4 py-3 text-slate-600 text-xs">
+                        {record.addedBy?.name || "-"}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={7} className="py-8 text-center text-slate-400">
+                      အကြွေးဆပ် မှတ်တမ်း မရှိသေးပါ
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Pay Credit Modal */}
+      {showPayCreditModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-slate-100">
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
+                  <CreditCard className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-800 text-base">အကြွေးဆပ်မည်</h3>
+                  <p className="text-xs text-slate-500">{customer?.name} ({customer?.phone})</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowPayCreditModal(false)}
+                className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Form */}
+            <form onSubmit={handleSubmitPayCredit} className="p-6 space-y-4">
+              {/* Outstanding Balance Banner */}
+              <div className="p-3.5 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-rose-600 font-medium">လက်ရှိကျန်အကြွေး စုစုပေါင်း</p>
+                  <p className="text-lg font-bold text-rose-700 mt-0.5">
+                    {formatNumber(creditOutstanding)} MMK
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setPayAmountInput(String(creditOutstanding))}
+                  className="px-2.5 py-1 bg-white hover:bg-rose-100/60 text-rose-700 border border-rose-200 rounded-lg text-xs font-semibold transition-colors shadow-sm"
+                >
+                  အပြည့်ဆပ်မည်
+                </button>
+              </div>
+
+              {/* Amount Input */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  ပေးဆပ်မည့် ငွေပမာဏ (MMK) *
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max={creditOutstanding}
+                  value={payAmountInput}
+                  onChange={(e) => setPayAmountInput(e.target.value)}
+                  placeholder="ဥပမာ - 50000"
+                  required
+                  className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 text-base"
+                />
+              </div>
+
+              {/* Payment Method */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  ငွေပေးချေမှု နည်းလမ်း *
+                </label>
+                <select
+                  value={payMethod}
+                  onChange={(e) => setPayMethod(e.target.value)}
+                  className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 bg-white"
+                >
+                  <option value="cash">လက်ငင်းငွေ (Cash)</option>
+                  <option value="kpay">KBZ Pay</option>
+                  <option value="wavepay">Wave Pay</option>
+                  <option value="ayapay">AYA Pay</option>
+                  <option value="uabpay">UAB Pay</option>
+                  <option value="bank_transfer">ဘဏ်လွှဲ (Bank Transfer)</option>
+                </select>
+              </div>
+
+              {/* Notes */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  မှတ်ချက် (အပိုဆောင်း)
+                </label>
+                <input
+                  type="text"
+                  value={payNotes}
+                  onChange={(e) => setPayNotes(e.target.value)}
+                  placeholder="မှတ်ချက် ရေးရန် (ဥပမာ - KPay Txn ID)"
+                  className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
+                />
+              </div>
+
+              {/* Actions */}
+              <div className="pt-2 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  disabled={isSubmittingPayment}
+                  onClick={() => setShowPayCreditModal(false)}
+                  className="px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-medium rounded-xl transition-colors disabled:opacity-50"
+                >
+                  ပယ်ဖျက်မည်
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingPayment}
+                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors flex items-center gap-2 disabled:opacity-50"
+                >
+                  {isSubmittingPayment ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>လုပ်ဆောင်နေသည်...</span>
+                    </>
+                  ) : (
+                    <span>အတည်ပြု ဆပ်မည်</span>
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

@@ -16,6 +16,7 @@ export interface CustomerMetrics {
   shippedCount?: number;
   validOrdersCount?: number;
   avgOrderValue?: number;
+  creditOutstanding?: number;
 }
 
 export interface CustomerOrderProduct {
@@ -60,11 +61,29 @@ export interface CustomerTopProduct {
   image?: string;
 }
 
+export interface CustomerCreditPaymentRecord {
+  _id: string;
+  orderId?: {
+    _id: string;
+    orderNumber: string;
+  };
+  paidAmount: number;
+  paymentDate: string;
+  paymentMethod: string;
+  notes?: string;
+  addedBy?: {
+    _id: string;
+    name: string;
+  };
+}
+
 export interface CustomerAnalyticsData {
   customer: Customer;
   metrics: CustomerMetrics;
   orders: CustomerOrderItem[];
   topProducts: CustomerTopProduct[];
+  creditOrders?: any[];
+  creditPayments?: CustomerCreditPaymentRecord[];
 }
 
 export interface CustomerAnalyticsResponse {
