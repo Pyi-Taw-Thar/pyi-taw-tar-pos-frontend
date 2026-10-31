@@ -187,11 +187,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         label: t("sidebar.groupFinance"),
         icon: PieChart,
         children: [
-          {
-            path: "/credits",
-            label: t("sidebar.creditSales"),
-            icon: CreditCard,
-          },
           { path: "/expenses", label: t("sidebar.expenses"), icon: PieChart },
           {
             path: "/reports",

@@ -6,6 +6,7 @@ import {
   Navigate,
   useLocation,
   useNavigate,
+  useParams,
 } from "react-router-dom";
 import { Toaster } from "sonner";
 import { LayoutGrid } from "lucide-react";
@@ -30,8 +31,11 @@ import { PurchaseReport } from "./pages/PurchaseReport";
 import { Settings } from "./pages/Settings";
 import { Inventory } from "./pages/Inventory";
 import { Purchasing } from "./pages/Purchasing";
-import { Credits } from "./pages/Credits";
-import { CreditDetail } from "./pages/CreditDetail";
+// /credits/:id သို့ ဝင်ရောက်လာပါက /customers/:id သို့ အလိုအလျောက် လမ်းကြောင်းလွှဲပေးသည့် component
+const CreditDetailRedirect: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  return <Navigate to={id ? `/customers/${id}` : "/customers"} replace />;
+};
 import { Expenses } from "./pages/Expenses";
 import { Suppliers } from "./pages/Suppliers";
 import { SupplierDetail } from "./pages/SupplierDetail";
@@ -219,22 +223,8 @@ const AppLayout: React.FC = () => {
               </FeatureRoute>
             }
           />
-          <Route
-            path="/credits"
-            element={
-              <FeatureRoute feature="posSales">
-                <Credits />
-              </FeatureRoute>
-            }
-          />
-          <Route
-            path="/credits/:id"
-            element={
-              <FeatureRoute feature="posSales">
-                <CreditDetail />
-              </FeatureRoute>
-            }
-          />
+          <Route path="/credits" element={<Navigate to="/customers" replace />} />
+          <Route path="/credits/:id" element={<CreditDetailRedirect />} />
           <Route
             path="/print-receipt/:orderId"
             element={<PrintReceipt />}

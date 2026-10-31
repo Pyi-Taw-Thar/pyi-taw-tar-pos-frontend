@@ -79,11 +79,17 @@ export const EcommerceOrderDetailModal: React.FC<
           .join(", ")
       : customer?.address || "";
 
-    // Calculate credit balance if customer has outstanding credit
-    const previousCreditOutstanding = (order as any).customerCreditOutstanding || 0;
-    const isPaid = order.paymentStatus === "paid";
-    const thisOrderRemaining = isPaid ? 0 : order.totalAmount;
+    // ယခင်ကျန်ငွေ (ဤ order မပါ) + ဤ order ကျန်ငွေ (totalAmount - paidAmount) ဖြင့် ဘောင်ချာကျန်ငွေ တွက်ချက်ခြင်း
+    const previousCreditOutstanding = Number(order.customerCreditOutstanding) || 0;
+    const orderPaidAmount =
+      typeof order.paidAmount === "number"
+        ? order.paidAmount
+        : order.paymentStatus === "paid"
+        ? order.totalAmount
+        : 0;
+    const thisOrderRemaining = Math.max(0, order.totalAmount - orderPaidAmount);
     const totalOutstandingIncludingThisOrder = previousCreditOutstanding + thisOrderRemaining;
+    const hasOutstanding = totalOutstandingIncludingThisOrder > 0;
 
     const receiptData: VoucherReceiptData = {
       documentType: "invoice",
@@ -91,11 +97,11 @@ export const EcommerceOrderDetailModal: React.FC<
       storefrontName: customer?.name || "Ecommerce Order",
       customerPhone: customer?.phone || "",
       customerAddress: customerAddress || undefined,
-      creditPersonName: previousCreditOutstanding > 0 ? (customer?.name || "Customer") : undefined,
-      creditPersonAddress: previousCreditOutstanding > 0 ? (customerAddress || undefined) : undefined,
-      creditPersonTownship: previousCreditOutstanding > 0 ? (customer?.township || undefined) : undefined,
-      creditPersonOutstanding: previousCreditOutstanding > 0 ? totalOutstandingIncludingThisOrder : undefined,
-      paidAmount: isPaid ? order.totalAmount : 0,
+      creditPersonName: hasOutstanding ? (customer?.name || "Customer") : undefined,
+      creditPersonAddress: hasOutstanding ? (customerAddress || undefined) : undefined,
+      creditPersonTownship: hasOutstanding ? (customer?.township || undefined) : undefined,
+      creditPersonOutstanding: hasOutstanding ? totalOutstandingIncludingThisOrder : undefined,
+      paidAmount: orderPaidAmount,
       date: order.createdAt || new Date().toISOString(),
       items: (order.products || []).map((p) => {
         // Ecommerce line ကိုယ်ပိုင် batches ကိုသာ ဘောင်ချာတွင် အသုံးပြုခြင်း

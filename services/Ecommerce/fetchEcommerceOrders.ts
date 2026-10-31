@@ -57,9 +57,11 @@ export interface EcommerceOrder {
   customerId: EcommerceOrderCustomer | null;
   products: EcommerceOrderProduct[];
   totalAmount: number;
+  paidAmount?: number;
+  customerCreditOutstanding?: number;
   status: EcommerceOrderStatus;
   paymentMethod: string;
-  paymentStatus: "paid" | "unpaid" | string;
+  paymentStatus: "paid" | "partial" | "unpaid" | string;
   shippingAddress: EcommerceOrderShippingAddress | null;
   note?: string;
   fulfillmentOrderId?: {

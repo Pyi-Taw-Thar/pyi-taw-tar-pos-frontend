@@ -268,14 +268,6 @@ export const MENU_SECTIONS: MenuSection[] = [
         roles: ["admin", "owner"],
         feature: "posSales",
       },
-      {
-        path: "/credits",
-        labelKey: "sidebar.creditSales",
-        descKey: "menu.desc.creditSales",
-        icon: CreditCard,
-        roles: ["admin", "owner"],
-        feature: "posSales",
-      },
     ],
   },
 ];
