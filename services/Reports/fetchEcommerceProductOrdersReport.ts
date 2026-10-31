@@ -10,9 +10,11 @@ export interface EcommerceProductOrderItem {
   createdAt: string;
   status: string;
   paymentMethod: string;
+  lineIndex?: number;
   quantity: number;
-  originalQuantity: number;
+  originalQuantity?: number | null;
   unit: string;
+  originalUnit?: string | null;
   unitPrice: number;
   subtotal: number;
   orderTotalAmount: number;
@@ -20,6 +22,7 @@ export interface EcommerceProductOrderItem {
 
 export interface EcommerceProductSalesItem {
   _id: string;
+  rowKey?: string;
   productName: string;
   productCode: string;
   unit: string;
@@ -37,6 +40,7 @@ export interface EcommerceProductSalesItem {
 
 export interface EcommerceProductReportTotals {
   uniqueProductsCount: number;
+  rowCount?: number;
   totalQuantity: number;
   totalRevenue: number;
 }
@@ -57,6 +61,7 @@ export interface FetchEcommerceProductOrdersReportParams {
   status?: string;
   search?: string;
   inventoryId?: string;
+  unit?: string;
 }
 
 /**
@@ -72,6 +77,7 @@ export const fetchEcommerceProductOrdersReport = async (
   if (params.status && params.status !== "all") queryParams.append("status", params.status);
   if (params.search && params.search.trim()) queryParams.append("search", params.search.trim());
   if (params.inventoryId) queryParams.append("inventoryId", params.inventoryId);
+  if (params.unit) queryParams.append("unit", params.unit);
 
   const queryString = queryParams.toString();
   const url = `/ecommerce/admin/product-orders-report${queryString ? `?${queryString}` : ""}`;

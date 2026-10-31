@@ -29,6 +29,7 @@ export interface DailySalesItem {
 
 export interface TopProductItem {
   _id: string;
+  rowKey?: string;
   productName: string;
   productCode: string;
   unit: string;

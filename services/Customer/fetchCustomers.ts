@@ -21,6 +21,11 @@ export interface Customer {
   blacklistReason?: string | null;
   createdAt: string;
   updatedAt: string;
+  creditSummary?: {
+    totalPurchaseAmount: number;
+    totalPaidAmount: number;
+    creditRemaining: number;
+  };
 }
 
 export interface CustomerPagination {
@@ -41,6 +46,13 @@ export interface FetchCustomersResponse {
   success: boolean;
   message: string;
   data: Customer[];
+  summary?: {
+    customerCount: number;
+    totalPurchaseAmount: number;
+    totalPaidAmount: number;
+    creditRemaining: number;
+    customersWithCredit: number;
+  };
   pagination?: CustomerPagination;
 }
 
@@ -67,6 +79,7 @@ export const fetchCustomers = async (
         message: body.message || "",
         data: body.data,
         pagination: body.pagination,
+        summary: body.summary,
       };
     }
 

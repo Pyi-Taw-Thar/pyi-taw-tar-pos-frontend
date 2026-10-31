@@ -20,6 +20,7 @@ import {
   CustomerAddress,
   CustomerPagination,
   fetchCustomers,
+  FetchCustomersResponse,
 } from "../services/Customer/fetchCustomers";
 import { registerCustomer } from "../services/Customer/registerCustomer";
 import { updateCustomer } from "../services/Customer/updateCustomer";
@@ -55,6 +56,7 @@ export const Customers: React.FC = () => {
 
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [pagination, setPagination] = useState<CustomerPagination | null>(null);
+  const [summary, setSummary] = useState<FetchCustomersResponse["summary"] | null>(null);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -143,6 +145,7 @@ export const Customers: React.FC = () => {
 
       if (response.success) {
         setCustomers(response.data);
+        setSummary(response.summary || null);
         if (response.pagination) {
           setPagination(response.pagination);
         } else {
@@ -156,10 +159,12 @@ export const Customers: React.FC = () => {
       } else {
         setCustomers([]);
         setPagination(null);
+        setSummary(null);
         toast.error(response.message || t("customers.failedToLoad"));
       }
     } catch (error) {
       console.error("Error fetching customers:", error);
+      setSummary(null);
       toast.error(t("customers.failedToLoad"));
     } finally {
       setLoading(false);
@@ -404,6 +409,45 @@ export const Customers: React.FC = () => {
         </div>
       </div>
 
+      {/* Customer အားလုံး၏ ဝယ်ယူငွေ / ပေးချေပြီးငွေ / အကြွေးကျန်ငွေ စုစုပေါင်း */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+          <span className="text-xs font-medium text-slate-500">
+            {t("customers.totalPurchaseAmount")}
+          </span>
+          <div className="text-xl sm:text-2xl font-extrabold text-slate-800 mt-1">
+            {summary && !loading ? summary.totalPurchaseAmount.toLocaleString() : "—"}{" "}
+            <span className="text-xs font-normal">MMK</span>
+          </div>
+          {summary && !loading && (
+            <div className="text-xs text-slate-500 mt-1">
+              {summary.customerCount} {t("customers.customerCount")} · {summary.customersWithCredit}{" "}
+              {t("customers.withCreditCount")}
+            </div>
+          )}
+        </div>
+
+        <div className="bg-white p-4 rounded-xl shadow-sm border border-green-200 bg-green-50/20">
+          <span className="text-xs font-medium text-green-700">
+            {t("customers.totalPaidAmount")}
+          </span>
+          <div className="text-xl sm:text-2xl font-extrabold text-green-700 mt-1">
+            {summary && !loading ? summary.totalPaidAmount.toLocaleString() : "—"}{" "}
+            <span className="text-xs font-normal">MMK</span>
+          </div>
+        </div>
+
+        <div className="bg-white p-4 rounded-xl shadow-sm border border-red-200 bg-red-50/20">
+          <span className="text-xs font-medium text-red-700">
+            {t("customers.totalCreditRemaining")}
+          </span>
+          <div className="text-xl sm:text-2xl font-extrabold text-red-600 mt-1">
+            {summary && !loading ? summary.creditRemaining.toLocaleString() : "—"}{" "}
+            <span className="text-xs font-normal">MMK</span>
+          </div>
+        </div>
+      </div>
+
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 mb-4 grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="md:col-span-2">
           <label className="block text-xs font-semibold text-slate-500 mb-1">
@@ -467,11 +511,17 @@ export const Customers: React.FC = () => {
               <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500">
                 {t("customers.township")}
               </th>
+              <th className="px-3 py-2 text-right text-xs font-semibold text-slate-500 whitespace-nowrap">
+                {t("customers.purchased")}
+              </th>
+              <th className="px-3 py-2 text-right text-xs font-semibold text-slate-500 whitespace-nowrap">
+                {t("customers.creditRemaining")}
+              </th>
               <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500">
                 {t("common.status")}
               </th>
               <th className="px-3 py-2 text-center text-xs font-semibold text-slate-500">
-                Credit
+                {t("customers.creditColumn")}
               </th>
               <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500">
                 {t("common.date")}
@@ -484,13 +534,13 @@ export const Customers: React.FC = () => {
           <tbody className="divide-y">
             {loading ? (
               <tr>
-                <td colSpan={9} className="py-10 text-center text-slate-500">
+                <td colSpan={11} className="py-10 text-center text-slate-500">
                   {t("common.loading")}
                 </td>
               </tr>
             ) : filteredCustomers.length === 0 ? (
               <tr>
-                <td colSpan={9} className="py-10 text-center text-slate-500">
+                <td colSpan={11} className="py-10 text-center text-slate-500">
                   {t("customers.noCustomers")}
                 </td>
               </tr>
@@ -523,6 +573,26 @@ export const Customers: React.FC = () => {
                     </td>
                     <td className="px-3 py-2 text-slate-600 max-w-[150px] truncate">
                       {customer.township || "-"}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums whitespace-nowrap font-medium text-slate-800">
+                      {customer.creditSummary
+                        ? `${customer.creditSummary.totalPurchaseAmount.toLocaleString()} MMK`
+                        : "-"}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums whitespace-nowrap">
+                      {customer.creditSummary ? (
+                        customer.creditSummary.creditRemaining > 0 ? (
+                          <span className="font-semibold text-red-600">
+                            {`${customer.creditSummary.creditRemaining.toLocaleString()} MMK`}
+                          </span>
+                        ) : (
+                          <span className="font-semibold text-green-700">
+                            {t("customers.noCredit")}
+                          </span>
+                        )
+                      ) : (
+                        <span className="text-slate-400">-</span>
+                      )}
                     </td>
                     <td className="px-3 py-2">
                       <span

@@ -802,6 +802,7 @@ ecommerceReports: {
     totalAmount: "ကျသင့်ငွေ",
     noOrdersForProduct: "ဤပစ္စည်းအတွက် အော်ဒါမှတ်တမ်း မရှိပါ",
     close: "ပိတ်မည်",
+    orderedOriginal: "မူလမှာယူ: {qty} {unit}",
   },
   customers: {
     detail: {
@@ -960,6 +961,15 @@ ecommerceReports: {
     addressLine: "လိပ်စာ",
     township: "မြို့နယ်",
     addressFieldsRequired: "လိပ်စာအားလုံးအတွက် လိပ်စာနှင့် မြို့ ကို ဖြည့်ပါ",
+    totalPurchaseAmount: "စုစုပေါင်း ဝယ်ယူငွေ",
+    totalPaidAmount: "ပေးချေပြီး ငွေ",
+    totalCreditRemaining: "အကြွေးကျန်ငွေ",
+    customerCount: "ဦး",
+    withCreditCount: "ဦး အကြွေးရှိ",
+    purchased: "ဝယ်ယူငွေ",
+    creditRemaining: "အကြွေးကျန်",
+    noCredit: "အကြွေး မရှိ",
+    creditColumn: "အကြွေး",
   },
   creditOrders: {
     title: "အကြွေး အော်ဒါများ",

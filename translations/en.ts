@@ -796,6 +796,7 @@ ecommerceReports: {
     totalAmount: "Total",
     noOrdersForProduct: "No order records found for this product",
     close: "Close",
+    orderedOriginal: "ordered: {qty} {unit}",
   },
   customers: {
     detail: {
@@ -954,6 +955,15 @@ ecommerceReports: {
     addressLine: "Address Line",
     township: "Township",
     addressFieldsRequired: "Please fill address line and city for all addresses",
+    totalPurchaseAmount: "Total Purchase Amount",
+    totalPaidAmount: "Total Paid",
+    totalCreditRemaining: "Credit Remaining",
+    customerCount: "customers",
+    withCreditCount: "with credit",
+    purchased: "Purchased",
+    creditRemaining: "Credit Remaining",
+    noCredit: "No credit",
+    creditColumn: "Credit",
   },
   creditOrders: {
     title: "Credit Orders",

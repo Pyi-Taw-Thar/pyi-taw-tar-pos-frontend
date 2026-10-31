@@ -27,6 +27,7 @@ import {
 import { fetchEcommerceOrderById } from "../services/Ecommerce/fetchEcommerceOrderById";
 import type { EcommerceOrder } from "../services/Ecommerce/fetchEcommerceOrders";
 import { EcommerceOrderDetailModal } from "../components/Ecommerce/EcommerceOrderDetailModal";
+import { ProductThumb } from "../components/Common/ProductThumb";
 
 // Helper function to get today's date
 const getToday = () => {
@@ -521,8 +522,8 @@ export const EcommerceReports: React.FC = () => {
           {/* TAB 2: TOP PRODUCTS */}
           {activeTab === "topProducts" && (
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-              <div className="p-4 border-b border-slate-200 flex justify-between items-center">
-                <h3 className="font-semibold text-slate-800 flex items-center gap-2">
+              <div className="p-4 border-b border-slate-200 flex flex-wrap justify-between items-center gap-2">
+                <h3 className="font-semibold text-slate-800 flex items-center gap-2 text-sm sm:text-base">
                   <Layers className="w-4 h-4 text-primary" />
                   {t("ecommerceReports.topProductsList")}
                 </h3>
@@ -530,71 +531,107 @@ export const EcommerceReports: React.FC = () => {
                   {t("ecommerceReports.topProductsCountSummary", { count: reportData?.topProducts?.length || 0, qty: formatNumber(totalOrderedQuantity) })}
                 </span>
               </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead className="bg-slate-50 text-slate-600 text-xs">
-                    <tr>
-                      <th className="px-4 py-3 text-left">#</th>
-                      <th className="px-4 py-3 text-left">{t("ecommerceReports.product")}</th>
-                      <th className="px-4 py-3 text-left">{t("ecommerceReports.code")}</th>
-                      <th className="px-4 py-3 text-center">{t("ecommerceReports.unit")}</th>
-                      <th className="px-4 py-3 text-center">{t("ecommerceReports.quantitySold")}</th>
-                      <th className="px-4 py-3 text-center">{t("ecommerceReports.orderFrequency")}</th>
-                      <th className="px-4 py-3 text-right">{t("ecommerceReports.revenueMmk")}</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {reportData?.topProducts && reportData.topProducts.length > 0 ? (
-                      reportData.topProducts.map((p, idx) => (
-                        <tr key={p._id || idx} className="hover:bg-slate-50">
-                          <td className="px-4 py-3 text-xs font-semibold text-slate-400">
-                            {idx + 1}
-                          </td>
-                          <td className="px-4 py-3">
-                            <div className="flex items-center gap-3">
-                              {p.image ? (
-                                <img
-                                  src={p.image}
-                                  alt={p.productName}
-                                  className="w-9 h-9 rounded object-cover border border-slate-200"
-                                />
-                              ) : (
-                                <div className="w-9 h-9 rounded bg-slate-100 flex items-center justify-center text-slate-400 text-xs font-semibold">
-                                  PTT
-                                </div>
+
+              {reportData?.topProducts && reportData.topProducts.length > 0 ? (
+                <>
+                  {/* မိုဘိုင်းအတွက် Card Layout (md:hidden) */}
+                  <div className="md:hidden divide-y divide-slate-100">
+                    {reportData.topProducts.map((p, idx) => (
+                      <div key={p.rowKey || `${p._id}-${p.unit}` || idx} className="p-4 space-y-3">
+                        <div className="flex items-start gap-3">
+                          <span className="text-xs font-semibold text-slate-400 mt-1 flex-shrink-0">
+                            #{idx + 1}
+                          </span>
+                          <ProductThumb src={p.image} size="sm" />
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-slate-800 break-words text-sm">
+                              {p.productName}
+                            </p>
+                            <div className="flex flex-wrap items-center gap-1.5 mt-1 text-[11px] text-slate-500 font-mono">
+                              {p.productCode && (
+                                <span className="px-1.5 py-0.5 rounded bg-slate-100">
+                                  {p.productCode}
+                                </span>
                               )}
-                              <span className="font-medium text-slate-800">
-                                {p.productName}
+                              <span className="px-1.5 py-0.5 rounded bg-slate-100 font-sans">
+                                {p.unit || "-"}
                               </span>
                             </div>
-                          </td>
-                          <td className="px-4 py-3 text-slate-500 text-xs">
-                            {p.productCode || "-"}
-                          </td>
-                          <td className="px-4 py-3 text-center text-slate-600">
-                            {p.unit || "-"}
-                          </td>
-                          <td className="px-4 py-3 text-center font-bold text-slate-800">
-                            {formatNumber(p.totalQuantity)}
-                          </td>
-                          <td className="px-4 py-3 text-center text-slate-600 text-xs">
-                            {t("ecommerceReports.orderTimes", { count: formatNumber(p.orderCount) })}
-                          </td>
-                          <td className="px-4 py-3 text-right font-bold text-emerald-600">
-                            {formatNumber(p.totalRevenue)}
-                          </td>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-2 p-2.5 rounded-lg bg-slate-50 text-xs">
+                          <div>
+                            <span className="text-slate-400 block text-[10px]">{t("ecommerceReports.quantitySold")}</span>
+                            <span className="font-bold text-slate-800">{formatNumber(p.totalQuantity)} {p.unit}</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-400 block text-[10px]">{t("ecommerceReports.orderFrequency")}</span>
+                            <span className="font-semibold text-slate-700">{t("ecommerceReports.orderTimes", { count: formatNumber(p.orderCount) })}</span>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-slate-400 block text-[10px]">{t("ecommerceReports.revenueMmk")}</span>
+                            <span className="font-bold text-emerald-600">{formatNumber(p.totalRevenue)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Desktop အတွက် Table Layout (hidden md:block) */}
+                  <div className="hidden md:block overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead className="bg-slate-50 text-slate-600 text-xs">
+                        <tr>
+                          <th className="px-4 py-3 text-left whitespace-nowrap">#</th>
+                          <th className="px-4 py-3 text-left min-w-[200px]">{t("ecommerceReports.product")}</th>
+                          <th className="px-4 py-3 text-left whitespace-nowrap">{t("ecommerceReports.code")}</th>
+                          <th className="px-4 py-3 text-center whitespace-nowrap">{t("ecommerceReports.unit")}</th>
+                          <th className="px-4 py-3 text-center whitespace-nowrap">{t("ecommerceReports.quantitySold")}</th>
+                          <th className="px-4 py-3 text-center whitespace-nowrap">{t("ecommerceReports.orderFrequency")}</th>
+                          <th className="px-4 py-3 text-right whitespace-nowrap">{t("ecommerceReports.revenueMmk")}</th>
                         </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan={7} className="py-8 text-center text-slate-400">
-                          {t("ecommerceReports.noTopProducts")}
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {reportData.topProducts.map((p, idx) => (
+                          <tr key={p.rowKey || `${p._id}-${p.unit}` || idx} className="hover:bg-slate-50">
+                            <td className="px-4 py-3 text-xs font-semibold text-slate-400 whitespace-nowrap">
+                              {idx + 1}
+                            </td>
+                            <td className="px-4 py-3 min-w-[200px]">
+                              <div className="flex items-center gap-3">
+                                <ProductThumb src={p.image} size="sm" />
+                                <span className="font-medium text-slate-800 break-words">
+                                  {p.productName}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="px-4 py-3 text-slate-500 text-xs whitespace-nowrap">
+                              {p.productCode || "-"}
+                            </td>
+                            <td className="px-4 py-3 text-center text-slate-600 whitespace-nowrap">
+                              {p.unit || "-"}
+                            </td>
+                            <td className="px-4 py-3 text-center font-bold text-slate-800 whitespace-nowrap">
+                              {formatNumber(p.totalQuantity)}
+                            </td>
+                            <td className="px-4 py-3 text-center text-slate-600 text-xs whitespace-nowrap">
+                              {t("ecommerceReports.orderTimes", { count: formatNumber(p.orderCount) })}
+                            </td>
+                            <td className="px-4 py-3 text-right font-bold text-emerald-600 whitespace-nowrap">
+                              {formatNumber(p.totalRevenue)}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
+              ) : (
+                <div className="py-8 text-center text-slate-400">
+                  {t("ecommerceReports.noTopProducts")}
+                </div>
+              )}
             </div>
           )}
 

@@ -28,6 +28,7 @@ import {
 import { fetchEcommerceOrderById } from "../services/Ecommerce/fetchEcommerceOrderById";
 import type { EcommerceOrder } from "../services/Ecommerce/fetchEcommerceOrders";
 import { EcommerceOrderDetailModal } from "../components/Ecommerce/EcommerceOrderDetailModal";
+import { ProductThumb } from "../components/Common/ProductThumb";
 
 // Helper function to get today's date
 const getToday = () => {
@@ -151,6 +152,7 @@ export const EcommerceProductOrdersReport: React.FC = () => {
         endDate: formatDateForAPI(endDate),
         status: statusFilter,
         inventoryId: product._id,
+        unit: product.unit,
       });
 
       if (res.success && res.data?.orders) {
@@ -368,7 +370,7 @@ export const EcommerceProductOrdersReport: React.FC = () => {
         </div>
       </div>
 
-      {/* Products Table */}
+            {/* Products Table & Cards */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         <div className="p-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
           <h3 className="font-semibold text-slate-800 flex items-center gap-2 text-sm sm:text-base">
@@ -385,46 +387,138 @@ export const EcommerceProductOrdersReport: React.FC = () => {
             <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2 text-primary" />
             <p className="text-sm">{t("ecommerceReports.loadingProducts")}</p>
           </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-slate-50 text-slate-600 text-xs">
-                <tr>
-                  <th className="px-4 py-3 text-left">#</th>
-                  <th className="px-4 py-3 text-left">{t("ecommerceReports.product")}</th>
-                  <th className="px-4 py-3 text-left">{t("ecommerceReports.code")}</th>
-                  <th className="px-4 py-3 text-center">{t("ecommerceReports.unit")}</th>
-                  <th className="px-4 py-3 text-center bg-purple-50/60 text-purple-900 font-bold">
-                    {t("ecommerceReports.orderedQty")}
-                  </th>
-                  <th className="px-4 py-3 text-center">{t("ecommerceReports.orderFrequency")}</th>
-                  <th className="px-4 py-3 text-right">{t("ecommerceReports.avgPrice")}</th>
-                  <th className="px-4 py-3 text-right">{t("ecommerceReports.revenueMmk")}</th>
-                  <th className="px-4 py-3 text-right">{t("ecommerceReports.viewOrders")}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {filteredAndSortedProducts.length > 0 ? (
-                  filteredAndSortedProducts.map((p, idx) => (
-                    <tr key={p._id || idx} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="px-4 py-3 text-xs font-semibold text-slate-400">
+        ) : filteredAndSortedProducts.length > 0 ? (
+          <>
+            {/* မိုဘိုင်းအတွက် Card Layout (md:hidden) */}
+            <div className="md:hidden divide-y divide-slate-100">
+              {filteredAndSortedProducts.map((p, idx) => (
+                <div key={p.rowKey || `${p._id}-${p.unit}` || idx} className="p-4 space-y-3">
+                  {/* Top line: #, thumb, name, category, code & unit chips */}
+                  <div className="flex items-start gap-3">
+                    <span className="text-xs font-semibold text-slate-400 mt-1 flex-shrink-0">
+                      #{idx + 1}
+                    </span>
+                    <ProductThumb src={p.image} size="sm" />
+                    <div className="flex-1 min-w-0">
+                      <p
+                        className="font-semibold text-slate-800 hover:text-primary transition-colors cursor-pointer break-words text-sm"
+                        onClick={() => handleOpenProductOrders(p)}
+                      >
+                        {p.productName}
+                      </p>
+                      {p.category && (
+                        <p className="text-xs text-slate-400 mt-0.5">{p.category}</p>
+                      )}
+                      <div className="flex flex-wrap items-center gap-1.5 mt-1 text-[11px] text-slate-500 font-mono">
+                        {p.productCode && (
+                          <span className="px-1.5 py-0.5 rounded bg-slate-100">
+                            {p.productCode}
+                          </span>
+                        )}
+                        <span className="px-1.5 py-0.5 rounded bg-slate-100 font-sans">
+                          {p.unit || "-"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Middle line: large purple Ordered Qty + unit, with status chips */}
+                  <div className="flex items-center justify-between p-2.5 rounded-lg bg-purple-50/50 border border-purple-100/60">
+                    <div>
+                      <span className="text-xs text-purple-900 font-medium block">
+                        {t("ecommerceReports.orderedQty")}
+                      </span>
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="text-lg font-extrabold text-purple-700">
+                          {formatNumber(p.totalQuantity)}
+                        </span>
+                        <span className="text-xs text-purple-600 font-medium">
+                          {p.unit}
+                        </span>
+                      </div>
+                    </div>
+                    {/* Status chips breakdown (P / C / S / D) */}
+                    <div className="flex items-center flex-wrap gap-1 text-[10px]">
+                      {p.pendingQuantity > 0 && (
+                        <span className="px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 font-medium" title={t("ecommerceReports.pendingStatus")}>
+                          P:{p.pendingQuantity}
+                        </span>
+                      )}
+                      {p.confirmedQuantity > 0 && (
+                        <span className="px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 font-medium" title={t("ecommerceReports.confirmedStatus")}>
+                          C:{p.confirmedQuantity}
+                        </span>
+                      )}
+                      {p.shippedQuantity > 0 && (
+                        <span className="px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-800 font-medium" title={t("ecommerceReports.shippedStatus")}>
+                          S:{p.shippedQuantity}
+                        </span>
+                      )}
+                      {p.deliveredQuantity > 0 && (
+                        <span className="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-medium" title={t("ecommerceReports.deliveredStatus")}>
+                          D:{p.deliveredQuantity}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Bottom grid (grid-cols-3): orders count, avg price, revenue */}
+                  <div className="grid grid-cols-3 gap-2 p-2.5 rounded-lg bg-slate-50 text-xs">
+                    <div>
+                      <span className="text-slate-400 block text-[10px]">{t("ecommerceReports.orderFrequency")}</span>
+                      <span className="font-semibold text-slate-700">{t("ecommerceReports.orderTimes", { count: p.orderCount })}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block text-[10px]">{t("ecommerceReports.avgPrice")}</span>
+                      <span className="font-semibold text-slate-700">{formatNumber(p.averageUnitPrice)}</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-slate-400 block text-[10px]">{t("ecommerceReports.revenueMmk")}</span>
+                      <span className="font-bold text-emerald-600">{formatNumber(p.totalRevenue)}</span>
+                    </div>
+                  </div>
+
+                  {/* Full-width "Orders" button */}
+                  <button
+                    onClick={() => handleOpenProductOrders(p)}
+                    className="w-full flex items-center justify-center gap-1.5 py-2 text-xs font-medium rounded-lg border border-primary/30 text-primary hover:bg-primary/5 transition-colors"
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                    {t("ecommerceReports.viewOrders")}
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop အတွက် Table Layout (hidden md:block) */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-slate-50 text-slate-600 text-xs">
+                  <tr>
+                    <th className="px-4 py-3 text-left whitespace-nowrap">#</th>
+                    <th className="px-4 py-3 text-left min-w-[220px]">{t("ecommerceReports.product")}</th>
+                    <th className="px-4 py-3 text-left whitespace-nowrap">{t("ecommerceReports.code")}</th>
+                    <th className="px-4 py-3 text-center whitespace-nowrap">{t("ecommerceReports.unit")}</th>
+                    <th className="px-4 py-3 text-center bg-purple-50/60 text-purple-900 font-bold whitespace-nowrap">
+                      {t("ecommerceReports.orderedQty")}
+                    </th>
+                    <th className="px-4 py-3 text-center whitespace-nowrap">{t("ecommerceReports.orderFrequency")}</th>
+                    <th className="px-4 py-3 text-right whitespace-nowrap">{t("ecommerceReports.avgPrice")}</th>
+                    <th className="px-4 py-3 text-right whitespace-nowrap">{t("ecommerceReports.revenueMmk")}</th>
+                    <th className="px-4 py-3 text-right whitespace-nowrap">{t("ecommerceReports.viewOrders")}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {filteredAndSortedProducts.map((p, idx) => (
+                    <tr key={p.rowKey || `${p._id}-${p.unit}` || idx} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="px-4 py-3 text-xs font-semibold text-slate-400 whitespace-nowrap">
                         {idx + 1}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3 min-w-[220px]">
                         <div className="flex items-center gap-3">
-                          {p.image ? (
-                            <img
-                              src={p.image}
-                              alt={p.productName}
-                              className="w-10 h-10 rounded-lg object-cover border border-slate-200 flex-shrink-0"
-                            />
-                          ) : (
-                            <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 text-xs font-semibold flex-shrink-0">
-                              PTT
-                            </div>
-                          )}
-                          <div>
-                            <p className="font-semibold text-slate-800 hover:text-primary transition-colors cursor-pointer" onClick={() => handleOpenProductOrders(p)}>
+                          <ProductThumb src={p.image} size="sm" />
+                          <div className="min-w-0">
+                            <p className="font-semibold text-slate-800 hover:text-primary transition-colors cursor-pointer break-words" onClick={() => handleOpenProductOrders(p)}>
                               {p.productName}
                             </p>
                             {p.category && (
@@ -433,23 +527,23 @@ export const EcommerceProductOrdersReport: React.FC = () => {
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-slate-600 text-xs font-mono">
+                      <td className="px-4 py-3 text-slate-600 text-xs font-mono whitespace-nowrap">
                         {p.productCode || "-"}
                       </td>
-                      <td className="px-4 py-3 text-center text-slate-600 text-xs">
+                      <td className="px-4 py-3 text-center text-slate-600 text-xs whitespace-nowrap">
                         <span className="inline-block px-2 py-0.5 rounded bg-slate-100">
                           {p.unit || "-"}
                         </span>
                       </td>
 
                       {/* Total Ordered Quantity - Prominent */}
-                      <td className="px-4 py-3 text-center bg-purple-50/30">
+                      <td className="px-4 py-3 text-center bg-purple-50/30 whitespace-nowrap">
                         <div className="inline-flex flex-col items-center">
                           <span className="text-base font-extrabold text-purple-700">
                             {formatNumber(p.totalQuantity)}
                           </span>
-                          {/* Mini breakdown of statuses */}
-                          <div className="flex items-center gap-1 mt-0.5 text-[10px] text-slate-500">
+                          {/* Mini breakdown of statuses (P / C / S / D) */}
+                          <div className="flex items-center justify-center flex-wrap gap-1 mt-0.5 text-[10px] text-slate-500">
                             {p.pendingQuantity > 0 && (
                               <span className="text-amber-700 font-medium" title={t("ecommerceReports.pendingStatus")}>
                                 P:{p.pendingQuantity}
@@ -458,6 +552,11 @@ export const EcommerceProductOrdersReport: React.FC = () => {
                             {p.confirmedQuantity > 0 && (
                               <span className="text-blue-700 font-medium" title={t("ecommerceReports.confirmedStatus")}>
                                 C:{p.confirmedQuantity}
+                              </span>
+                            )}
+                            {p.shippedQuantity > 0 && (
+                              <span className="text-indigo-700 font-medium" title={t("ecommerceReports.shippedStatus")}>
+                                S:{p.shippedQuantity}
                               </span>
                             )}
                             {p.deliveredQuantity > 0 && (
@@ -469,16 +568,16 @@ export const EcommerceProductOrdersReport: React.FC = () => {
                         </div>
                       </td>
 
-                      <td className="px-4 py-3 text-center text-slate-700 font-medium text-xs">
+                      <td className="px-4 py-3 text-center text-slate-700 font-medium text-xs whitespace-nowrap">
                         {t("ecommerceReports.orderTimes", { count: p.orderCount })}
                       </td>
-                      <td className="px-4 py-3 text-right text-slate-600 text-xs">
+                      <td className="px-4 py-3 text-right text-slate-600 text-xs whitespace-nowrap">
                         {formatNumber(p.averageUnitPrice)}
                       </td>
-                      <td className="px-4 py-3 text-right font-bold text-emerald-600">
+                      <td className="px-4 py-3 text-right font-bold text-emerald-600 whitespace-nowrap">
                         {formatNumber(p.totalRevenue)}
                       </td>
-                      <td className="px-4 py-3 text-right">
+                      <td className="px-4 py-3 text-right whitespace-nowrap">
                         <button
                           onClick={() => handleOpenProductOrders(p)}
                           className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-lg border border-primary/30 text-primary hover:bg-primary/5 transition-colors"
@@ -489,140 +588,197 @@ export const EcommerceProductOrdersReport: React.FC = () => {
                         </button>
                       </td>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={9} className="py-12 text-center text-slate-400">
-                      {t("ecommerceReports.noProductsInDateRange")}
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        ) : (
+          <div className="py-12 text-center text-slate-400">
+            {t("ecommerceReports.noProductsInDateRange")}
           </div>
         )}
       </div>
 
-      {/* Modal: Orders containing this product */}
+{/* Modal: Orders containing this product */}
       {showProductOrdersModal && selectedProduct && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden border border-slate-100">
-            {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
-              <div className="flex items-center gap-3">
-                {selectedProduct.image ? (
-                  <img
-                    src={selectedProduct.image}
-                    alt={selectedProduct.productName}
-                    className="w-12 h-12 rounded-xl object-cover border border-slate-200"
-                  />
-                ) : (
-                  <div className="w-12 h-12 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center font-bold">
-                    PTT
-                  </div>
-                )}
-                <div>
-                  <h3 className="font-bold text-slate-800 text-base">
-                    {selectedProduct.productName}
-                  </h3>
-                  <div className="flex items-center gap-2 mt-0.5 text-xs text-slate-500">
-                    <span>{t("ecommerceReports.modalCode", { code: selectedProduct.productCode || "-" })}</span>
-                    <span>•</span>
-                    <span>{t("ecommerceReports.modalTotalOrdered", { qty: formatNumber(selectedProduct.totalQuantity), unit: selectedProduct.unit })}</span>
-                  </div>
-                </div>
-              </div>
-              <button
-                onClick={() => {
-                  setShowProductOrdersModal(false);
-                  setSelectedProduct(null);
-                }}
-                className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Modal Content - Table of Orders */}
-            <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
+              <div className="flex items-center gap-3">
+                <ProductThumb src={selectedProduct.image} size="md" />
+                <div>
+                  <h3 className="font-bold text-slate-800 text-base">
+                    {selectedProduct.productName}
+                  </h3>
+                  <div className="flex items-center gap-2 mt-0.5 text-xs text-slate-500">
+                    <span>{t("ecommerceReports.modalCode", { code: selectedProduct.productCode || "-" })}</span>
+                    <span>•</span>
+                    <span>{t("ecommerceReports.modalTotalOrdered", { qty: formatNumber(selectedProduct.totalQuantity), unit: selectedProduct.unit })}</span>
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setShowProductOrdersModal(false);
+                  setSelectedProduct(null);
+                }}
+                className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Content - Table of Orders */}
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6">
               {loadingOrders ? (
                 <div className="py-16 text-center text-slate-500">
                   <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2 text-primary" />
                   <p className="text-sm">{t("ecommerceReports.loadingOrders")}</p>
                 </div>
               ) : productOrders.length > 0 ? (
-                <div className="border border-slate-200 rounded-xl overflow-hidden">
-                  <table className="w-full text-sm">
-                    <thead className="bg-slate-50 text-slate-600 text-xs">
-                      <tr>
-                        <th className="px-4 py-2.5 text-left">{t("customers.detail.orderNumber")}</th>
-                        <th className="px-4 py-2.5 text-left">{t("ecommerceReports.date")}</th>
-                        <th className="px-4 py-2.5 text-left">{t("ecommerceReports.customer")}</th>
-                        <th className="px-4 py-2.5 text-center font-bold text-purple-900 bg-purple-50/50">
-                          {t("ecommerceReports.orderedQty")}
-                        </th>
-                        <th className="px-4 py-2.5 text-right">{t("ecommerceReports.price")}</th>
-                        <th className="px-4 py-2.5 text-right">{t("ecommerceReports.totalAmount")}</th>
-                        <th className="px-4 py-2.5 text-center">{t("ecommerceReports.status")}</th>
-                        <th className="px-4 py-2.5 text-right">{t("ecommerceReports.detail")}</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {productOrders.map((ord) => (
-                        <tr key={ord._id} className="hover:bg-slate-50">
-                          <td className="px-4 py-3 font-semibold text-primary">
+                <>
+                  {/* မိုဘိုင်းအတွက် Modal Order Cards (md:hidden) */}
+                  <div className="md:hidden divide-y divide-slate-100 border border-slate-200 rounded-xl overflow-hidden">
+                    {productOrders.map((ord, idx) => (
+                      <div key={`${ord._id}-${ord.lineIndex ?? idx}`} className="p-3.5 space-y-2.5 bg-white">
+                        <div className="flex items-center justify-between gap-2">
+                          <button
+                            onClick={() => handleOpenOrderDetail(ord._id)}
+                            className="font-semibold text-primary text-sm hover:underline"
+                          >
                             {ord.orderNumber}
-                          </td>
-                          <td className="px-4 py-3 text-slate-600 text-xs">
-                            {formatDisplayDate(ord.createdAt)}
-                          </td>
-                          <td className="px-4 py-3">
-                            <p className="font-medium text-slate-800 text-xs sm:text-sm">
-                              {ord.customerName}
-                            </p>
-                            {ord.customerPhone && (
-                              <p className="text-xs text-slate-400">{ord.customerPhone}</p>
-                            )}
-                          </td>
-                          <td className="px-4 py-3 text-center bg-purple-50/20 font-bold text-purple-700 text-sm">
-                            {ord.quantity} {ord.unit}
-                          </td>
-                          <td className="px-4 py-3 text-right text-slate-600 text-xs">
-                            {formatNumber(ord.unitPrice)}
-                          </td>
-                          <td className="px-4 py-3 text-right font-bold text-slate-800 text-xs sm:text-sm">
-                            {formatNumber(ord.subtotal)}
-                          </td>
-                          <td className="px-4 py-3 text-center">
-                            <span
-                              className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold ${formatStatusBadge(
-                                ord.status
-                              )}`}
-                            >
-                              {ord.status}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 text-right">
-                            <button
-                              onClick={() => handleOpenOrderDetail(ord._id)}
-                              className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded border border-slate-200 text-slate-700 hover:bg-slate-100 transition-colors"
-                            >
-                              <Eye className="w-3.5 h-3.5" />
-                              {t("ecommerceReports.view")}
-                            </button>
-                          </td>
+                          </button>
+                          <span
+                            className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold ${formatStatusBadge(
+                              ord.status
+                            )}`}
+                          >
+                            {ord.status}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between text-xs text-slate-500">
+                          <span>{formatDisplayDate(ord.createdAt)}</span>
+                          <span className="font-medium text-slate-700">
+                            {ord.customerName} {ord.customerPhone ? `(${ord.customerPhone})` : ""}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between pt-1 border-t border-slate-50">
+                          <div>
+                            <div className="font-bold text-purple-700 text-sm">
+                              {ord.quantity} {ord.unit}
+                            </div>
+                            {ord.originalUnit &&
+                              (ord.originalUnit !== ord.unit ||
+                                (ord.originalQuantity != null && ord.originalQuantity !== ord.quantity)) && (
+                                <div className="text-[11px] font-normal text-slate-400 mt-0.5">
+                                  {t("ecommerceReports.orderedOriginal", {
+                                    qty: ord.originalQuantity ?? ord.quantity,
+                                    unit: ord.originalUnit,
+                                  })}
+                                </div>
+                              )}
+                          </div>
+                          <div className="text-right">
+                            <div className="text-[11px] text-slate-400">
+                              {formatNumber(ord.unitPrice)} × {ord.quantity}
+                            </div>
+                            <div className="font-bold text-slate-800 text-sm">
+                              {formatNumber(ord.subtotal)} MMK
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Desktop အတွက် Modal Order Table (hidden md:block) */}
+                  <div className="hidden md:block border border-slate-200 rounded-xl overflow-hidden">
+                    <table className="w-full text-sm">
+                      <thead className="bg-slate-50 text-slate-600 text-xs">
+                        <tr>
+                          <th className="px-4 py-2.5 text-left whitespace-nowrap">{t("customers.detail.orderNumber")}</th>
+                          <th className="px-4 py-2.5 text-left whitespace-nowrap">{t("ecommerceReports.date")}</th>
+                          <th className="px-4 py-2.5 text-left">{t("ecommerceReports.customer")}</th>
+                          <th className="px-4 py-2.5 text-center font-bold text-purple-900 bg-purple-50/50 whitespace-nowrap">
+                            {t("ecommerceReports.orderedQty")}
+                          </th>
+                          <th className="px-4 py-2.5 text-right whitespace-nowrap">{t("ecommerceReports.price")}</th>
+                          <th className="px-4 py-2.5 text-right whitespace-nowrap">{t("ecommerceReports.totalAmount")}</th>
+                          <th className="px-4 py-2.5 text-center whitespace-nowrap">{t("ecommerceReports.status")}</th>
+                          <th className="px-4 py-2.5 text-right whitespace-nowrap">{t("ecommerceReports.detail")}</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {productOrders.map((ord, idx) => (
+                          <tr key={`${ord._id}-${ord.lineIndex ?? idx}`} className="hover:bg-slate-50">
+                            <td className="px-4 py-3 font-semibold text-primary whitespace-nowrap">
+                              {ord.orderNumber}
+                            </td>
+                            <td className="px-4 py-3 text-slate-600 text-xs whitespace-nowrap">
+                              {formatDisplayDate(ord.createdAt)}
+                            </td>
+                            <td className="px-4 py-3">
+                              <p className="font-medium text-slate-800 text-xs sm:text-sm">
+                                {ord.customerName}
+                              </p>
+                              {ord.customerPhone && (
+                                <p className="text-xs text-slate-400">{ord.customerPhone}</p>
+                              )}
+                            </td>
+                            <td className="px-4 py-3 text-center bg-purple-50/20 font-bold text-purple-700 text-sm whitespace-nowrap">
+                              <div>
+                                {ord.quantity} {ord.unit}
+                              </div>
+                              {ord.originalUnit &&
+                                (ord.originalUnit !== ord.unit ||
+                                  (ord.originalQuantity != null && ord.originalQuantity !== ord.quantity)) && (
+                                  <div className="text-[11px] font-normal text-slate-400 mt-0.5">
+                                    {t("ecommerceReports.orderedOriginal", {
+                                      qty: ord.originalQuantity ?? ord.quantity,
+                                      unit: ord.originalUnit,
+                                    })}
+                                  </div>
+                                )}
+                            </td>
+                            <td className="px-4 py-3 text-right text-slate-600 text-xs whitespace-nowrap">
+                              {formatNumber(ord.unitPrice)}
+                            </td>
+                            <td className="px-4 py-3 text-right font-bold text-slate-800 text-xs sm:text-sm whitespace-nowrap">
+                              {formatNumber(ord.subtotal)}
+                            </td>
+                            <td className="px-4 py-3 text-center whitespace-nowrap">
+                              <span
+                                className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold ${formatStatusBadge(
+                                  ord.status
+                                )}`}
+                              >
+                                {ord.status}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-right whitespace-nowrap">
+                              <button
+                                onClick={() => handleOpenOrderDetail(ord._id)}
+                                className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded border border-slate-200 text-slate-700 hover:bg-slate-100 transition-colors"
+                              >
+                                <Eye className="w-3.5 h-3.5" />
+                                {t("ecommerceReports.view")}
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
               ) : (
                 <div className="py-12 text-center text-slate-400">
                   {t("ecommerceReports.noOrdersForProduct")}
                 </div>
-              )}
-            </div>
-
+              )}
+            </div>
+
             {/* Modal Footer */}
             <div className="px-6 py-3 border-t border-slate-100 bg-slate-50/50 flex justify-end">
               <button
