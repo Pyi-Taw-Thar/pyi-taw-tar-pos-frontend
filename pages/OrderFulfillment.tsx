@@ -412,11 +412,11 @@ export const OrderFulfillment: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => handlePrintOrder(ord)}
-                            title={t("fulfillment.printSlip") || "ဘောက်ချာ ပုံနှိပ်မည်"}
+                            title={t("fulfillment.printSlip")}
                             className="inline-flex items-center justify-center gap-1.5 p-2 sm:px-3 sm:py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 hover:text-blue-800 border border-blue-200 rounded-xl text-xs font-semibold shadow-sm transition-all whitespace-nowrap"
                           >
                             <Printer className="w-4 h-4 shrink-0" />
-                            <span className="hidden sm:inline">{t("fulfillment.printSlip") || "ဘောက်ချာ ထုတ်မည်"}</span>
+                            <span className="hidden sm:inline">{t("fulfillment.printSlip")}</span>
                           </button>
                           <button
                             onClick={() => setSelectedOrderForFulfill(ord)}

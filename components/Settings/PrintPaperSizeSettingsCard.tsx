@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Printer, Check, LayoutGrid, List } from "lucide-react";
 import { toast } from "sonner";
+import { useLanguage } from "../../context/LanguageContext";
 import { PrintPaperSizeSelector } from "../Print/PrintPaperSizeSelector";
 import {
   getSavedPrintPaperSize,
@@ -14,6 +15,7 @@ import {
 } from "../../utils/printPaperSize";
 
 export const PrintPaperSizeSettingsCard: React.FC = () => {
+  const { t } = useLanguage();
   const [paperSize, setPaperSize] = useState<PrintPaperSize>(() =>
     getSavedPrintPaperSize(),
   );
@@ -69,10 +71,10 @@ export const PrintPaperSizeSettingsCard: React.FC = () => {
       <div className="mt-6 pt-5 border-t border-slate-200">
         <h4 className="text-sm font-semibold text-slate-800 mb-1 flex items-center gap-2">
           <LayoutGrid className="w-4 h-4 text-blue-600" />
-          Thermal Voucher Format (Thermal ဘောက်ချာပုံစံ)
+          {t("settings.paperSize.thermalFormatTitle")}
         </h4>
         <p className="text-xs text-slate-500 mb-3">
-          Thermal (72mm/80mm) ပရင့်ထုတ်ရာတွင် အသုံးပြုမည့် ပုံစံဒီဇိုင်းကို စိတ်ကြိုက်ရွေးချယ်ပါ
+          {t("settings.paperSize.thermalFormatDesc")}
         </p>
 
         <div className="flex flex-wrap gap-2.5">
@@ -92,7 +94,7 @@ export const PrintPaperSizeSettingsCard: React.FC = () => {
               ) : (
                 <LayoutGrid className="w-4 h-4" />
               )}
-              {opt.label}
+              {opt.labelKey ? t(opt.labelKey) : opt.label}
             </button>
           ))}
         </div>
@@ -100,7 +102,7 @@ export const PrintPaperSizeSettingsCard: React.FC = () => {
         {selectedLayout && (
           <p className="mt-2.5 text-xs text-slate-500 flex items-center gap-1.5">
             <Check className="w-3.5 h-3.5 text-green-600" />
-            {selectedLayout.description}
+            {selectedLayout.descriptionKey ? t(selectedLayout.descriptionKey) : selectedLayout.description}
           </p>
         )}
       </div>

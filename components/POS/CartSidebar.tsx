@@ -106,7 +106,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
                       </p>
                       {isWholesale && (
                         <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                          {t("pos.wholesale") || "လက်ကား"}
+                          {t("pos.wholesale")}
                         </span>
                       )}
                     </div>
@@ -134,7 +134,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
                     </div>
                     {nextTier && (
                       <p className="text-[11px] text-amber-600 mt-1">
-                        💡 {nextTier.quantity} {item.selectedUnit} ပြည့်ပါက လက်ကားဈေး {nextTier.price.toLocaleString()} MMK
+                        {t("pos.nextTierNotice", { qty: nextTier.quantity, unit: item.selectedUnit, price: nextTier.price.toLocaleString() })}
                       </p>
                     )}
                   </div>
@@ -191,7 +191,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
                 {item.scannedBatches && item.scannedBatches.length > 0 && (
                   <div className="mt-1 flex flex-col gap-1 rounded bg-slate-50 p-1.5 border border-slate-200 text-[11px]">
                     <div className="flex items-center justify-between text-slate-500 font-semibold text-[10px]">
-                      <span>စကင်ဖတ်ထားသော အသုတ်များ:</span>
+                      <span>{t("pos.scannedBatches")}</span>
                       {/* Batch qty သည် base unit ဖြစ်၍ line qty ကို base unit သို့ ပြောင်းပြီး နှိုင်း (ပုံး 1 = 10 ဘူး) */}
                       <span className="text-blue-600 font-bold">
                         {(() => {

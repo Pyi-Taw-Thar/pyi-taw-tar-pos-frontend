@@ -352,7 +352,7 @@ export const ActivityLogTab: React.FC = () => {
           <div>
             <h2 className="text-lg font-semibold flex items-center gap-2">
               <History className="w-5 h-5 text-primary" />
-              Activity Log (မှတ်တမ်း)
+              {t("settings.activityLog")}
             </h2>
             {!loading && !error && (
               <p className="text-sm text-slate-500 mt-1">

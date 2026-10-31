@@ -282,7 +282,7 @@ const PrintReceipt: React.FC = () => {
                           : "bg-white text-slate-700 border-slate-300 hover:border-blue-400 hover:bg-blue-50"
                       }`}
                     >
-                      {opt.label}
+                      {opt.labelKey ? t(opt.labelKey) : opt.label}
                     </button>
                   ))}
                 </div>

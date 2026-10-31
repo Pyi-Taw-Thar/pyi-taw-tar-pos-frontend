@@ -328,9 +328,7 @@ export function usePOS() {
 
           if (batch.isExpired) {
             toast.error(
-              `⚠ ဤကုန်ပစ္စည်းသည် သက်တမ်းကုန်ဆုံးနေပါသည် (Expired: ${new Date(
-                batch.expiryDate
-              ).toLocaleDateString("en-GB")})! ရောင်းချခွင့်မပြုပါ။`
+              t("pos.itemExpired", { date: new Date(batch.expiryDate).toLocaleDateString("en-GB") })
             );
             setSearch("");
             return;
@@ -338,7 +336,7 @@ export function usePOS() {
 
           if (batch.quantity <= 0) {
             toast.error(
-              `Batch (${batch.batchNumber}) လက်ကျန်ကုန်နေပါသည် (Out of Stock)!`
+              t("pos.batchOutOfStock", { batchNumber: batch.batchNumber })
             );
             setSearch("");
             return;
@@ -402,7 +400,7 @@ export function usePOS() {
 
           if (productFoundInCart) {
             toast.success(
-              `[အသုတ်: ${batch.batchNumber}] စကင်ဖတ်ပြီးပါပြီ (စုစုပေါင်း: ${updatedQty})`
+              t("pos.batchScanned", { batchNumber: batch.batchNumber, qty: updatedQty })
             );
             setSearch("");
             return;
@@ -452,7 +450,7 @@ export function usePOS() {
                 return [...prev, newLine];
               });
               toast.success(
-                `[အသုတ်: ${batch.batchNumber}] ${matchingStock.inventoryId.productName} ခြင်းထဲထည့်ပြီးပါပြီ`
+                t("pos.batchAddedToCart", { batchNumber: batch.batchNumber, productName: matchingStock.inventoryId.productName })
               );
               setSearch("");
               return;
@@ -582,7 +580,7 @@ export function usePOS() {
       if (result.success) {
         if (targetStatus === "pending") {
           toast.success(
-            `Order (${result.data?.orderNumber}) ကို ဂိုဒေါင်သို့ စစ်ဆေးထုတ်ပိုးရန် ပို့ဆောင်လိုက်ပါပြီ`
+            t("pos.sentToWarehouseSuccess", { orderNumber: result.data?.orderNumber })
           );
           setCart([]);
           setDiscount(0);

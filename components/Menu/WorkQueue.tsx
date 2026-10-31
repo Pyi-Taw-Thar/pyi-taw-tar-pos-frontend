@@ -48,8 +48,8 @@ export const WorkQueue: React.FC<WorkQueueProps> = ({ items, states }) => {
           : t(item.zeroTextKey);
 
         const ariaLabel = statusText
-          ? `${labelText} — ${statusText}။ ${actionText}`
-          : `${labelText}။ ${actionText}`;
+          ? t("menu.workQueue.ariaLabelWithStatus", { label: labelText, status: statusText, action: actionText })
+          : t("menu.workQueue.ariaLabelWithoutStatus", { label: labelText, action: actionText });
 
         return (
           <Link

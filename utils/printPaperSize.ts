@@ -24,6 +24,8 @@ export const THERMAL_LAYOUT_KEY = "voucherThermalLayout";
 
 export interface ThermalLayoutOption {
   id: ThermalLayout;
+  labelKey?: string;
+  descriptionKey?: string;
   label: string;
   description: string;
 }
@@ -31,13 +33,17 @@ export interface ThermalLayoutOption {
 export const THERMAL_LAYOUT_OPTIONS: ThermalLayoutOption[] = [
   {
     id: "list",
-    label: "POS စာရင်းပုံစံ (List)",
-    description: "စာလုံးကြီးပြီး သန့်ရှင်းသော POS ပြေစာပုံစံ",
+    labelKey: "settings.paperSize.thermalListLabel",
+    descriptionKey: "settings.paperSize.thermalListDesc",
+    label: "POS List Layout",
+    description: "Large text clean POS receipt layout",
   },
   {
     id: "table",
-    label: "ဇယားကွက်ပုံစံ (Table)",
-    description: "ကုန်ပစ္စည်း၊ အရေအတွက်၊ ဈေးနှုန်း ဇယားကွက်ပုံစံ (၄ ကော်လံ)",
+    labelKey: "settings.paperSize.thermalTableLabel",
+    descriptionKey: "settings.paperSize.thermalTableDesc",
+    label: "Table Layout",
+    description: "Product, quantity, price 4-column table format",
   },
 ];
 

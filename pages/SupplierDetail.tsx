@@ -110,7 +110,7 @@ export const SupplierDetail: React.FC = () => {
     return (
       <div className="flex justify-center items-center min-h-[60vh] text-slate-500">
         <Loader2 className="w-8 h-8 animate-spin mr-2 text-primary" />
-        <span>Supplier အချက်အလက်များ ခေါ်ယူနေပါသည်...</span>
+        <span>{t("suppliers.supplierLoading")}</span>
       </div>
     );
   }
@@ -119,12 +119,12 @@ export const SupplierDetail: React.FC = () => {
     return (
       <div className="p-6 text-center">
         <AlertCircle className="w-12 h-12 text-amber-500 mx-auto mb-3" />
-        <h2 className="text-lg font-bold text-slate-800">Supplier မတွေ့ရှိပါ</h2>
+        <h2 className="text-lg font-bold text-slate-800">{t("suppliers.supplierNotFound")}</h2>
         <button
           onClick={() => navigate("/suppliers")}
           className="mt-4 px-4 py-2 bg-primary text-white rounded-lg text-sm"
         >
-          Supplier စာရင်းသို့ ပြန်သွားမည်
+          {t("suppliers.backToSuppliers")}
         </button>
       </div>
     );
@@ -186,7 +186,7 @@ export const SupplierDetail: React.FC = () => {
         {/* Contact Info */}
         <div className="space-y-3">
           <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-            ဆက်သွယ်ရန် အချက်အလက်
+            {t("suppliers.contactInfo")}
           </h3>
           <div className="space-y-2 text-sm text-slate-700">
             <div className="flex items-center gap-2">
@@ -214,7 +214,7 @@ export const SupplierDetail: React.FC = () => {
         {/* System & Type Badges */}
         <div className="space-y-3">
           <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-            အမျိုးအစား နှင့် စည်းကမ်းများ
+            {t("suppliers.typeAndTerms")}
           </h3>
           <div className="space-y-2 text-sm">
             <div className="flex items-center gap-2">
@@ -229,7 +229,7 @@ export const SupplierDetail: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-slate-500">Consign (အပ်စရင်):</span>
+              <span className="text-slate-500">{t("suppliers.consign")}:</span>
               {supplier.isConsign ? (
                 <span className="bg-purple-100 text-purple-800 text-xs px-2 py-0.5 rounded font-bold flex items-center gap-1">
                   <CheckCircle className="w-3.5 h-3.5" /> Yes
@@ -244,12 +244,12 @@ export const SupplierDetail: React.FC = () => {
         {/* Joined Info */}
         <div className="space-y-3">
           <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-            စနစ်သွင်း စာရင်း
+            {t("suppliers.systemAudit")}
           </h3>
           <div className="space-y-1 text-xs text-slate-600">
             {supplier.createdAt && (
               <div>
-                <span className="text-slate-400">စတင်ထည့်သွင်းသည့်ရက်: </span>
+                <span className="text-slate-400">{t("suppliers.createdDate")}</span>
                 <span className="font-medium">
                   {new Date(supplier.createdAt).toLocaleDateString()}
                 </span>
@@ -257,7 +257,7 @@ export const SupplierDetail: React.FC = () => {
             )}
             {supplier.updatedAt && (
               <div>
-                <span className="text-slate-400">နောက်ဆုံးပြင်ဆင်သည့်ရက်: </span>
+                <span className="text-slate-400">{t("suppliers.updatedDate")}</span>
                 <span className="font-medium">
                   {new Date(supplier.updatedAt).toLocaleDateString()}
                 </span>
@@ -271,28 +271,28 @@ export const SupplierDetail: React.FC = () => {
       {creditSummary && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-            <span className="text-xs font-medium text-slate-500">စုစုပေါင်း PO အရေအတွက်</span>
+            <span className="text-xs font-medium text-slate-500">{t("suppliers.totalPOCount")}</span>
             <div className="text-2xl font-extrabold text-slate-800 mt-1">
-              {creditSummary.totalPOs} <span className="text-xs font-normal">ခု</span>
+              {creditSummary.totalPOs} <span className="text-xs font-normal">{t("suppliers.poUnit")}</span>
             </div>
           </div>
 
           <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-            <span className="text-xs font-medium text-slate-500">စုစုပေါင်း ဝယ်ယူငွေ (Total Amount)</span>
+            <span className="text-xs font-medium text-slate-500">{t("suppliers.totalPurchaseAmountLabel")}</span>
             <div className="text-xl sm:text-2xl font-extrabold text-slate-800 mt-1">
               {creditSummary.totalPOAmount.toLocaleString()} <span className="text-xs font-normal">MMK</span>
             </div>
           </div>
 
           <div className="bg-white p-4 rounded-xl shadow-sm border border-green-200 bg-green-50/20">
-            <span className="text-xs font-medium text-green-700">ပေးချေပြီး ငွေပမာဏ (Total Paid)</span>
+            <span className="text-xs font-medium text-green-700">{t("suppliers.totalPaidAmountLabel")}</span>
             <div className="text-xl sm:text-2xl font-extrabold text-green-700 mt-1">
               {creditSummary.totalPaid.toLocaleString()} <span className="text-xs font-normal">MMK</span>
             </div>
           </div>
 
           <div className="bg-white p-4 rounded-xl shadow-sm border border-red-200 bg-red-50/20">
-            <span className="text-xs font-medium text-red-700">ကျန်ရှိသော အကြွေး (Outstanding Balance)</span>
+            <span className="text-xs font-medium text-red-700">{t("suppliers.outstandingCreditLabel")}</span>
             <div className="text-xl sm:text-2xl font-extrabold text-red-600 mt-1">
               {creditSummary.totalOutstanding.toLocaleString()} <span className="text-xs font-normal">MMK</span>
             </div>
@@ -305,28 +305,28 @@ export const SupplierDetail: React.FC = () => {
         <div className="flex justify-between items-center">
           <h2 className="font-bold text-base sm:text-lg text-slate-800 flex items-center gap-2">
             <History className="w-5 h-5 text-primary" />
-            Supplier Credit ငွေပေးချေမှု မှတ်တမ်းများ
+            {t("suppliers.creditPaymentsHistory")}
           </h2>
         </div>
 
         {paymentsLoading ? (
           <div className="flex justify-center items-center py-8 text-slate-500">
-            <Loader2 className="w-5 h-5 animate-spin mr-2" /> ခေါ်ယူနေပါသည်...
+            <Loader2 className="w-5 h-5 animate-spin mr-2" /> {t("suppliers.loadingPayments")}
           </div>
         ) : payments.length === 0 ? (
           <div className="text-center py-8 text-slate-400 border rounded-lg border-dashed">
-            ငွေပေးချေမှု မှတ်တမ်း မရှိသေးပါ။
+            {t("suppliers.noPaymentHistory")}
           </div>
         ) : (
           <div className="overflow-x-auto border rounded-lg">
             <table className="w-full text-xs sm:text-sm text-left">
               <thead className="bg-slate-50 border-b font-semibold text-slate-700">
                 <tr>
-                  <th className="p-3">ရက်စွဲ</th>
-                  <th className="p-3">PO နံပါတ်</th>
-                  <th className="p-3">ပေးချေငွေပမာဏ</th>
-                  <th className="p-3">ပေးချေနည်း</th>
-                  <th className="p-3">မှတ်ချက်</th>
+                  <th className="p-3">{t("suppliers.thDate")}</th>
+                  <th className="p-3">{t("suppliers.thPONumber")}</th>
+                  <th className="p-3">{t("suppliers.thPaidAmount")}</th>
+                  <th className="p-3">{t("suppliers.thPaymentMethod")}</th>
+                  <th className="p-3">{t("suppliers.thNotes")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -359,12 +359,12 @@ export const SupplierDetail: React.FC = () => {
       <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border space-y-4">
         <h2 className="font-bold text-base sm:text-lg text-slate-800 flex items-center gap-2">
           <CreditCard className="w-5 h-5 text-primary" />
-          ဤ Supplier ၏ Purchase Order (PO) စာရင်းများ
+          {t("suppliers.supplierPOsTitle")}
         </h2>
 
         {poList.length === 0 ? (
           <div className="text-center py-8 text-slate-400 border rounded-lg border-dashed">
-            ဤ Supplier အတွက် ဝယ်ယူထားသော PO စာရင်း မရှိသေးပါ။
+            {t("suppliers.noPOsForSupplier")}
           </div>
         ) : (
           <div className="overflow-x-auto border rounded-lg">
@@ -372,10 +372,10 @@ export const SupplierDetail: React.FC = () => {
               <thead className="bg-slate-50 border-b font-semibold text-slate-700">
                 <tr>
                   <th className="p-3">{t("purchasing.poId")}</th>
-                  <th className="p-3">ရက်စွဲ</th>
-                  <th className="p-3">စုစုပေါင်း (Total)</th>
-                  <th className="p-3">ပေးပြီး (Paid)</th>
-                  <th className="p-3">ကျန်ငွေ (Balance)</th>
+                  <th className="p-3">{t("suppliers.thDate")}</th>
+                  <th className="p-3">{t("suppliers.thTotal")}</th>
+                  <th className="p-3">{t("suppliers.thPaid")}</th>
+                  <th className="p-3">{t("suppliers.thBalance")}</th>
                   <th className="p-3">{t("common.status")}</th>
                   <th className="p-3 text-center">{t("common.actions")}</th>
                 </tr>

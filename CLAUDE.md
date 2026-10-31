@@ -188,6 +188,7 @@ services/
 ├── Credit/               # personas, records
 ├── Expense/              # CRUD
 ├── Quotation/            # API + types
+├── Ecommerce/            # fetchEcommerceOrders, add/remove items, updateEcommerceOrderPrices (action: "price")
 ├── ShopSettings/         # settings + logo upload
 └── ...(more)
 ```

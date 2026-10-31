@@ -93,7 +93,7 @@ export const POS: React.FC = () => {
             </div>
             <div className="min-w-0">
               <div className="text-xs text-gray-500 font-medium">
-                {pos.cart.reduce((sum, i) => sum + i.qty, 0)} {t("pos.itemsLower") || "ခု"}
+                {pos.cart.reduce((sum, i) => sum + i.qty, 0)} {t("pos.itemsLower")}
               </div>
               <div className="text-sm sm:text-base font-bold text-gray-900 truncate">
                 {pos.subtotal.toLocaleString()} MMK
@@ -104,7 +104,7 @@ export const POS: React.FC = () => {
             onClick={() => setCartOpen(true)}
             className="bg-primary hover:bg-primary/90 text-white px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm shadow transition-colors shrink-0"
           >
-            {t("pos.proceedToCheckout") || "ငွေရှင်းမယ်"}
+            {t("pos.proceedToCheckout")}
           </button>
         </div>
       )}

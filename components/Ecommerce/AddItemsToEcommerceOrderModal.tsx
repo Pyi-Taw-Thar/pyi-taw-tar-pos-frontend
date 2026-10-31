@@ -429,8 +429,8 @@ export const AddItemsToEcommerceOrderModal: React.FC<
                     <p className="text-[11px] text-slate-500">
                       {hasExistingLine
                         ? isExistingUnit
-                          ? `Order ထဲရှိ ${item.unit} line ထဲသို့ ပေါင်းထည့်မည် · `
-                          : `${item.unit} line အသစ် ထည့်မည် · `
+                          ? t("ecommerceOrders.mergeToExistingLine", { unit: item.unit })
+                          : t("ecommerceOrders.addNewLine", { unit: item.unit })
                         : ""}
                       Stock: {stockInUnit.toLocaleString()} {item.unit}
                     </p>

@@ -162,7 +162,7 @@ export const BatchBarcodeStickerModal: React.FC<BatchStickerProps> = ({
                 })}
               </select>
               <p className="mt-1 text-xs text-slate-500">
-                Scan တစ်ကြိမ် = {factor} {baseUnit}
+                {t("common.scanFactorNotice", { factor, baseUnit })}
               </p>
             </div>
           )}

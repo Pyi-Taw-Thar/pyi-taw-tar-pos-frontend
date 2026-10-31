@@ -233,8 +233,7 @@ export const EcommerceOrders: React.FC = () => {
       const response = await sendOrderToFulfillment(sendingFulfillmentOrder._id);
       if (response.success) {
         toast.success(
-          t("ecommerceOrders.sendToFulfillmentSuccess") ||
-            "အော်ဒါကို ဂိုဒေါင်သို့ အောင်မြင်စွာ လွှဲပြောင်းပေးပို့လိုက်ပါပြီ",
+          t("ecommerceOrders.sendToFulfillmentSuccess"),
         );
         await loadOrders();
         if (selectedOrder?._id === sendingFulfillmentOrder._id) {
@@ -244,15 +243,13 @@ export const EcommerceOrders: React.FC = () => {
       } else {
         toast.error(
           response.message ||
-            t("ecommerceOrders.sendToFulfillmentFailed") ||
-            "ဂိုဒေါင်သို့ လွှဲပြောင်းရာတွင် မအောင်မြင်ပါ",
+            t("ecommerceOrders.sendToFulfillmentFailed"),
         );
       }
     } catch (error: any) {
       console.error("Error sending order to fulfillment:", error);
       toast.error(
-        t("ecommerceOrders.sendToFulfillmentFailed") ||
-          "ဂိုဒေါင်သို့ လွှဲပြောင်းရာတွင် မအောင်မြင်ပါ",
+        t("ecommerceOrders.sendToFulfillmentFailed"),
       );
     } finally {
       setIsSendingFulfillment(false);
@@ -461,7 +458,7 @@ export const EcommerceOrders: React.FC = () => {
                     {order.isSentToFulfillment ? (
                       <span className="px-2.5 py-2 text-xs font-semibold rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-200 flex items-center justify-center gap-1 min-h-[36px]">
                         <Truck className="w-3.5 h-3.5" />
-                        <span>{t("ecommerceOrders.inFulfillment") || "ဂိုဒေါင်သို့ လွှဲပြီး"}</span>
+                        <span>{t("ecommerceOrders.inFulfillment")}</span>
                       </span>
                     ) : order.status !== "cancelled" ? (
                       <button
@@ -469,7 +466,7 @@ export const EcommerceOrders: React.FC = () => {
                         className="py-2 px-2.5 text-xs font-semibold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors flex items-center justify-center gap-1 min-h-[36px]"
                       >
                         <Truck className="w-3.5 h-3.5" />
-                        <span>{t("ecommerceOrders.sendToFulfillment") || "ပို့မည်"}</span>
+                        <span>{t("ecommerceOrders.sendToFulfillment")}</span>
                       </button>
                     ) : null}
 
@@ -636,16 +633,16 @@ export const EcommerceOrders: React.FC = () => {
                               }
                             >
                               <Truck className="w-3.5 h-3.5 shrink-0" />
-                              <span className="truncate">{t("ecommerceOrders.inFulfillment") || "ဂိုဒေါင်သို့ လွှဲပြီး"}</span>
+                              <span className="truncate">{t("ecommerceOrders.inFulfillment")}</span>
                             </span>
                           ) : order.status !== "cancelled" ? (
                             <button
                               onClick={() => setSendingFulfillmentOrder(order)}
                               className="inline-flex items-center justify-center gap-1.5 w-32 h-8 px-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-sm cursor-pointer whitespace-nowrap shrink-0"
-                              title="ဂိုဒေါင်သို့ ပစ္စည်းစစ်ဆေးထုတ်ပိုးရန် ပို့မည်"
+                              title={t("ecommerceOrders.sendToFulfillmentTooltip")}
                             >
                               <Truck className="w-3.5 h-3.5 shrink-0" />
-                              <span className="truncate">{t("ecommerceOrders.sendToFulfillment") || "ဂိုဒေါင်သို့ ပို့မည်"}</span>
+                              <span className="truncate">{t("ecommerceOrders.sendToFulfillment")}</span>
                             </button>
                           ) : null}
 
@@ -757,7 +754,7 @@ export const EcommerceOrders: React.FC = () => {
           const fo = o.fulfillmentOrderId;
           if (nextStatus === "cancelled" && fo) {
             const foNumber = typeof fo === "object" ? fo.orderNumber : "";
-            return `${base} ဂိုဒေါင် fulfillment order ${foNumber} ကိုပါ ပယ်ဖျက်ပြီး scan ပြီးသား batch stock ကို ပြန်ထည့်ပါမည်။`;
+            return `${base} ${t("ecommerceOrders.cancelFulfillmentWarning", { foNumber })}`;
           }
           return base;
         })()}
@@ -783,14 +780,14 @@ export const EcommerceOrders: React.FC = () => {
 
       <ConfirmModal
         isOpen={!!sendingFulfillmentOrder}
-        title={t("ecommerceOrders.sendToFulfillment") || "ဂိုဒေါင်သို့ ပို့မည်"}
+        title={t("ecommerceOrders.sendToFulfillment")}
         message={
           sendingFulfillmentOrder
-            ? `အော်ဒါ (${sendingFulfillmentOrder.orderNumber}) အား ဂိုဒေါင်မှ ပစ္စည်းစစ်ဆေးထုတ်ပိုးရန် ပို့ဆောင်မှာ သေချာပါသလား?`
+            ? t("ecommerceOrders.sendToFulfillmentOrderConfirm", { orderNumber: sendingFulfillmentOrder.orderNumber })
             : ""
         }
-        confirmText={t("common.confirm") || "အတည်ပြုသည်"}
-        cancelText={t("common.cancel") || "မလုပ်တော့ပါ"}
+        confirmText={t("common.confirm")}
+        cancelText={t("common.cancel")}
         confirmButtonColor="primary"
         isLoading={isSendingFulfillment}
         onCancel={() => setSendingFulfillmentOrder(null)}

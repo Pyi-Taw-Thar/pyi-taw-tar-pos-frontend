@@ -61,6 +61,7 @@ import { EcommerceOrderDetailModal } from "../components/Ecommerce/EcommerceOrde
 import { fetchOrderById } from "../services/Order/fetchOrderById";
 import type { Order } from "../services/Order/fetchOrders";
 import { OrderDetailModal } from "../components/Orders/OrderDetailModal";
+import { useLanguage } from "../context/LanguageContext";
 
 const formatDisplayDate = (iso?: string | null) => {
   if (!iso) return "-";
@@ -103,15 +104,6 @@ const getTierColor = (tier?: string) => {
   }
 };
 
-const STATUS_LABELS_MM: Record<string, string> = {
-  pending: "စောင့်ဆိုင်းဆဲ",
-  confirmed: "ထုပ်ပိုးဆဲ",
-  shipped: "ပို့ဆောင်ဆဲ",
-  delivered: "ရောက်ရှိပြီး",
-  completed: "ပြီးစီး",
-  partially_fulfilled: "တစ်စိတ်တစ်ပိုင်း",
-  cancelled: "ပယ်ဖျက်ပြီး",
-};
 
 const formatStatusBadge = (status: string) => {
   switch (status) {
@@ -140,14 +132,24 @@ type ProductSortKey =
   | "orderCount"
   | "lastPurchaseDate";
 
-const SOURCE_CHIPS: { key: CustomerOrderSource; label: string }[] = [
-  { key: "all", label: "အားလုံး" },
-  { key: "ecommerce", label: "E-commerce" },
-  { key: "pos", label: "POS" },
-];
 
 export const CustomerDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const { t } = useLanguage();
+
+  const getStatusLabel = (status: string) => {
+    const val = t(`customers.detail.status.${status}`);
+    return val && val !== `customers.detail.status.${status}` ? val : status;
+  };
+
+  const sourceChips: { key: CustomerOrderSource; label: string }[] = useMemo(
+    () => [
+      { key: "all", label: t("common.all") },
+      { key: "ecommerce", label: "E-commerce" },
+      { key: "pos", label: "POS" },
+    ],
+    [t]
+  );
   const navigate = useNavigate();
 
   // Summary state
@@ -204,12 +206,12 @@ export const CustomerDetail: React.FC = () => {
       if (res.success && res.data) {
         setSummaryData(res.data);
       } else {
-        toast.error(res.message || "Customer အချက်အလက် ဆွဲတင်၍ မရပါ");
+        toast.error(res.message || t("customers.detail.loadCustomerFailed"));
       }
     } catch (err: any) {
       console.error("Error loading customer summary:", err);
       toast.error(
-        err?.response?.data?.message || err?.message || "Customer အချက်အလက် ဆွဲတင်၍ မရပါ"
+        err?.response?.data?.message || err?.message || t("customers.detail.loadCustomerFailed")
       );
     } finally {
       setSummaryLoading(false);
@@ -235,7 +237,7 @@ export const CustomerDetail: React.FC = () => {
     } catch (err: any) {
       console.error("Error loading customer orders:", err);
       toast.error(
-        err?.response?.data?.message || err?.message || "အော်ဒါစာရင်း ဆွဲတင်၍ မရပါ"
+        err?.response?.data?.message || err?.message || t("customers.detail.loadOrdersFailed")
       );
     } finally {
       setOrdersLoading(false);
@@ -257,7 +259,7 @@ export const CustomerDetail: React.FC = () => {
     } catch (err: any) {
       console.error("Error loading customer products:", err);
       toast.error(
-        err?.response?.data?.message || err?.message || "ပစ္စည်းစာရင်း ဆွဲတင်၍ မရပါ"
+        err?.response?.data?.message || err?.message || t("customers.detail.loadProductsFailed")
       );
     } finally {
       setProductsLoading(false);
@@ -289,12 +291,12 @@ export const CustomerDetail: React.FC = () => {
       if (res.success) {
         toast.success(
           res.data?.isCreditPerson
-            ? "အကြွေးဝယ်ခွင့် ဖွင့်ပေးလိုက်ပါပြီ"
-            : "အကြွေးဝယ်ခွင့် ပိတ်လိုက်ပါပြီ"
+            ? t("customers.detail.creditEnabled")
+            : t("customers.detail.creditDisabled")
         );
         await loadSummary();
       } else {
-        toast.error(res.message || "အကြွေးဝယ်ခွင့် ပြောင်း၍ မရပါ");
+        toast.error(res.message || t("customers.detail.creditToggleFailed"));
       }
     } finally {
       setTogglingCredit(false);
@@ -311,10 +313,10 @@ export const CustomerDetail: React.FC = () => {
       try {
         const res = await updateCustomerBlacklist(id, false);
         if (res.success) {
-          toast.success("Blacklist မှ ပယ်ဖျက်ပြီးပါပြီ");
+          toast.success(t("customers.detail.unblacklistSuccess"));
           await loadSummary();
         } else {
-          toast.error(res.message || "Blacklist ပယ်ဖျက်၍ မရပါ");
+          toast.error(res.message || t("customers.detail.unblacklistFailed"));
         }
       } finally {
         setUpdatingBlacklist(false);
@@ -336,11 +338,11 @@ export const CustomerDetail: React.FC = () => {
         blacklistReasonInput.trim() || undefined
       );
       if (res.success) {
-        toast.success("Customer ကို Blacklist သွင်းပြီးပါပြီ");
+        toast.success(t("customers.detail.blacklistSuccess"));
         setShowBlacklistModal(false);
         await loadSummary();
       } else {
-        toast.error(res.message || "Blacklist သွင်း၍ မရပါ");
+        toast.error(res.message || t("customers.detail.blacklistFailed"));
       }
     } finally {
       setUpdatingBlacklist(false);
@@ -357,11 +359,11 @@ export const CustomerDetail: React.FC = () => {
         if (res.success && res.data) {
           setSelectedEcomOrder(res.data);
         } else {
-          toast.error(res.message || "အော်ဒါ အသေးစိတ် ဖွင့်၍ မရပါ");
+          toast.error(res.message || t("customers.detail.openOrderDetailFailed"));
           setEcomModalOpen(false);
         }
       } catch (err: any) {
-        toast.error(err?.message || "အော်ဒါ အသေးစိတ် ဖွင့်၍ မရပါ");
+        toast.error(err?.message || t("customers.detail.openOrderDetailFailed"));
         setEcomModalOpen(false);
       } finally {
         setLoadingEcomDetail(false);
@@ -374,11 +376,11 @@ export const CustomerDetail: React.FC = () => {
         if (res.success && res.data) {
           setSelectedPosOrder(res.data);
         } else {
-          toast.error(res.message || "POS အော်ဒါ အသေးစိတ် ဖွင့်၍ မရပါ");
+          toast.error(res.message || t("customers.detail.openPosOrderDetailFailed"));
           setPosModalOpen(false);
         }
       } catch (err: any) {
-        toast.error(err?.message || "POS အော်ဒါ အသေးစိတ် ဖွင့်၍ မရပါ");
+        toast.error(err?.message || t("customers.detail.openPosOrderDetailFailed"));
         setPosModalOpen(false);
       } finally {
         setLoadingPosDetail(false);
@@ -402,14 +404,14 @@ export const CustomerDetail: React.FC = () => {
 
     const amount = Number(payAmountInput);
     if (!amount || amount <= 0) {
-      toast.error("ကျေးဇူးပြု၍ ပေးဆပ်မည့် ငွေပမာဏကို မှန်ကန်စွာ ထည့်သွင်းပါ");
+      toast.error(t("customers.detail.enterValidPayAmount"));
       return;
     }
 
     const payable = summaryData?.payableRemaining ?? 0;
     if (amount > payable) {
       toast.error(
-        `ဆပ်ငွေသည် ယခု ဆပ်နိုင်သော ကျန်ငွေ (${formatNumber(payable)} MMK) ထက် များနေပါသည်`
+        t("customers.detail.payAmountExceeds", { payable: formatNumber(payable) })
       );
       return;
     }
@@ -423,16 +425,16 @@ export const CustomerDetail: React.FC = () => {
       });
 
       if (res.success) {
-        toast.success(`အကြွေး ${formatNumber(amount)} MMK အောင်မြင်စွာ ဆပ်ပြီးပါပြီ`);
+        toast.success(t("customers.detail.payCreditSuccess", { amount: formatNumber(amount) }));
         setShowPayCreditModal(false);
         await refreshAll();
       } else {
-        toast.error(res.message || "အကြွေးဆပ်ခြင်း မအောင်မြင်ပါ");
+        toast.error(res.message || t("customers.detail.payCreditFailed"));
       }
     } catch (err: any) {
       console.error("Error submitting credit payment:", err);
       toast.error(
-        err?.response?.data?.message || err?.message || "အကြွေးဆပ်ခြင်း မအောင်မြင်ပါ"
+        err?.response?.data?.message || err?.message || t("customers.detail.payCreditFailed")
       );
     } finally {
       setIsSubmittingPayment(false);
@@ -488,7 +490,7 @@ export const CustomerDetail: React.FC = () => {
     return (
       <div className="p-6 max-w-7xl mx-auto flex flex-col items-center justify-center min-h-[400px]">
         <Loader2 className="w-8 h-8 animate-spin text-primary mb-2" />
-        <p className="text-slate-500 text-sm">Customer အချက်အလက်များ ဆွဲတင်နေပါသည်...</p>
+        <p className="text-slate-500 text-sm">{t("customers.detail.loadingCustomer")}</p>
       </div>
     );
   }
@@ -501,10 +503,10 @@ export const CustomerDetail: React.FC = () => {
           className="inline-flex items-center gap-1.5 text-sm text-slate-600 hover:text-slate-900 mb-4"
         >
           <ArrowLeft className="w-4 h-4" />
-          ဖောက်သည်များ စာရင်းသို့ ပြန်သွားမည်
+          {t("customers.detail.backToCustomers")}
         </button>
         <div className="bg-white rounded-xl p-12 text-center text-slate-500 border border-slate-200">
-          ဖောက်သည် အချက်အလက် ရှာမတွေ့ပါ
+          {t("customers.detail.customerNotFound")}
         </div>
       </div>
     );
@@ -522,7 +524,7 @@ export const CustomerDetail: React.FC = () => {
   } = summaryData;
 
   const isPayDisabled = payableRemaining <= 0;
-  const payDisabledTooltip = "ပို့ပြီးသော အော်ဒါ မရှိသေး၍ ဆပ်၍ မရသေးပါ";
+  const payDisabledTooltip = t("customers.detail.payDisabledTooltip");
 
   return (
     <div className="p-4 sm:p-6 space-y-6 max-w-7xl mx-auto">
@@ -533,7 +535,7 @@ export const CustomerDetail: React.FC = () => {
           className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-primary transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>ဖောက်သည်များ စာရင်း</span>
+          <span>{t("customers.detail.customersList")}</span>
         </button>
 
         <div className="flex items-center gap-2">
@@ -544,11 +546,11 @@ export const CustomerDetail: React.FC = () => {
             <button
               onClick={handleOpenPayCredit}
               disabled={isPayDisabled}
-              title={isPayDisabled ? payDisabledTooltip : "အကြွေးဆပ်မည်"}
+              title={isPayDisabled ? payDisabledTooltip : t("customers.detail.payCredit")}
               className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white rounded-lg text-xs font-semibold shadow-sm transition-colors"
             >
               <CreditCard className="w-3.5 h-3.5" />
-              အကြွေးဆပ်မည်
+              {t("customers.detail.payCredit")}
             </button>
           </span>
 
@@ -558,7 +560,7 @@ export const CustomerDetail: React.FC = () => {
             className="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-medium transition-colors"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${summaryLoading ? "animate-spin" : ""}`} />
-            ပြန်တင်မည်
+            {t("customers.detail.reload")}
           </button>
         </div>
       </div>
@@ -583,11 +585,11 @@ export const CustomerDetail: React.FC = () => {
                 </span>
                 {customer?.isCreditPerson ? (
                   <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                    အကြွေးဝယ်ခွင့် ရှိ
+                    {t("customers.detail.creditAllowed")}
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
-                    အကြွေးဝယ်ခွင့် ပိတ်ထား
+                    {t("customers.detail.creditNotAllowed")}
                   </span>
                 )}
                 {customer?.blacklist && (
@@ -609,19 +611,19 @@ export const CustomerDetail: React.FC = () => {
                 </span>
                 <span className="flex items-center gap-1">
                   <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                  စတင်ချိတ်ဆက်: {formatDisplayDate(customer?.createdAt)}
+                  {t("customers.detail.since", { date: formatDisplayDate(customer?.createdAt) })}
                 </span>
                 {lastOrderDate && (
                   <span className="flex items-center gap-1">
                     <ShoppingBag className="w-3.5 h-3.5 text-slate-400" />
-                    နောက်ဆုံးအော်ဒါ: {formatDisplayDate(lastOrderDate)}
+                    {t("customers.detail.lastOrder", { date: formatDisplayDate(lastOrderDate) })}
                   </span>
                 )}
               </div>
 
               {customer?.blacklist && customer?.blacklistReason && (
                 <p className="mt-2 text-xs text-rose-600 bg-rose-50 border border-rose-100 rounded-lg px-2.5 py-1 inline-block">
-                  ပိတ်ပင်ရသည့် အကြောင်းရင်း: {customer.blacklistReason}
+                  {t("customers.detail.blacklistReason", { reason: customer.blacklistReason })}
                 </p>
               )}
             </div>
@@ -650,7 +652,7 @@ export const CustomerDetail: React.FC = () => {
                   }`}
                 />
               </span>
-              <span>အကြွေးဝယ်ခွင့်</span>
+              <span>{t("customers.detail.creditToggleLabel")}</span>
             </button>
 
             <button
@@ -666,12 +668,12 @@ export const CustomerDetail: React.FC = () => {
               {customer?.blacklist ? (
                 <>
                   <ShieldCheck className="w-3.5 h-3.5" />
-                  Blacklist မှ ပယ်ဖျက်မည်
+                  {t("customers.detail.removeFromBlacklist")}
                 </>
               ) : (
                 <>
                   <Ban className="w-3.5 h-3.5" />
-                  Blacklist သွင်းမည်
+                  {t("customers.detail.addToBlacklist")}
                 </>
               )}
             </button>
@@ -684,7 +686,7 @@ export const CustomerDetail: React.FC = () => {
         {/* Card 1: စုစုပေါင်း ဝယ်ယူငွေ */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-slate-500">စုစုပေါင်း ဝယ်ယူငွေ</p>
+            <p className="text-xs font-semibold text-slate-500">{t("customers.detail.totalPurchases")}</p>
             <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
               <DollarSign className="w-5 h-5" />
             </div>
@@ -694,15 +696,18 @@ export const CustomerDetail: React.FC = () => {
             <span className="text-sm font-normal text-slate-500">MMK</span>
           </p>
           <p className="mt-2 text-xs text-slate-500">
-            စုစုပေါင်း {formatNumber(orderCount?.total)} အော်ဒါ (E-commerce:{" "}
-            {formatNumber(orderCount?.ecommerce)}, POS: {formatNumber(orderCount?.pos)})
+            {t("customers.detail.totalOrdersSub", {
+              total: formatNumber(orderCount?.total),
+              ecom: formatNumber(orderCount?.ecommerce),
+              pos: formatNumber(orderCount?.pos),
+            })}
           </p>
         </div>
 
         {/* Card 2: အကြွေး လက်ကျန် */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-slate-500">အကြွေး လက်ကျန်</p>
+            <p className="text-xs font-semibold text-slate-500">{t("customers.detail.creditRemaining")}</p>
             <div
               className={`p-2 rounded-lg ${
                 creditRemaining > 0
@@ -723,7 +728,7 @@ export const CustomerDetail: React.FC = () => {
           </p>
           <div className="mt-2 flex items-center justify-between gap-2">
             <span className="text-xs font-medium text-slate-600">
-              ယခုဆပ်နိုင်: <strong className="text-emerald-700">{formatNumber(payableRemaining)} MMK</strong>
+              {t("customers.detail.currentlyPayable")}<strong className="text-emerald-700">{formatNumber(payableRemaining)} MMK</strong>
             </span>
             {creditRemaining > 0 && isPayDisabled && (
               <span className="text-[11px] text-amber-700">
@@ -736,7 +741,7 @@ export const CustomerDetail: React.FC = () => {
         {/* Card 3: အကြွေး ဆပ်ပြီးငွေ */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-slate-500">အကြွေး ဆပ်ပြီးငွေ</p>
+            <p className="text-xs font-semibold text-slate-500">{t("customers.detail.creditPaid")}</p>
             <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
               <History className="w-5 h-5" />
             </div>
@@ -746,7 +751,7 @@ export const CustomerDetail: React.FC = () => {
             <span className="text-sm font-normal text-slate-500">MMK</span>
           </p>
           <p className="mt-2 text-xs text-slate-500">
-            ဆပ်ပြီးအကြိမ်ရေ {formatNumber(creditPayments.length)} ကြိမ်
+            {t("customers.detail.creditPaidCount", { count: formatNumber(creditPayments.length) })}
           </p>
         </div>
       </div>
@@ -762,7 +767,7 @@ export const CustomerDetail: React.FC = () => {
                 : "text-slate-500 hover:text-slate-700"
             }`}
           >
-            အော်ဒါများ ({formatNumber(ordersPagination?.totalItems ?? orderCount?.total)})
+            {t("customers.detail.tabOrders", { count: formatNumber(ordersPagination?.totalItems ?? orderCount?.total) })}
           </button>
           <button
             onClick={() => setActiveTab("products")}
@@ -772,7 +777,7 @@ export const CustomerDetail: React.FC = () => {
                 : "text-slate-500 hover:text-slate-700"
             }`}
           >
-            ဝယ်ထားသော ပစ္စည်းများ ({formatNumber(productsData?.totals.uniqueProducts ?? 0)})
+            {t("customers.detail.tabProducts", { count: formatNumber(productsData?.totals.uniqueProducts ?? 0) })}
           </button>
           <button
             onClick={() => setActiveTab("creditPayments")}
@@ -782,7 +787,7 @@ export const CustomerDetail: React.FC = () => {
                 : "text-slate-500 hover:text-slate-700"
             }`}
           >
-            အကြွေးဆပ် မှတ်တမ်း ({formatNumber(creditPayments.length)})
+            {t("customers.detail.tabCreditPayments", { count: formatNumber(creditPayments.length) })}
           </button>
         </nav>
       </div>
@@ -793,7 +798,7 @@ export const CustomerDetail: React.FC = () => {
           {/* Filter Bar */}
           <div className="p-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3 bg-slate-50/50">
             <div className="inline-flex rounded-lg border border-slate-200 bg-white p-1 gap-1">
-              {SOURCE_CHIPS.map((chip) => (
+              {sourceChips.map((chip) => (
                 <button
                   key={chip.key}
                   type="button"
@@ -821,18 +826,18 @@ export const CustomerDetail: React.FC = () => {
                 }}
                 className="px-3 py-1.5 border border-slate-200 rounded-lg text-xs bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/30"
               >
-                <option value="all">အခြေအနေ အားလုံး</option>
-                <option value="pending">စောင့်ဆိုင်းဆဲ (pending)</option>
-                <option value="confirmed">ထုပ်ပိုးဆဲ (confirmed)</option>
-                <option value="shipped">ပို့ဆောင်ဆဲ (shipped)</option>
-                <option value="delivered">ရောက်ရှိပြီး (delivered)</option>
-                <option value="completed">ပြီးစီး (completed)</option>
-                <option value="partially_fulfilled">တစ်စိတ်တစ်ပိုင်း (partially_fulfilled)</option>
-                <option value="cancelled">ပယ်ဖျက်ပြီး (cancelled)</option>
+                <option value="all">{t("customers.detail.allStatuses")}</option>
+                <option value="pending">{t("customers.detail.status.pending")}</option>
+                <option value="confirmed">{t("customers.detail.status.confirmed")}</option>
+                <option value="shipped">{t("customers.detail.status.shipped")}</option>
+                <option value="delivered">{t("customers.detail.status.delivered")}</option>
+                <option value="completed">{t("customers.detail.status.completed")}</option>
+                <option value="partially_fulfilled">{t("customers.detail.status.partially_fulfilled")}</option>
+                <option value="cancelled">{t("customers.detail.status.cancelled")}</option>
               </select>
 
               <div className="flex items-center gap-1.5 text-xs text-slate-600">
-                <span>မှ</span>
+                <span>{t("customers.detail.from")}</span>
                 <input
                   type="date"
                   value={orderFrom}
@@ -842,7 +847,7 @@ export const CustomerDetail: React.FC = () => {
                   }}
                   className="px-2.5 py-1.5 border border-slate-200 rounded-lg text-xs bg-white"
                 />
-                <span>ထိ</span>
+                <span>{t("customers.detail.to")}</span>
                 <input
                   type="date"
                   value={orderTo}
@@ -866,7 +871,7 @@ export const CustomerDetail: React.FC = () => {
                   }}
                   className="px-2.5 py-1.5 text-xs font-medium text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
                 >
-                  Filter ရှင်းမည်
+                  {t("customers.detail.clearFilter")}
                 </button>
               )}
             </div>
@@ -876,15 +881,15 @@ export const CustomerDetail: React.FC = () => {
             <table className="w-full text-sm">
               <thead className="bg-slate-50 text-slate-600 text-xs">
                 <tr>
-                  <th className="px-4 py-3 text-left">အော်ဒါနံပါတ်</th>
-                  <th className="px-4 py-3 text-left">ရက်စွဲ</th>
+                  <th className="px-4 py-3 text-left">{t("customers.detail.orderNumber")}</th>
+                  <th className="px-4 py-3 text-left">{t("customers.detail.date")}</th>
                   <th className="px-4 py-3 text-center">Source</th>
-                  <th className="px-4 py-3 text-center">အခြေအနေ</th>
-                  <th className="px-4 py-3 text-center">ပစ္စည်း</th>
-                  <th className="px-4 py-3 text-right">ကျသင့်ငွေ</th>
-                  <th className="px-4 py-3 text-right">ပေးပြီး</th>
-                  <th className="px-4 py-3 text-right">ကျန်ငွေ</th>
-                  <th className="px-4 py-3 text-right">အသေးစိတ်</th>
+                  <th className="px-4 py-3 text-center">{t("customers.detail.statusCol")}</th>
+                  <th className="px-4 py-3 text-center">{t("customers.detail.productCol")}</th>
+                  <th className="px-4 py-3 text-right">{t("customers.detail.totalAmountCol")}</th>
+                  <th className="px-4 py-3 text-right">{t("customers.detail.paidCol")}</th>
+                  <th className="px-4 py-3 text-right">{t("customers.detail.remainingCol")}</th>
+                  <th className="px-4 py-3 text-right">{t("customers.detail.detailCol")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -892,7 +897,7 @@ export const CustomerDetail: React.FC = () => {
                   <tr>
                     <td colSpan={9} className="py-10 text-center text-slate-400">
                       <Loader2 className="w-6 h-6 animate-spin mx-auto mb-1 text-primary" />
-                      အော်ဒါစာရင်း ဆွဲတင်နေပါသည်...
+                      {t("customers.detail.loadingOrders")}
                     </td>
                   </tr>
                 ) : orders.length > 0 ? (
@@ -925,11 +930,11 @@ export const CustomerDetail: React.FC = () => {
                             ord.status
                           )}`}
                         >
-                          {STATUS_LABELS_MM[ord.status] || ord.status}
+                          {getStatusLabel(ord.status)}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-center text-slate-600 text-xs">
-                        {formatNumber(ord.itemCount)} မျိုး
+                        {t("customers.detail.itemTypes", { count: formatNumber(ord.itemCount) })}
                       </td>
                       <td className="px-4 py-3 text-right font-semibold text-slate-800">
                         {formatNumber(ord.totalAmount)}
@@ -956,7 +961,7 @@ export const CustomerDetail: React.FC = () => {
                           className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded border border-slate-200 text-slate-700 hover:bg-slate-100 transition-colors"
                         >
                           <Eye className="w-3.5 h-3.5" />
-                          ကြည့်မည်
+                          {t("customers.detail.view")}
                         </button>
                       </td>
                     </tr>
@@ -964,7 +969,7 @@ export const CustomerDetail: React.FC = () => {
                 ) : (
                   <tr>
                     <td colSpan={9} className="py-10 text-center text-slate-400">
-                      မှာယူထားသော အော်ဒါ မရှိသေးပါ
+                      {t("customers.detail.noOrders")}
                     </td>
                   </tr>
                 )}
@@ -976,8 +981,11 @@ export const CustomerDetail: React.FC = () => {
           {ordersPagination && ordersPagination.totalPages > 1 && (
             <div className="px-4 py-3 border-t border-slate-200 flex items-center justify-between text-xs text-slate-600 bg-slate-50/50">
               <span>
-                စုစုပေါင်း {formatNumber(ordersPagination.totalItems)} အော်ဒါ (စာမျက်နှာ{" "}
-                {ordersPagination.currentPage} / {ordersPagination.totalPages})
+                {t("customers.detail.paginationTotal", {
+                  total: formatNumber(ordersPagination.totalItems),
+                  page: ordersPagination.currentPage,
+                  totalPages: ordersPagination.totalPages,
+                })}
               </span>
               <div className="flex items-center gap-1.5">
                 <button
@@ -987,7 +995,7 @@ export const CustomerDetail: React.FC = () => {
                   className="inline-flex items-center gap-1 px-2.5 py-1 rounded border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40"
                 >
                   <ChevronLeft className="w-3.5 h-3.5" />
-                  ယခင်
+                  {t("customers.detail.prev")}
                 </button>
                 <button
                   type="button"
@@ -997,7 +1005,7 @@ export const CustomerDetail: React.FC = () => {
                   }
                   className="inline-flex items-center gap-1 px-2.5 py-1 rounded border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40"
                 >
-                  နောက်သို့
+                  {t("customers.detail.next")}
                   <ChevronRight className="w-3.5 h-3.5" />
                 </button>
               </div>
@@ -1012,7 +1020,7 @@ export const CustomerDetail: React.FC = () => {
           {/* Filter Bar */}
           <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 flex flex-wrap items-center justify-between gap-3">
             <div className="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-1 gap-1">
-              {SOURCE_CHIPS.map((chip) => (
+              {sourceChips.map((chip) => (
                 <button
                   key={chip.key}
                   type="button"
@@ -1029,14 +1037,14 @@ export const CustomerDetail: React.FC = () => {
             </div>
 
             <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600">
-              <span>မှ</span>
+              <span>{t("customers.detail.from")}</span>
               <input
                 type="date"
                 value={productFrom}
                 onChange={(e) => setProductFrom(e.target.value)}
                 className="px-2.5 py-1.5 border border-slate-200 rounded-lg text-xs bg-white"
               />
-              <span>ထိ</span>
+              <span>{t("customers.detail.to")}</span>
               <input
                 type="date"
                 value={productTo}
@@ -1053,7 +1061,7 @@ export const CustomerDetail: React.FC = () => {
                   }}
                   className="px-2.5 py-1.5 text-xs font-medium text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
                 >
-                  Filter ရှင်းမည်
+                  {t("customers.detail.clearFilter")}
                 </button>
               )}
             </div>
@@ -1063,9 +1071,9 @@ export const CustomerDetail: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 flex items-center justify-between">
               <div>
-                <p className="text-xs text-slate-500 font-medium">ပစ္စည်း အမျိုးအရေအတွက်</p>
+                <p className="text-xs text-slate-500 font-medium">{t("customers.detail.uniqueProducts")}</p>
                 <p className="text-2xl font-bold text-slate-800 mt-1">
-                  {formatNumber(productsData?.totals.uniqueProducts ?? 0)} မျိုး
+                  {t("customers.detail.itemTypes", { count: formatNumber(productsData?.totals.uniqueProducts ?? 0) })}
                 </p>
               </div>
               <div className="p-2.5 bg-indigo-50 text-indigo-600 rounded-lg">
@@ -1075,7 +1083,7 @@ export const CustomerDetail: React.FC = () => {
 
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 flex items-center justify-between">
               <div>
-                <p className="text-xs text-slate-500 font-medium">စုစုပေါင်း ငွေ</p>
+                <p className="text-xs text-slate-500 font-medium">{t("customers.detail.totalAmount")}</p>
                 <p className="text-2xl font-bold text-emerald-600 mt-1">
                   {formatNumber(productsData?.totals.totalAmount ?? 0)}{" "}
                   <span className="text-xs font-normal text-slate-500">MMK</span>
@@ -1088,7 +1096,7 @@ export const CustomerDetail: React.FC = () => {
 
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 flex items-center justify-between">
               <div className="min-w-0 pr-2">
-                <p className="text-xs text-slate-500 font-medium">အများဆုံး ဝယ်သော ပစ္စည်း</p>
+                <p className="text-xs text-slate-500 font-medium">{t("customers.detail.topProduct")}</p>
                 <p className="text-base font-bold text-slate-800 mt-1 truncate">
                   {productsData?.totals.topProduct?.productName || "-"}
                 </p>
@@ -1109,7 +1117,7 @@ export const CustomerDetail: React.FC = () => {
           <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
             <h3 className="font-semibold text-slate-800 text-sm mb-4 flex items-center gap-2">
               <Layers className="w-4 h-4 text-primary" />
-              လအလိုက် ဝယ်ယူငွေ (နောက်ဆုံး ၁၂ လ)
+              {t("customers.detail.monthlySpend")}
             </h3>
             <div className="h-[260px] w-full">
               <ResponsiveContainer width="100%" height="100%">
@@ -1125,7 +1133,7 @@ export const CustomerDetail: React.FC = () => {
                   <Tooltip
                     formatter={(value: number) => [
                       `${formatNumber(value)} MMK`,
-                      "ဝယ်ယူငွေ",
+                      t("customers.detail.monthlySpendLabel"),
                     ]}
                   />
                   <Bar dataKey="amount" fill="#0284c7" radius={[6, 6, 0, 0]} />
@@ -1145,7 +1153,7 @@ export const CustomerDetail: React.FC = () => {
                       className="px-4 py-3 text-left cursor-pointer hover:bg-slate-100 select-none"
                     >
                       <span className="inline-flex items-center gap-1">
-                        ပစ္စည်း {renderSortIcon("productName")}
+                        {t("customers.detail.productName")} {renderSortIcon("productName")}
                       </span>
                     </th>
                     <th
@@ -1153,7 +1161,7 @@ export const CustomerDetail: React.FC = () => {
                       className="px-4 py-3 text-left cursor-pointer hover:bg-slate-100 select-none"
                     >
                       <span className="inline-flex items-center gap-1">
-                        ကုဒ် {renderSortIcon("productCode")}
+                        {t("customers.detail.productCode")} {renderSortIcon("productCode")}
                       </span>
                     </th>
                     <th
@@ -1161,7 +1169,7 @@ export const CustomerDetail: React.FC = () => {
                       className="px-4 py-3 text-left cursor-pointer hover:bg-slate-100 select-none"
                     >
                       <span className="inline-flex items-center gap-1">
-                        အရေအတွက် {renderSortIcon("totalBaseQty")}
+                        {t("customers.detail.quantity")} {renderSortIcon("totalBaseQty")}
                       </span>
                     </th>
                     <th
@@ -1169,7 +1177,7 @@ export const CustomerDetail: React.FC = () => {
                       className="px-4 py-3 text-right cursor-pointer hover:bg-slate-100 select-none"
                     >
                       <span className="inline-flex items-center justify-end gap-1">
-                        ငွေ (MMK) {renderSortIcon("totalAmount")}
+                        {t("customers.detail.amountMmk")} {renderSortIcon("totalAmount")}
                       </span>
                     </th>
                     <th
@@ -1177,7 +1185,7 @@ export const CustomerDetail: React.FC = () => {
                       className="px-4 py-3 text-center cursor-pointer hover:bg-slate-100 select-none"
                     >
                       <span className="inline-flex items-center gap-1">
-                        အကြိမ် {renderSortIcon("orderCount")}
+                        {t("customers.detail.orderTimes")} {renderSortIcon("orderCount")}
                       </span>
                     </th>
                     <th
@@ -1185,7 +1193,7 @@ export const CustomerDetail: React.FC = () => {
                       className="px-4 py-3 text-left cursor-pointer hover:bg-slate-100 select-none"
                     >
                       <span className="inline-flex items-center gap-1">
-                        နောက်ဆုံးဝယ်ရက် {renderSortIcon("lastPurchaseDate")}
+                        {t("customers.detail.lastPurchaseDate")} {renderSortIcon("lastPurchaseDate")}
                       </span>
                     </th>
                   </tr>
@@ -1195,7 +1203,7 @@ export const CustomerDetail: React.FC = () => {
                     <tr>
                       <td colSpan={6} className="py-10 text-center text-slate-400">
                         <Loader2 className="w-6 h-6 animate-spin mx-auto mb-1 text-primary" />
-                        ပစ္စည်းစာရင်း ဆွဲတင်နေပါသည်...
+                        {t("customers.detail.loadingProducts")}
                       </td>
                     </tr>
                   ) : sortedProducts.length > 0 ? (
@@ -1214,7 +1222,7 @@ export const CustomerDetail: React.FC = () => {
                           {formatNumber(p.totalAmount)}
                         </td>
                         <td className="px-4 py-3 text-center text-slate-600 text-xs">
-                          {formatNumber(p.orderCount)} ကြိမ်
+                          {t("customers.detail.orderCountTimes", { count: formatNumber(p.orderCount) })}
                         </td>
                         <td className="px-4 py-3 text-slate-600 text-xs">
                           {formatDisplayDate(p.lastPurchaseDate)}
@@ -1224,7 +1232,7 @@ export const CustomerDetail: React.FC = () => {
                   ) : (
                     <tr>
                       <td colSpan={6} className="py-10 text-center text-slate-400">
-                        ဝယ်ယူထားသော ပစ္စည်းမှတ်တမ်း မရှိသေးပါ
+                        {t("customers.detail.noProducts")}
                       </td>
                     </tr>
                   )}
@@ -1241,10 +1249,10 @@ export const CustomerDetail: React.FC = () => {
           <div className="p-4 border-b border-slate-200 flex justify-between items-center">
             <h3 className="font-semibold text-slate-800 flex items-center gap-2">
               <History className="w-4 h-4 text-primary" />
-              အကြွေးဆပ် မှတ်တမ်းများ
+              {t("customers.detail.paymentHistory")}
             </h3>
             <span className="text-xs text-slate-500">
-              စုစုပေါင်း {formatNumber(creditPayments.length)} ကြိမ်
+              {t("customers.detail.paymentHistoryCount", { count: formatNumber(creditPayments.length) })}
             </span>
           </div>
           <div className="overflow-x-auto">
@@ -1252,12 +1260,12 @@ export const CustomerDetail: React.FC = () => {
               <thead className="bg-slate-50 text-slate-600 text-xs">
                 <tr>
                   <th className="px-4 py-3 text-left">#</th>
-                  <th className="px-4 py-3 text-left">ရက်စွဲ နှင့် အချိန်</th>
-                  <th className="px-4 py-3 text-right">ဆပ်ငွေ (MMK)</th>
-                  <th className="px-4 py-3 text-center">ပေးချေမှု နည်းလမ်း</th>
-                  <th className="px-4 py-3 text-left">သက်ဆိုင်သည့် အော်ဒါ</th>
-                  <th className="px-4 py-3 text-left">မှတ်ချက်</th>
-                  <th className="px-4 py-3 text-left">မှတ်တမ်းတင်သူ</th>
+                  <th className="px-4 py-3 text-left">{t("customers.detail.dateTime")}</th>
+                  <th className="px-4 py-3 text-right">{t("customers.detail.paidAmountMmk")}</th>
+                  <th className="px-4 py-3 text-center">{t("customers.detail.paymentMethod")}</th>
+                  <th className="px-4 py-3 text-left">{t("customers.detail.relatedOrder")}</th>
+                  <th className="px-4 py-3 text-left">{t("customers.detail.notes")}</th>
+                  <th className="px-4 py-3 text-left">{t("customers.detail.recordedBy")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -1312,7 +1320,7 @@ export const CustomerDetail: React.FC = () => {
                 ) : (
                   <tr>
                     <td colSpan={7} className="py-10 text-center text-slate-400">
-                      အကြွေးဆပ် မှတ်တမ်း မရှိသေးပါ
+                      {t("customers.detail.noPayments")}
                     </td>
                   </tr>
                 )}
@@ -1332,7 +1340,7 @@ export const CustomerDetail: React.FC = () => {
                   <CreditCard className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-800 text-base">အကြွေးဆပ်မည်</h3>
+                  <h3 className="font-bold text-slate-800 text-base">{t("customers.detail.payCreditModalTitle")}</h3>
                   <p className="text-xs text-slate-500">
                     {customer?.name} ({customer?.phone || "-"})
                   </p>
@@ -1350,14 +1358,14 @@ export const CustomerDetail: React.FC = () => {
               <div className="p-3.5 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center justify-between">
                 <div>
                   <p className="text-xs text-emerald-700 font-medium">
-                    ယခု ဆပ်နိုင်သော ပမာဏ (ပို့ပြီး အော်ဒါများ + POS)
+                    {t("customers.detail.payableRemainingHelp")}
                   </p>
                   <p className="text-lg font-bold text-emerald-800 mt-0.5">
                     {formatNumber(payableRemaining)} MMK
                   </p>
                   {creditRemaining > payableRemaining && (
                     <p className="text-[11px] text-slate-500 mt-0.5">
-                      စုစုပေါင်း အကြွေးလက်ကျန်: {formatNumber(creditRemaining)} MMK
+                      {t("customers.detail.totalCreditRemainingHelp", { amount: formatNumber(creditRemaining) })}
                     </p>
                   )}
                 </div>
@@ -1366,13 +1374,13 @@ export const CustomerDetail: React.FC = () => {
                   onClick={() => setPayAmountInput(String(payableRemaining))}
                   className="px-2.5 py-1 bg-white hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-lg text-xs font-semibold transition-colors shadow-sm"
                 >
-                  အပြည့်ဆပ်မည်
+                  {t("customers.detail.payFull")}
                 </button>
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  ပေးဆပ်မည့် ငွေပမာဏ (MMK) *
+                  {t("customers.detail.payAmountLabel")}
                 </label>
                 <input
                   type="number"
@@ -1380,7 +1388,7 @@ export const CustomerDetail: React.FC = () => {
                   max={payableRemaining}
                   value={payAmountInput}
                   onChange={(e) => setPayAmountInput(e.target.value)}
-                  placeholder="ဥပမာ - 30000"
+                  placeholder={t("customers.detail.payAmountPlaceholder")}
                   required
                   className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 text-base"
                 />
@@ -1388,31 +1396,31 @@ export const CustomerDetail: React.FC = () => {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  ငွေပေးချေမှု နည်းလမ်း *
+                  {t("customers.detail.paymentMethodLabel")}
                 </label>
                 <select
                   value={payMethod}
                   onChange={(e) => setPayMethod(e.target.value)}
                   className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 bg-white"
                 >
-                  <option value="cash">လက်ငင်းငွေ (Cash)</option>
+                  <option value="cash">{t("customers.detail.paymentMethodCash")}</option>
                   <option value="kpay">KBZ Pay</option>
                   <option value="wavepay">Wave Pay</option>
                   <option value="ayapay">AYA Pay</option>
                   <option value="uabpay">UAB Pay</option>
-                  <option value="bank_transfer">ဘဏ်လွှဲ (Bank Transfer)</option>
+                  <option value="bank_transfer">{t("customers.detail.paymentMethodBankTransfer")}</option>
                 </select>
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  မှတ်ချက် (အပိုဆောင်း)
+                  {t("customers.detail.paymentNotesLabel")}
                 </label>
                 <input
                   type="text"
                   value={payNotes}
                   onChange={(e) => setPayNotes(e.target.value)}
-                  placeholder="မှတ်ချက် ရေးရန် (ဥပမာ - KPay Txn ID)"
+                  placeholder={t("customers.detail.paymentNotesPlaceholder")}
                   className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
                 />
               </div>
@@ -1424,7 +1432,7 @@ export const CustomerDetail: React.FC = () => {
                   disabled={isSubmittingPayment}
                   className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
                 >
-                  မလုပ်တော့ပါ
+                  {t("customers.detail.cancel")}
                 </button>
                 <button
                   type="submit"
@@ -1432,7 +1440,7 @@ export const CustomerDetail: React.FC = () => {
                   className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow-sm disabled:opacity-50"
                 >
                   {isSubmittingPayment && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                  အကြွေးဆပ်မည်
+                  {t("customers.detail.submitPayment")}
                 </button>
               </div>
             </form>
@@ -1448,7 +1456,7 @@ export const CustomerDetail: React.FC = () => {
               <div className="flex items-center gap-2">
                 <Ban className="w-5 h-5 text-rose-600" />
                 <h3 className="font-bold text-slate-800 text-base">
-                  Customer ကို Blacklist သွင်းမည်
+                  {t("customers.detail.blacklistModalTitle")}
                 </h3>
               </div>
               <button
@@ -1460,17 +1468,17 @@ export const CustomerDetail: React.FC = () => {
             </div>
             <form onSubmit={handleConfirmBlacklist} className="p-6 space-y-4">
               <p className="text-xs text-slate-600">
-                Blacklist သွင်းလိုက်ပါက ဤ Customer သည် E-commerce မှ အော်ဒါတင်ခွင့် ပိတ်သွားပါမည်။
+                {t("customers.detail.blacklistWarning")}
               </p>
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  ပိတ်ပင်ရသည့် အကြောင်းရင်း (အပိုဆောင်း)
+                  {t("customers.detail.blacklistReasonLabel")}
                 </label>
                 <input
                   type="text"
                   value={blacklistReasonInput}
                   onChange={(e) => setBlacklistReasonInput(e.target.value)}
-                  placeholder="ဥပမာ - အကြွေး ကာလရှည် မဆပ်ပါ"
+                  placeholder={t("customers.detail.blacklistReasonPlaceholder")}
                   className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/30"
                 />
               </div>
@@ -1480,14 +1488,14 @@ export const CustomerDetail: React.FC = () => {
                   onClick={() => setShowBlacklistModal(false)}
                   className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl"
                 >
-                  မလုပ်တော့ပါ
+                  {t("customers.detail.cancel")}
                 </button>
                 <button
                   type="submit"
                   disabled={updatingBlacklist}
                   className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-semibold disabled:opacity-50"
                 >
-                  Blacklist သွင်းမည်
+                  {t("customers.detail.confirmBlacklist")}
                 </button>
               </div>
             </form>

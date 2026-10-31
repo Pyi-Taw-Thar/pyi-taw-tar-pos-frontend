@@ -319,7 +319,7 @@ export const GRNDetailModal: React.FC<GRNDetailModalProps> = ({
                                 })
                               }
                               className="rounded-lg p-2 text-indigo-600 transition-colors hover:bg-indigo-50"
-                              title="Sticker ပရင့်ထုတ်မည်"
+                              title={t("purchasing.printStickerTitle")}
                             >
                               <Printer className="h-4 w-4" />
                             </button>

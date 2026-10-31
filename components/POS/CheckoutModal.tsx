@@ -372,7 +372,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
               className="w-full bg-amber-600 hover:bg-amber-700 text-white py-2.5 rounded-lg font-semibold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
             >
               <Package className="w-4 h-4" />
-              ဂိုဒေါင်သို့ ပို့မည် (Send to Warehouse / Pending)
+              {t("pos.sendToWarehousePending")}
             </button>
             <button onClick={onClose} className="w-full py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
               {t("common.cancel")}

@@ -42,6 +42,9 @@ export interface EcommerceOrderProduct {
   unitPrice: number;
   subtotal: number;
   batches?: EcommerceOrderBatch[];
+  // ဆိုင်က ဈေးပြင်ထားသော line ဖြစ်ကြောင်းနှင့် မူလဈေးနှုန်း
+  priceOverridden?: boolean;
+  originalUnitPrice?: number | null;
 }
 
 export interface EcommerceOrderShippingAddress {

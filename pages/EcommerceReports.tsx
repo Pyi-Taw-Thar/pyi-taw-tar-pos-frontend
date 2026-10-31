@@ -163,7 +163,7 @@ export const EcommerceReports: React.FC = () => {
             Ecommerce Reports
           </h1>
           <p className="text-sm text-slate-500 mt-1">
-            အွန်လိုင်း အရောင်းဆိုင် အစီရင်ခံစာနှင့် စာရင်းအင်းများ
+            {t("ecommerceReports.subtitle")}
           </p>
         </div>
 
@@ -175,12 +175,12 @@ export const EcommerceReports: React.FC = () => {
             onChange={(e) => setStatusFilter(e.target.value)}
             className="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none text-sm bg-white"
           >
-            <option value="all">အော်ဒါအားလုံး (All Statuses)</option>
-            <option value="pending">ဆိုင်းငံ့ထား (Pending)</option>
-            <option value="confirmed">အတည်ပြုပြီး (Confirmed)</option>
-            <option value="shipped">ပို့ဆောင်နေ (Shipped)</option>
-            <option value="delivered">ပို့ဆောင်ပြီး (Delivered)</option>
-            <option value="cancelled">ပယ်ဖျက် (Cancelled)</option>
+            <option value="all">{t("ecommerceReports.allStatuses")}</option>
+            <option value="pending">{t("ecommerceReports.pending")}</option>
+            <option value="confirmed">{t("ecommerceReports.confirmed")}</option>
+            <option value="shipped">{t("ecommerceReports.shipped")}</option>
+            <option value="delivered">{t("ecommerceReports.delivered")}</option>
+            <option value="cancelled">{t("ecommerceReports.cancelled")}</option>
           </select>
 
           {/* Date Range Picker */}
@@ -197,10 +197,10 @@ export const EcommerceReports: React.FC = () => {
           <button
             onClick={() => navigate("/admin/ecommerce-product-orders")}
             className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 rounded-lg text-xs sm:text-sm font-semibold transition-colors"
-            title="ဘယ်ပစ္စည်းက ဘယ်လောက် Order တင်ထားသည်ကို အသေးစိတ် ကြည့်ရှုရန်"
+            title={t("ecommerceReports.productOrdersReportTooltip")}
           >
             <PackageSearch className="w-4 h-4" />
-            <span className="hidden sm:inline">ပစ္စည်းအလိုက် စာရင်း</span>
+            <span className="hidden sm:inline">{t("ecommerceReports.productOrdersReportBtn")}</span>
           </button>
 
           {/* Refresh Button */}
@@ -222,7 +222,7 @@ export const EcommerceReports: React.FC = () => {
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 relative overflow-hidden">
           <div className="flex items-center justify-between">
             <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">
-              စုစုပေါင်း ရောင်းရငွေ
+              {t("ecommerceReports.totalRevenue")}
             </p>
             <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
               <DollarSign className="w-5 h-5" />
@@ -232,7 +232,7 @@ export const EcommerceReports: React.FC = () => {
             {formatNumber(totalRevenue)} <span className="text-xs font-normal text-slate-500">MMK</span>
           </p>
           <div className="mt-2 text-xs text-emerald-600 font-medium truncate">
-            ပယ်ဖျက်မှုမပါ ဝင်ငွေ
+            {t("ecommerceReports.revenueExclCancelled")}
           </div>
         </div>
 
@@ -240,17 +240,17 @@ export const EcommerceReports: React.FC = () => {
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
           <div className="flex items-center justify-between">
             <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">
-              အော်ဒါ စုစုပေါင်း
+              {t("ecommerceReports.totalOrders")}
             </p>
             <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
               <Package className="w-5 h-5" />
             </div>
           </div>
           <p className="text-xl sm:text-2xl font-bold text-slate-800 mt-2">
-            {formatNumber(totalOrders)} <span className="text-xs font-normal text-slate-500">ခု</span>
+            {formatNumber(totalOrders)}
           </p>
           <div className="mt-2 text-xs text-slate-500">
-            ကာလအတွင်း အော်ဒါအရေအတွက်
+            {t("ecommerceReports.ordersInPeriod")}
           </div>
         </div>
 
@@ -258,17 +258,17 @@ export const EcommerceReports: React.FC = () => {
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 bg-gradient-to-br from-white to-purple-50/30">
           <div className="flex items-center justify-between">
             <p className="text-xs font-medium text-purple-700 uppercase tracking-wider font-semibold">
-              မှာယူထားသော ပစ္စည်းပေါင်း
+              {t("ecommerceReports.totalOrderedQuantity")}
             </p>
             <div className="p-2 bg-purple-100 text-purple-700 rounded-lg">
               <Layers className="w-5 h-5" />
             </div>
           </div>
           <p className="text-xl sm:text-2xl font-bold text-purple-700 mt-2">
-            {formatNumber(totalOrderedQuantity)} <span className="text-xs font-normal text-purple-600">ခု</span>
+            {formatNumber(totalOrderedQuantity)}
           </p>
           <div className="mt-2 text-xs text-purple-600 font-medium">
-            ကုန်ပစ္စည်း စုစုပေါင်း အရေအတွက်
+            {t("ecommerceReports.totalOrderedQuantityDesc")}
           </div>
         </div>
 
@@ -276,17 +276,17 @@ export const EcommerceReports: React.FC = () => {
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
           <div className="flex items-center justify-between">
             <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">
-              ပို့ဆောင်ပြီး အော်ဒါ
+              {t("ecommerceReports.deliveredOrders")}
             </p>
             <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
               <CheckCircle2 className="w-5 h-5" />
             </div>
           </div>
           <p className="text-xl sm:text-2xl font-bold text-slate-800 mt-2">
-            {formatNumber(deliveredOrders)} <span className="text-xs font-normal text-slate-500">ခု</span>
+            {formatNumber(deliveredOrders)}
           </p>
           <div className="mt-2 text-xs text-emerald-600 font-medium">
-            အောင်မြင်စွာ ပို့ပြီး
+            {t("ecommerceReports.successfullyDelivered")}
           </div>
         </div>
 
@@ -294,17 +294,17 @@ export const EcommerceReports: React.FC = () => {
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
           <div className="flex items-center justify-between">
             <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">
-              ပယ်ဖျက် အော်ဒါ
+              {t("ecommerceReports.cancelledOrders")}
             </p>
             <div className="p-2 bg-rose-50 text-rose-600 rounded-lg">
               <XCircle className="w-5 h-5" />
             </div>
           </div>
           <p className="text-xl sm:text-2xl font-bold text-slate-800 mt-2">
-            {formatNumber(cancelledOrders)} <span className="text-xs font-normal text-slate-500">ခု</span>
+            {formatNumber(cancelledOrders)}
           </p>
           <div className="mt-2 text-xs text-rose-600 font-medium">
-            ဖျက်သိမ်းခဲ့သော အော်ဒါ
+            {t("ecommerceReports.cancelledOrdersDesc")}
           </div>
         </div>
 
@@ -312,7 +312,7 @@ export const EcommerceReports: React.FC = () => {
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
           <div className="flex items-center justify-between">
             <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">
-              ပျမ်းမျှ အော်ဒါတန်ဖိုး
+              {t("ecommerceReports.avgOrderValue")}
             </p>
             <div className="p-2 bg-amber-50 text-amber-600 rounded-lg">
               <TrendingUp className="w-5 h-5" />
@@ -322,7 +322,7 @@ export const EcommerceReports: React.FC = () => {
             {formatNumber(avgOrderValue)} <span className="text-xs font-normal text-slate-500">MMK</span>
           </p>
           <div className="mt-2 text-xs text-amber-600 font-medium truncate">
-            တစ်အော်ဒါ ပျမ်းမျှ
+            {t("ecommerceReports.perOrderAverage")}
           </div>
         </div>
       </div>
@@ -332,17 +332,17 @@ export const EcommerceReports: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
           <h3 className="text-xs font-semibold uppercase text-slate-500 tracking-wider flex items-center gap-1.5">
             <Clock className="w-4 h-4 text-primary" />
-            အော်ဒါ အခြေအနေအလိုက် အရေအတွက်များ
+            {t("ecommerceReports.statusBreakdown")}
           </h3>
           <span className="text-xs font-medium text-slate-500">
-            စုစုပေါင်း မှာယူမှု: <strong className="text-slate-800">{formatNumber(totalOrders)} အော်ဒါ</strong> (ကုန်ပစ္စည်း <strong className="text-purple-700">{formatNumber(totalOrderedQuantity)} ခု</strong>)
+            {t("ecommerceReports.totalOrdersCountSummary", { orders: formatNumber(totalOrders), items: formatNumber(totalOrderedQuantity) })}
           </span>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           {/* Pending */}
           <div className="p-2.5 rounded-lg border border-amber-200 bg-amber-50/60 flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium text-amber-800">ဆိုင်းငံ့ / စစ်ဆေးဆဲ</p>
+              <p className="text-xs font-medium text-amber-800">{t("ecommerceReports.pendingStatus")}</p>
               <p className="text-lg font-bold text-amber-700 mt-0.5">{formatNumber(pendingOrders)}</p>
             </div>
             <Clock className="w-5 h-5 text-amber-500 opacity-80" />
@@ -351,7 +351,7 @@ export const EcommerceReports: React.FC = () => {
           {/* Confirmed */}
           <div className="p-2.5 rounded-lg border border-blue-200 bg-blue-50/60 flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium text-blue-800">အတည်ပြုပြီး</p>
+              <p className="text-xs font-medium text-blue-800">{t("ecommerceReports.confirmedStatus")}</p>
               <p className="text-lg font-bold text-blue-700 mt-0.5">{formatNumber(confirmedOrders)}</p>
             </div>
             <Package className="w-5 h-5 text-blue-500 opacity-80" />
@@ -360,7 +360,7 @@ export const EcommerceReports: React.FC = () => {
           {/* Shipped */}
           <div className="p-2.5 rounded-lg border border-indigo-200 bg-indigo-50/60 flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium text-indigo-800">ပို့ဆောင်ဆဲ</p>
+              <p className="text-xs font-medium text-indigo-800">{t("ecommerceReports.shippedStatus")}</p>
               <p className="text-lg font-bold text-indigo-700 mt-0.5">{formatNumber(shippedOrders)}</p>
             </div>
             <Truck className="w-5 h-5 text-indigo-500 opacity-80" />
@@ -369,7 +369,7 @@ export const EcommerceReports: React.FC = () => {
           {/* Delivered */}
           <div className="p-2.5 rounded-lg border border-emerald-200 bg-emerald-50/60 flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium text-emerald-800">ပို့ဆောင်ပြီး</p>
+              <p className="text-xs font-medium text-emerald-800">{t("ecommerceReports.deliveredStatus")}</p>
               <p className="text-lg font-bold text-emerald-700 mt-0.5">{formatNumber(deliveredOrders)}</p>
             </div>
             <CheckCircle2 className="w-5 h-5 text-emerald-500 opacity-80" />
@@ -378,7 +378,7 @@ export const EcommerceReports: React.FC = () => {
           {/* Cancelled */}
           <div className="p-2.5 rounded-lg border border-rose-200 bg-rose-50/60 flex items-center justify-between col-span-2 sm:col-span-1">
             <div>
-              <p className="text-xs font-medium text-rose-800">ပယ်ဖျက်</p>
+              <p className="text-xs font-medium text-rose-800">{t("ecommerceReports.cancelledStatus")}</p>
               <p className="text-lg font-bold text-rose-700 mt-0.5">{formatNumber(cancelledOrders)}</p>
             </div>
             <XCircle className="w-5 h-5 text-rose-500 opacity-80" />
@@ -397,7 +397,7 @@ export const EcommerceReports: React.FC = () => {
                 : "text-slate-500 hover:text-slate-700"
             }`}
           >
-            ရောင်းအား ခြုံငုံသုံးသပ်ချက် (Overview)
+            {t("ecommerceReports.tabOverview")}
           </button>
           <button
             onClick={() => setActiveTab("topProducts")}
@@ -407,7 +407,7 @@ export const EcommerceReports: React.FC = () => {
                 : "text-slate-500 hover:text-slate-700"
             }`}
           >
-            အဝယ်များဆုံး ပစ္စည်းများ (Top Products)
+            {t("ecommerceReports.tabTopProducts")}
           </button>
           <button
             onClick={() => setActiveTab("recentOrders")}
@@ -417,7 +417,7 @@ export const EcommerceReports: React.FC = () => {
                 : "text-slate-500 hover:text-slate-700"
             }`}
           >
-            လတ်တလော အော်ဒါများ (Recent Orders)
+            {t("ecommerceReports.tabRecentOrders")}
           </button>
         </nav>
       </div>
@@ -426,7 +426,7 @@ export const EcommerceReports: React.FC = () => {
       {loading ? (
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-12 text-center text-slate-500">
           <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2 text-primary" />
-          <p className="text-sm">အစီရင်ခံစာ အချက်အလက်များ ဆွဲတင်နေပါသည်...</p>
+          <p className="text-sm">{t("ecommerceReports.loadingReports")}</p>
         </div>
       ) : (
         <>
@@ -438,10 +438,10 @@ export const EcommerceReports: React.FC = () => {
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-semibold text-slate-800 flex items-center gap-2">
                     <Calendar className="w-4 h-4 text-primary" />
-                    နေ့အလိုက် ရောင်းအား မှတ်တမ်း (Daily Sales Trend)
+                    {t("ecommerceReports.dailySalesTrend")}
                   </h3>
                   <span className="text-xs text-slate-500">
-                    {reportData?.dailySales?.length || 0} ရက်
+                    {t("ecommerceReports.daysCount", { count: reportData?.dailySales?.length || 0 })}
                   </span>
                 </div>
                 {reportData?.dailySales && reportData.dailySales.length > 0 ? (
@@ -449,9 +449,9 @@ export const EcommerceReports: React.FC = () => {
                     <table className="w-full text-sm">
                       <thead className="bg-slate-50 text-slate-600 text-xs">
                         <tr>
-                          <th className="px-4 py-2.5 text-left">ရက်စွဲ</th>
-                          <th className="px-4 py-2.5 text-center">အော်ဒါအရေအတွက်</th>
-                          <th className="px-4 py-2.5 text-right">ရောင်းရငွေ (MMK)</th>
+                          <th className="px-4 py-2.5 text-left">{t("ecommerceReports.date")}</th>
+                          <th className="px-4 py-2.5 text-center">{t("ecommerceReports.orderCount")}</th>
+                          <th className="px-4 py-2.5 text-right">{t("ecommerceReports.revenueMmk")}</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100">
@@ -475,7 +475,7 @@ export const EcommerceReports: React.FC = () => {
                   </div>
                 ) : (
                   <p className="text-sm text-slate-400 py-8 text-center">
-                    ဤကာလအတွင်း ရောင်းအားမှတ်တမ်း မရှိပါ
+                    {t("ecommerceReports.noSalesInPeriod")}
                   </p>
                 )}
               </div>
@@ -484,7 +484,7 @@ export const EcommerceReports: React.FC = () => {
               <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
                 <h3 className="font-semibold text-slate-800 flex items-center gap-2 mb-4">
                   <CreditCard className="w-4 h-4 text-primary" />
-                  ငွေပေးချေမှု နည်းလမ်းများ (Payment Methods)
+                  {t("ecommerceReports.paymentMethods")}
                 </h3>
                 {reportData?.paymentMethods && reportData.paymentMethods.length > 0 ? (
                   <div className="space-y-3">
@@ -498,7 +498,7 @@ export const EcommerceReports: React.FC = () => {
                             {pm.method?.replace(/_/g, " ")}
                           </p>
                           <p className="text-xs text-slate-500 mt-0.5">
-                            {formatNumber(pm.count)} အော်ဒါ
+                            {t("ecommerceReports.ordersLabel", { count: formatNumber(pm.count) })}
                           </p>
                         </div>
                         <div className="text-right">
@@ -511,7 +511,7 @@ export const EcommerceReports: React.FC = () => {
                   </div>
                 ) : (
                   <p className="text-sm text-slate-400 py-8 text-center">
-                    ငွေပေးချေမှု မှတ်တမ်း မရှိပါ
+                    {t("ecommerceReports.noPayments")}
                   </p>
                 )}
               </div>
@@ -524,10 +524,10 @@ export const EcommerceReports: React.FC = () => {
               <div className="p-4 border-b border-slate-200 flex justify-between items-center">
                 <h3 className="font-semibold text-slate-800 flex items-center gap-2">
                   <Layers className="w-4 h-4 text-primary" />
-                  အဝယ်အများဆုံး ပစ္စည်းများ စာရင်း
+                  {t("ecommerceReports.topProductsList")}
                 </h3>
                 <span className="text-xs text-slate-500">
-                  စုစုပေါင်း {reportData?.topProducts?.length || 0} မျိုး (မှာယူထားသော စုစုပေါင်း: {formatNumber(totalOrderedQuantity)} ခု)
+                  {t("ecommerceReports.topProductsCountSummary", { count: reportData?.topProducts?.length || 0, qty: formatNumber(totalOrderedQuantity) })}
                 </span>
               </div>
               <div className="overflow-x-auto">
@@ -535,12 +535,12 @@ export const EcommerceReports: React.FC = () => {
                   <thead className="bg-slate-50 text-slate-600 text-xs">
                     <tr>
                       <th className="px-4 py-3 text-left">#</th>
-                      <th className="px-4 py-3 text-left">ပစ္စည်း</th>
-                      <th className="px-4 py-3 text-left">ကုဒ်</th>
-                      <th className="px-4 py-3 text-center">ယူနစ်</th>
-                      <th className="px-4 py-3 text-center">ရောင်းရ အရေအတွက်</th>
-                      <th className="px-4 py-3 text-center">အော်ဒါ အကြိမ်ရေ</th>
-                      <th className="px-4 py-3 text-right">ရောင်းရငွေ (MMK)</th>
+                      <th className="px-4 py-3 text-left">{t("ecommerceReports.product")}</th>
+                      <th className="px-4 py-3 text-left">{t("ecommerceReports.code")}</th>
+                      <th className="px-4 py-3 text-center">{t("ecommerceReports.unit")}</th>
+                      <th className="px-4 py-3 text-center">{t("ecommerceReports.quantitySold")}</th>
+                      <th className="px-4 py-3 text-center">{t("ecommerceReports.orderFrequency")}</th>
+                      <th className="px-4 py-3 text-right">{t("ecommerceReports.revenueMmk")}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -578,7 +578,7 @@ export const EcommerceReports: React.FC = () => {
                             {formatNumber(p.totalQuantity)}
                           </td>
                           <td className="px-4 py-3 text-center text-slate-600 text-xs">
-                            {formatNumber(p.orderCount)} ကြိမ်
+                            {t("ecommerceReports.orderTimes", { count: formatNumber(p.orderCount) })}
                           </td>
                           <td className="px-4 py-3 text-right font-bold text-emerald-600">
                             {formatNumber(p.totalRevenue)}
@@ -588,7 +588,7 @@ export const EcommerceReports: React.FC = () => {
                     ) : (
                       <tr>
                         <td colSpan={7} className="py-8 text-center text-slate-400">
-                          ဤကာလအတွင်း အဝယ်များသော ပစ္စည်းမှတ်တမ်း မရှိပါ
+                          {t("ecommerceReports.noTopProducts")}
                         </td>
                       </tr>
                     )}
@@ -604,23 +604,23 @@ export const EcommerceReports: React.FC = () => {
               <div className="p-4 border-b border-slate-200 flex justify-between items-center">
                 <h3 className="font-semibold text-slate-800 flex items-center gap-2">
                   <ShoppingBag className="w-4 h-4 text-primary" />
-                  လတ်တလော အော်ဒါများ
+                  {t("ecommerceReports.recentOrders")}
                 </h3>
                 <span className="text-xs text-slate-500">
-                  နောက်ဆုံး {reportData?.recentOrders?.length || 0} ခု
+                  {t("ecommerceReports.latestCount", { count: reportData?.recentOrders?.length || 0 })}
                 </span>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead className="bg-slate-50 text-slate-600 text-xs">
                     <tr>
-                      <th className="px-4 py-3 text-left">အော်ဒါနံပါတ်</th>
-                      <th className="px-4 py-3 text-left">ဝယ်ယူသူ</th>
-                      <th className="px-4 py-3 text-left">ရက်စွဲ</th>
-                      <th className="px-4 py-3 text-center">အခြေအနေ</th>
-                      <th className="px-4 py-3 text-left">ငွေပေးချေမှု</th>
-                      <th className="px-4 py-3 text-right">ကျသင့်ငွေ (MMK)</th>
-                      <th className="px-4 py-3 text-right">အသေးစိတ်</th>
+                      <th className="px-4 py-3 text-left">{t("customers.detail.orderNumber")}</th>
+                      <th className="px-4 py-3 text-left">{t("ecommerceReports.customer")}</th>
+                      <th className="px-4 py-3 text-left">{t("ecommerceReports.date")}</th>
+                      <th className="px-4 py-3 text-center">{t("ecommerceReports.status")}</th>
+                      <th className="px-4 py-3 text-left">{t("ecommerceReports.payment")}</th>
+                      <th className="px-4 py-3 text-right">{t("ecommerceReports.totalMmk")}</th>
+                      <th className="px-4 py-3 text-right">{t("ecommerceReports.detail")}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -662,7 +662,7 @@ export const EcommerceReports: React.FC = () => {
                               className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded border border-slate-200 text-slate-700 hover:bg-slate-100 transition-colors"
                             >
                               <Eye className="w-3.5 h-3.5" />
-                              ကြည့်မည်
+                              {t("ecommerceReports.view")}
                             </button>
                           </td>
                         </tr>
@@ -670,7 +670,7 @@ export const EcommerceReports: React.FC = () => {
                     ) : (
                       <tr>
                         <td colSpan={7} className="py-8 text-center text-slate-400">
-                          ဤကာလအတွင်း အော်ဒါမှတ်တမ်း မရှိပါ
+                          {t("ecommerceReports.noRecentOrders")}
                         </td>
                       </tr>
                     )}

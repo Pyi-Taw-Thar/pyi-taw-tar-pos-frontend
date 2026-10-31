@@ -10,6 +10,7 @@ import {
   CreditCard,
   Plus,
   Minus,
+  Pencil,
   Truck,
   Printer,
 } from "lucide-react";
@@ -21,6 +22,7 @@ import { getSavedPrintPaperSize } from "../../utils/printPaperSize";
 import type { VoucherReceiptData } from "../Print/VoucherContent";
 import { AddItemsToEcommerceOrderModal } from "./AddItemsToEcommerceOrderModal";
 import { RemoveItemsFromEcommerceOrderModal } from "./RemoveItemsFromEcommerceOrderModal";
+import { EditEcommerceOrderPricesModal } from "./EditEcommerceOrderPricesModal";
 
 interface EcommerceOrderDetailModalProps {
   isOpen: boolean;
@@ -38,6 +40,7 @@ export const EcommerceOrderDetailModal: React.FC<
   const { t } = useLanguage();
   const [showAddItemsModal, setShowAddItemsModal] = useState(false);
   const [showRemoveItemsModal, setShowRemoveItemsModal] = useState(false);
+  const [showEditPricesModal, setShowEditPricesModal] = useState(false);
   const [isSendingFulfillment, setIsSendingFulfillment] = useState(false);
 
   if (!isOpen) return null;
@@ -49,21 +52,18 @@ export const EcommerceOrderDetailModal: React.FC<
       const res = await sendOrderToFulfillment(order._id);
       if (res.success) {
         toast.success(
-          t("ecommerceOrders.sendToFulfillmentSuccess") ||
-            "အော်ဒါကို ဂိုဒေါင်သို့ အောင်မြင်စွာ လွှဲပြောင်းပေးပို့လိုက်ပါပြီ",
+          t("ecommerceOrders.sendToFulfillmentSuccess"),
         );
         if (onOrderUpdate) onOrderUpdate();
       } else {
         toast.error(
           res.message ||
-            t("ecommerceOrders.sendToFulfillmentFailed") ||
-            "ဂိုဒေါင်သို့ လွှဲပြောင်းရာတွင် မအောင်မြင်ပါ",
+            t("ecommerceOrders.sendToFulfillmentFailed"),
         );
       }
     } catch (err: any) {
       toast.error(
-        t("ecommerceOrders.sendToFulfillmentFailed") ||
-          "ဂိုဒေါင်သို့ လွှဲပြောင်းရာတွင် မအောင်မြင်ပါ",
+        t("ecommerceOrders.sendToFulfillmentFailed"),
       );
     } finally {
       setIsSendingFulfillment(false);
@@ -111,7 +111,7 @@ export const EcommerceOrderDetailModal: React.FC<
           name: p.inventoryId?.productName || (p as any).productName || "Product",
           code: p.inventoryId?.productCode || (p as any).productCode || "",
           qty: p.quantity,
-          unit: p.unit || "ခု",
+          unit: p.unit || "",
           price: p.unitPrice,
           batches: batches.length > 0 ? batches : undefined,
         };
@@ -177,11 +177,11 @@ export const EcommerceOrderDetailModal: React.FC<
                 <button
                   onClick={handlePrint}
                   className="h-9 px-2.5 sm:px-3 bg-slate-700 hover:bg-slate-800 text-white rounded-lg transition-colors text-xs sm:text-sm font-semibold flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
-                  title={t("common.print") === "common.print" ? "ပရင့်ထုတ်မည်" : t("common.print")}
+                  title={t("common.print")}
                 >
                   <Printer className="w-4 h-4 shrink-0" />
                   <span className="hidden sm:inline">
-                    {t("common.print") === "common.print" ? "ပရင့်ထုတ်မည်" : t("common.print")}
+                    {t("common.print")}
                   </span>
                 </button>
 
@@ -190,7 +190,7 @@ export const EcommerceOrderDetailModal: React.FC<
                     onClick={handleSendToFulfillment}
                     disabled={isSendingFulfillment}
                     className="h-9 px-2.5 sm:px-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors text-xs sm:text-sm font-semibold disabled:opacity-50 cursor-pointer shadow-sm flex items-center justify-center gap-1.5"
-                    title={t("ecommerceOrders.sendToFulfillment") || "ဂိုဒေါင်သို့ လွှဲမည်"}
+                    title={t("ecommerceOrders.sendToFulfillment")}
                   >
                     {isSendingFulfillment ? (
                       <RefreshCw className="w-4 h-4 animate-spin shrink-0" />
@@ -198,17 +198,17 @@ export const EcommerceOrderDetailModal: React.FC<
                       <Truck className="w-4 h-4 shrink-0" />
                     )}
                     <span className="hidden sm:inline">
-                      {t("ecommerceOrders.sendToFulfillment") || "ဂိုဒေါင်သို့ လွှဲမည်"}
+                      {t("ecommerceOrders.sendToFulfillment")}
                     </span>
                   </button>
                 ) : order.isSentToFulfillment ? (
                   <span
                     className="h-9 px-2.5 sm:px-3 rounded-lg text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 inline-flex items-center justify-center gap-1.5 shadow-sm"
-                    title={t("ecommerceOrders.inFulfillment") || "ဂိုဒေါင်သို့ လွှဲပြီး"}
+                    title={t("ecommerceOrders.inFulfillment")}
                   >
                     <Truck className="w-4 h-4 shrink-0" />
                     <span className="hidden sm:inline">
-                      {t("ecommerceOrders.inFulfillment") || "ဂိုဒေါင်သို့ လွှဲပြီး"}
+                      {t("ecommerceOrders.inFulfillment")}
                     </span>
                   </span>
                 ) : null}
@@ -216,21 +216,34 @@ export const EcommerceOrderDetailModal: React.FC<
                 <button
                   onClick={() => setShowRemoveItemsModal(true)}
                   className="h-9 px-2.5 sm:px-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors text-xs sm:text-sm font-semibold flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
-                  title={t("orders.removeItems") || "ပစ္စည်းများ ဖယ်ရှားမည်"}
+                  title={t("orders.removeItems")}
                 >
                   <Minus className="w-4 h-4 shrink-0" />
                   <span className="hidden sm:inline">
-                    {t("orders.removeItems") || "ပစ္စည်းများ ဖယ်ရှားမည်"}
+                    {t("orders.removeItems")}
                   </span>
                 </button>
+                {/* ဂိုဒေါင်မလွှဲရသေးသော pending အော်ဒါများတွင်သာ ဈေးနှုန်းပြင်ဆင်ခွင့်ပြုသည် */}
+                {order.status === "pending" && !order.isSentToFulfillment && (
+                  <button
+                    onClick={() => setShowEditPricesModal(true)}
+                    className="h-9 px-2.5 sm:px-3 bg-amber-500 hover:bg-amber-600 text-white rounded-lg transition-colors text-xs sm:text-sm font-semibold flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
+                    title={t("ecommerceOrders.editPrices")}
+                  >
+                    <Pencil className="w-4 h-4 shrink-0" />
+                    <span className="hidden sm:inline">
+                      {t("ecommerceOrders.editPrices")}
+                    </span>
+                  </button>
+                )}
                 <button
                   onClick={() => setShowAddItemsModal(true)}
                   className="h-9 px-2.5 sm:px-3 bg-primary hover:bg-primary/90 text-white rounded-lg transition-colors text-xs sm:text-sm font-semibold flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
-                  title={t("orders.addItems") || "ပစ္စည်းများ ထည့်မည်"}
+                  title={t("orders.addItems")}
                 >
                   <Plus className="w-4 h-4 shrink-0" />
                   <span className="hidden sm:inline">
-                    {t("orders.addItems") || "ပစ္စည်းများ ထည့်မည်"}
+                    {t("orders.addItems")}
                   </span>
                 </button>
               </>
@@ -261,7 +274,7 @@ export const EcommerceOrderDetailModal: React.FC<
                     <Truck className="w-5 h-5 text-indigo-600 shrink-0" />
                     <div>
                       <p className="text-xs font-bold text-indigo-900">
-                        ဂိုဒေါင်မှ ပစ္စည်းစစ်ဆေးထုတ်ပိုးရန် လွှဲပြောင်းပေးပို့ထားပါသည် (In Fulfillment)
+                        {t("ecommerceOrders.inFulfillmentBanner")}
                       </p>
                       {typeof order.fulfillmentOrderId === "object" && order.fulfillmentOrderId?.orderNumber && (
                         <p className="text-[11px] text-indigo-700 font-mono mt-0.5">
@@ -426,7 +439,7 @@ export const EcommerceOrderDetailModal: React.FC<
                                 ((p as any).originalUnit || p.unit) !== p.unit) && (
                                 <span className="text-amber-600 text-xs block font-normal">
                                   {/* မူလ မှာယူခဲ့သော unit ပါ ပြ (fulfillment တွင် base unit သို့ ပြောင်းနိုင်၍) */}
-                                  (မူလ: {(p as any).originalQuantity}{" "}
+                                  {t("ecommerceOrders.originalQty", { qty: (p as any).originalQuantity })}{" "}
                                   {(p as any).originalUnit || p.unit})
                                 </span>
                               )}
@@ -435,7 +448,22 @@ export const EcommerceOrderDetailModal: React.FC<
                             {p.unit}
                           </td>
                           <td className="p-3 text-right text-slate-600">
-                            {p.unitPrice.toLocaleString()} MMK
+                            {/* ဆိုင်က ဈေးပြင်ထားသော line ဖြစ်လျှင် မူလဈေးကို မျဉ်းဖြတ်ပြပြီး ဈေးပြင်ထား badge ပြသည် */}
+                            {p.priceOverridden &&
+                              p.originalUnitPrice != null &&
+                              p.originalUnitPrice !== p.unitPrice && (
+                                <div className="text-xs text-slate-400 line-through">
+                                  {p.originalUnitPrice.toLocaleString()} MMK
+                                </div>
+                              )}
+                            <div>{p.unitPrice.toLocaleString()} MMK</div>
+                            {p.priceOverridden &&
+                              p.originalUnitPrice != null &&
+                              p.originalUnitPrice !== p.unitPrice && (
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-800 border border-amber-200 mt-0.5">
+                                  {t("ecommerceOrders.priceEdited")}
+                                </span>
+                              )}
                           </td>
                           <td className="p-3 text-right font-medium text-slate-800">
                             {p.subtotal.toLocaleString()} MMK
@@ -516,6 +544,16 @@ export const EcommerceOrderDetailModal: React.FC<
         onClose={() => setShowRemoveItemsModal(false)}
         onSuccess={() => {
           setShowRemoveItemsModal(false);
+          if (onOrderUpdate) onOrderUpdate();
+        }}
+      />
+
+      <EditEcommerceOrderPricesModal
+        isOpen={showEditPricesModal}
+        order={order}
+        onClose={() => setShowEditPricesModal(false)}
+        onSuccess={() => {
+          setShowEditPricesModal(false);
           if (onOrderUpdate) onOrderUpdate();
         }}
       />

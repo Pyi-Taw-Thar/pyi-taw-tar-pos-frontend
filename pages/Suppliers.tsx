@@ -416,7 +416,7 @@ export const Suppliers: React.FC = () => {
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
               <input
                 type="text"
-                placeholder="ရှာဖွေရန်... (အမည်၊ ကုမ္ပဏီ၊ ဖုန်း၊ မြို့နယ်)"
+                placeholder={t("suppliers.searchPlaceholderAdvanced")}
                 value={search}
                 onChange={(e) => {
                   setSearch(e.target.value);
@@ -441,7 +441,7 @@ export const Suppliers: React.FC = () => {
               <button
                 onClick={handleResetFilters}
                 className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-600 hover:text-slate-800 bg-white border rounded-lg hover:bg-slate-100 transition-colors"
-                title="Filters ပြန်လည်ရှင်းလင်းရန်"
+                title={t("suppliers.clearFiltersTitle")}
               >
                 <RefreshCw className="w-3.5 h-3.5" />
                 <span>{t("common.reset")}</span>
@@ -454,7 +454,7 @@ export const Suppliers: React.FC = () => {
             {/* Township Filter */}
             <div>
               <label className="block text-[11px] font-medium text-slate-500 mb-1">
-                မြို့နယ် (Township)
+                {t("suppliers.townshipFilter")}
               </label>
               <select
                 value={selectedTownship}
@@ -464,7 +464,7 @@ export const Suppliers: React.FC = () => {
                 }}
                 className="w-full p-2 bg-white border rounded-lg text-slate-700 outline-none focus:ring-1 focus:ring-primary"
               >
-                <option value="">မြို့နယ်အားလုံး (All)</option>
+                <option value="">{t("suppliers.allTownships")}</option>
                 {townships.map((tName) => (
                   <option key={tName} value={tName}>
                     {tName}
@@ -476,7 +476,7 @@ export const Suppliers: React.FC = () => {
             {/* Is Credit Filter */}
             <div>
               <label className="block text-[11px] font-medium text-slate-500 mb-1">
-                အကြွေး ရောင်း/မရောင်း
+                {t("suppliers.creditSalesFilter")}
               </label>
               <select
                 value={isCreditFilter}
@@ -486,9 +486,9 @@ export const Suppliers: React.FC = () => {
                 }}
                 className="w-full p-2 bg-white border rounded-lg text-slate-700 outline-none focus:ring-1 focus:ring-primary"
               >
-                <option value="">အားလုံး (All)</option>
-                <option value="true">အကြွေးရောင်းသော Supplier</option>
-                <option value="false">အကြွေးမရောင်းသော Supplier</option>
+                <option value="">{t("suppliers.all")}</option>
+                <option value="true">{t("suppliers.creditSuppliersOnly")}</option>
+                <option value="false">{t("suppliers.noCreditSuppliers")}</option>
               </select>
             </div>
 
@@ -505,16 +505,16 @@ export const Suppliers: React.FC = () => {
                 }}
                 className="w-full p-2 bg-white border rounded-lg text-slate-700 outline-none focus:ring-1 focus:ring-primary"
               >
-                <option value="">အားလုံး (All)</option>
+                <option value="">{t("suppliers.all")}</option>
                 <option value="true">{t("purchasing.consignSupplier")}</option>
-                <option value="false">Consign မဟုတ်သော Supplier</option>
+                <option value="false">{t("suppliers.nonConsignSuppliers")}</option>
               </select>
             </div>
 
             {/* Sort Options */}
             <div>
               <label className="block text-[11px] font-medium text-slate-500 mb-1">
-                စီရန် (Sort By)
+                {t("suppliers.sortBy")}
               </label>
               <div className="flex items-center gap-1">
                 <select
@@ -522,9 +522,9 @@ export const Suppliers: React.FC = () => {
                   onChange={(e) => setSortBy(e.target.value)}
                   className="w-full p-2 bg-white border rounded-lg text-slate-700 outline-none focus:ring-1 focus:ring-primary"
                 >
-                  <option value="createdAt">ရက်စွဲ (Date)</option>
-                  <option value="supplierName">အမည် (Name)</option>
-                  <option value="township">မြို့နယ် (Township)</option>
+                  <option value="createdAt">{t("suppliers.sortDate")}</option>
+                  <option value="supplierName">{t("suppliers.sortName")}</option>
+                  <option value="township">{t("suppliers.sortTownship")}</option>
                 </select>
                 <button
                   type="button"
@@ -759,7 +759,7 @@ export const Suppliers: React.FC = () => {
             {pagination && pagination.totalPages > 1 && (
               <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6 pt-4 border-t text-xs text-slate-600">
                 <div className="flex items-center gap-2">
-                  <span>တစ်မျက်နှာလျှင်:</span>
+                  <span>{t("suppliers.perPage")}</span>
                   <select
                     value={limit}
                     onChange={(e) => {
@@ -773,7 +773,7 @@ export const Suppliers: React.FC = () => {
                     <option value={50}>50</option>
                   </select>
                   <span>
-                    | စုစုပေါင်း: {pagination.totalItems} ခု (စာမျက်နှာ {pagination.currentPage} / {pagination.totalPages})
+                    {t("suppliers.paginationSummary", { total: pagination.totalItems, page: pagination.currentPage, totalPages: pagination.totalPages })}
                   </span>
                 </div>
 
@@ -950,7 +950,7 @@ export const Suppliers: React.FC = () => {
                     <input
                       type="text"
                       className="w-full border rounded-lg pl-10 p-2 focus:ring-2 focus:ring-primary outline-none text-sm"
-                      placeholder="မရမ်းကုန်း"
+                      placeholder={t("suppliers.townshipPlaceholder")}
                       value={formData.township}
                       onChange={(e) =>
                         setFormData({ ...formData, township: e.target.value })
@@ -1000,7 +1000,7 @@ export const Suppliers: React.FC = () => {
                       }
                       className="w-4 h-4 rounded text-primary focus:ring-primary"
                     />
-                    Is Consign (ကွန်ဆိုင်း)
+                    {t("suppliers.isConsign")}
                   </label>
                 </div>
               </div>

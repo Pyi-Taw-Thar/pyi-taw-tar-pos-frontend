@@ -128,7 +128,7 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
         {loading ? (
           <>
             <div className="w-3.5 h-3.5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-            <span className="text-gray-500">{t("pos.loading") || "ရှာဖွေနေပါသည်..."}</span>
+            <span className="text-gray-500">{t("pos.loading")}</span>
           </>
         ) : (
           <span>{t("pos.showingProducts").replace("{count}", filteredProducts.length.toString())}</span>
@@ -234,13 +234,13 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
                     </span>
                     {hasWholesale && (
                       <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                        {t("pos.wholesale") || "လက်ကား"}
+                        {t("pos.wholesale")}
                       </span>
                     )}
                   </div>
                   {hasWholesale && minWholesalePrice !== null && (
                     <p className="text-[11px] text-emerald-600 font-medium">
-                      {t("pos.wholesaleFrom") || "လက်ကား"}: {minWholesalePrice.toLocaleString()} MMK {t("pos.from") || "မှစ၍"}
+                      {t("pos.wholesaleFrom")}: {minWholesalePrice.toLocaleString()} MMK {t("pos.from") || ""}
                     </p>
                   )}
                 </div>

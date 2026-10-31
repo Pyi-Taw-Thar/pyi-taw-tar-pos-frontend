@@ -735,7 +735,7 @@ export const CreatePOModal: React.FC<CreatePOModalProps> = ({
                   onChange={(e) => setPaymentMethod(e.target.value)}
                   className="w-full p-2 border rounded-lg bg-white text-xs outline-none focus:ring-2 focus:ring-primary"
                 >
-                  <option value="cash">{t("purchasing.cash") || "Cash (ငွေသား)"}</option>
+                  <option value="cash">{t("purchasing.cash")}</option>
                   <option value="bank_transfer">{t("purchasing.bankTransfer")}</option>
                   <option value="mobile_payment">{t("purchasing.mobilePayment")}</option>
                   <option value="cheque">{t("purchasing.cheque")}</option>

@@ -463,7 +463,7 @@ export const CreateGRNModal: React.FC<CreateGRNModalProps> = ({
                         <div className="grid grid-cols-2 gap-3 pt-1">
                           <div>
                             <label className="text-xs text-slate-500 block mb-1">
-                              အသုတ်နံပါတ် (Batch No):
+                              {t("purchasing.batchNo")}:
                             </label>
                             <input
                               type="text"
@@ -477,7 +477,7 @@ export const CreateGRNModal: React.FC<CreateGRNModalProps> = ({
                           </div>
                           <div>
                             <label className="text-xs text-slate-500 block mb-1">
-                              သက်တမ်းကုန်ရက် (Expiry):
+                              {t("purchasing.expiry")}:
                             </label>
                             <input
                               type="date"

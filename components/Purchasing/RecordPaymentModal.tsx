@@ -42,13 +42,13 @@ export const RecordPaymentModal: React.FC<RecordPaymentModalProps> = ({
 
     const amountNum = Number(paidAmount);
     if (isNaN(amountNum) || amountNum <= 0) {
-      toast.error("ကျေးဇူးပြု၍ မှန်ကန်သော ငွေပမာဏ ရိုက်ထည့်ပါ");
+      toast.error(t("purchasing.validAmountError"));
       return;
     }
 
     if (amountNum > currentRemaining) {
       toast.error(
-        `ပေးချေငွေသည် ကျန်ရှိသော အကြွေးပမာဏ (${currentRemaining.toLocaleString()} MMK) ထက် မပိုရပါ`
+        t("purchasing.amountExceedsRemaining", { amount: currentRemaining.toLocaleString() })
       );
       return;
     }
@@ -163,7 +163,7 @@ export const RecordPaymentModal: React.FC<RecordPaymentModalProps> = ({
                 onChange={(e) => setPaymentMethod(e.target.value)}
                 className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none bg-white text-xs"
               >
-                <option value="cash">Cash (ငွေသား)</option>
+                <option value="cash">{t("purchasing.cash")}</option>
                 <option value="bank_transfer">{t("purchasing.bankTransfer")}</option>
                 <option value="mobile_payment">{t("purchasing.mobilePayment")}</option>
                 <option value="cheque">{t("purchasing.cheque")}</option>
@@ -189,7 +189,7 @@ export const RecordPaymentModal: React.FC<RecordPaymentModalProps> = ({
 
           <div>
             <label className="block text-xs font-medium text-slate-700 mb-1">
-              Notes (မှတ်ချက်)
+              {t("purchasing.notes")}
             </label>
             <div className="relative">
               <FileText className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />

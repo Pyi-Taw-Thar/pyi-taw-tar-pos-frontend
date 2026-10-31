@@ -422,7 +422,7 @@ export const DirectSale: React.FC = () => {
       if (result.success) {
         if (targetStatus === "pending") {
           toast.success(
-            `Order (${result.data?.orderNumber}) ကို ဂိုဒေါင်သို့ စစ်ဆေးထုတ်ပိုးရန် ပို့ဆောင်လိုက်ပါပြီ`
+            t("pos.sentToWarehouseSuccess", { orderNumber: result.data?.orderNumber })
           );
           setCart([]);
           setDiscount(0);
@@ -1015,7 +1015,7 @@ export const DirectSale: React.FC = () => {
             </div>
             <div className="min-w-0">
               <div className="text-xs text-gray-500 font-medium">
-                {cart.reduce((sum, item) => sum + item.qty, 0)} {t("pos.itemsLower") || "ခု"}
+                {cart.reduce((sum, item) => sum + item.qty, 0)} {t("pos.itemsLower")}
               </div>
               <div className="text-sm sm:text-base font-bold text-gray-900 truncate">
                 {total.toLocaleString()} MMK
@@ -1026,7 +1026,7 @@ export const DirectSale: React.FC = () => {
             onClick={() => setCartOpen(true)}
             className="bg-primary hover:bg-primary/90 text-white px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm shadow transition-colors shrink-0"
           >
-            {t("pos.proceedToCheckout") || "ငွေရှင်းမယ်"}
+            {t("pos.proceedToCheckout")}
           </button>
         </div>
       )}
@@ -1425,7 +1425,7 @@ export const DirectSale: React.FC = () => {
                 className="w-full bg-amber-600 hover:bg-amber-700 text-white py-2.5 rounded-lg font-semibold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
               >
                 <Package className="w-4 h-4" />
-                ဂိုဒေါင်သို့ ပို့မည် (Send to Warehouse / Pending)
+                {t("pos.sendToWarehousePending")}
               </button>
               <button
                 onClick={() => setShowCheckoutModal(false)}

@@ -562,7 +562,7 @@ export const Customers: React.FC = () => {
                           className="px-2 py-1 text-xs rounded border border-primary/30 text-primary hover:bg-primary/5 font-medium transition-colors"
                           title="View Customer Analytics & Orders"
                         >
-                          အသေးစိတ်
+                          {t("customers.analyticsDetail")}
                         </button>
                         <button
                           onClick={() => handleOpenDetail(customer)}

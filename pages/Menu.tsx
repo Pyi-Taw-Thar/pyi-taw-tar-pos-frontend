@@ -59,10 +59,10 @@ const formatTodayDate = (lang: "my" | "en"): string => {
     const year = toMyanmarNumber(now.getFullYear());
     return `${weekday}၊ ${day} ${month} ${year}`;
   }
-  return now.toLocaleDateString("en-US", {
-    weekday: "short",
+  return now.toLocaleDateString("en-GB", {
+    weekday: "long",
     day: "numeric",
-    month: "long",
+    month: "short",
     year: "numeric",
   });
 };
