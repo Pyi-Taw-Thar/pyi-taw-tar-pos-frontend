@@ -8,6 +8,7 @@ import { removeProductsFromEcommerceOrder } from "../../services/Ecommerce/remov
 
 type OrderLine = {
   lineKey: string;
+  lineId?: string;
   inventoryId: string;
   productName: string;
   productCode: string;
@@ -42,15 +43,17 @@ export const RemoveItemsFromEcommerceOrderModal: React.FC<
 
     const initial: OrderLine[] =
       order.products?.map((p, idx) => {
-        // ecommerce response doesn't guarantee a line _id, so use stable key
+        // ပစ္စည်းတူ unit မတူ line များ key မထပ်စေရန် line _id (မရှိလျှင် index) ကို သုံးသည်
         const inv: any = p.inventoryId as any;
         const inventoryId =
           typeof inv === "string" ? inv : (inv?._id as string | undefined);
+        const lineId = p._id ? String(p._id) : undefined;
         return {
-          lineKey: `${inventoryId || inv?.productCode || idx}`,
+          lineKey: lineId || `${inventoryId || inv?.productCode || "line"}-${idx}`,
+          lineId,
           inventoryId: inventoryId || "",
-          productName: inv?.productName || "-",
-          productCode: inv?.productCode || "-",
+          productName: inv?.productName || (p as any).productName || "-",
+          productCode: inv?.productCode || (p as any).productCode || "-",
           currentQuantity: Number(p.quantity || 0),
           removeQuantity: 0,
           unitPrice: Number(p.unitPrice || 0),
@@ -98,6 +101,7 @@ export const RemoveItemsFromEcommerceOrderModal: React.FC<
       const response = await removeProductsFromEcommerceOrder(order._id, {
         action: "remove",
         products: itemsToRemove.map((l) => ({
+          ...(l.lineId ? { lineId: l.lineId } : {}),
           inventoryId: l.inventoryId,
           quantity: l.removeQuantity,
         })),
@@ -166,9 +170,17 @@ export const RemoveItemsFromEcommerceOrderModal: React.FC<
                       className="bg-slate-50 p-3 rounded-lg border"
                     >
                       <div className="mb-2">
-                        <p className="font-medium text-slate-800 text-sm">
-                          {l.productName}
-                        </p>
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="font-medium text-slate-800 text-sm">
+                            {l.productName}
+                          </p>
+                          {/* unit မတူသော line များ (ဥပမာ box / pack) ကို အလွယ်တကူ ခွဲမြင်စေရန် badge ပြသည် */}
+                          {l.unit && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                              {l.unit}
+                            </span>
+                          )}
+                        </div>
                         <p className="text-xs text-slate-500">{l.productCode}</p>
                       </div>
                       <div className="flex items-center justify-between gap-3">
@@ -252,9 +264,16 @@ export const RemoveItemsFromEcommerceOrderModal: React.FC<
                       className="bg-red-50 p-3 rounded-lg border border-red-200 flex items-center justify-between"
                     >
                       <div className="flex-1">
-                        <p className="font-medium text-slate-800 text-sm">
-                          {l.productName}
-                        </p>
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium text-slate-800 text-sm">
+                            {l.productName}
+                          </p>
+                          {l.unit && (
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-semibold bg-red-100 text-red-700 border border-red-200">
+                              {l.unit}
+                            </span>
+                          )}
+                        </div>
                         <p className="text-xs text-slate-500">{l.productCode}</p>
                       </div>
                       <div className="flex items-center gap-2">
@@ -327,4 +346,3 @@ export const RemoveItemsFromEcommerceOrderModal: React.FC<
     </div>
   );
 };
-

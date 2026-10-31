@@ -98,23 +98,8 @@ export const EcommerceOrderDetailModal: React.FC<
       paidAmount: isPaid ? order.totalAmount : 0,
       date: order.createdAt || new Date().toISOString(),
       items: (order.products || []).map((p) => {
-        let batches = p.batches;
-        if (
-          (!batches || batches.length === 0) &&
-          typeof order.fulfillmentOrderId === "object" &&
-          order.fulfillmentOrderId
-        ) {
-          const fulfillmentOp = (
-            order.fulfillmentOrderId as any
-          ).ordersProducts?.find(
-            (fop: any) =>
-              (fop.inventoryId?._id || fop.inventoryId)?.toString() ===
-              (p.inventoryId?._id || (p as any)._id || (p.inventoryId as any))?.toString()
-          );
-          if (fulfillmentOp?.batches?.length) {
-            batches = fulfillmentOp.batches;
-          }
-        }
+        // Ecommerce line ကိုယ်ပိုင် batches ကိုသာ ဘောင်ချာတွင် အသုံးပြုခြင်း
+        const batches = p.batches || [];
 
         return {
           name: p.inventoryId?.productName || (p as any).productName || "Product",
@@ -122,7 +107,7 @@ export const EcommerceOrderDetailModal: React.FC<
           qty: p.quantity,
           unit: p.unit || "ခု",
           price: p.unitPrice,
-          batches: batches && batches.length > 0 ? batches : undefined,
+          batches: batches.length > 0 ? batches : undefined,
         };
       }),
       subtotal: order.totalAmount,
@@ -396,24 +381,8 @@ export const EcommerceOrderDetailModal: React.FC<
                             <td className="p-3 font-medium text-slate-800">
                               <div>{productName}</div>
                               {(() => {
-                                let batches = p.batches;
-                                if (
-                                  (!batches || batches.length === 0) &&
-                                  typeof order.fulfillmentOrderId === "object" &&
-                                  order.fulfillmentOrderId
-                                ) {
-                                  const fulfillmentOp = (
-                                    order.fulfillmentOrderId as any
-                                  ).ordersProducts?.find(
-                                    (fop: any) =>
-                                      (fop.inventoryId?._id || fop.inventoryId)?.toString() ===
-                                      (inv?._id || (p as any)._id || (p.inventoryId as any))?.toString()
-                                  );
-                                  if (fulfillmentOp?.batches?.length) {
-                                    batches = fulfillmentOp.batches;
-                                  }
-                                }
-                                const expBatches = (batches || []).filter((b: any) => b.expiryDate);
+                                // Ecommerce line ကိုယ်ပိုင် batches ကိုသာ ပြသခြင်း
+                                const expBatches = (p.batches || []).filter((b: any) => b.expiryDate);
                                 if (expBatches.length === 0) return null;
 
                                 const formattedDates = Array.from(

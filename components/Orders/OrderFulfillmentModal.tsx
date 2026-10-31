@@ -39,6 +39,8 @@ interface ScannedBatchEntry {
 }
 
 interface ProductFulfillmentState {
+  // ပစ္စည်းတူ unit မတူ line များကို ခွဲခြားရန် order line ၏ _id
+  orderProductId: string;
   inventoryId: string;
   productName: string;
   productCode: string;
@@ -120,7 +122,7 @@ export const OrderFulfillmentModal: React.FC<OrderFulfillmentModalProps> = ({
   // Initialize product states from order
   useEffect(() => {
     if (order && show) {
-      const initial: ProductFulfillmentState[] = (order.ordersProducts || []).map((op) => {
+      const initial: ProductFulfillmentState[] = (order.ordersProducts || []).map((op, idx) => {
         const inv = op.inventoryId;
         const requiredQty = op.baseQuantity || op.quantity;
         const existingBatches: ScannedBatchEntry[] = (op.batches || []).map((b: any) => ({
@@ -133,6 +135,7 @@ export const OrderFulfillmentModal: React.FC<OrderFulfillmentModalProps> = ({
           locationType: b.locationType || null,
         }));
         return {
+          orderProductId: String(op._id || `${inv._id || (inv as any).id}-${idx}`),
           inventoryId: inv._id || (inv as any).id,
           productName: inv.productName || "Unknown Product",
           productCode: inv.productCode || "",
@@ -218,23 +221,54 @@ export const OrderFulfillmentModal: React.FC<OrderFulfillmentModalProps> = ({
           ? scannedBatch.inventoryId._id
           : scannedBatch.inventoryId;
 
-      // Find matching product in order
-      const prodIndex = productStates.findIndex(
-        (p) => String(p.inventoryId) === String(batchInvId)
-      );
+      const scanFactor = scannedBatch.scanFactor || 1;
+      const baseUnitLabel = scannedBatch.baseUnit || "";
 
-      if (prodIndex === -1) {
+      // ၁) inventoryId တူသော line အားလုံးကို ရှာသည်
+      const candidates: number[] = [];
+      productStates.forEach((p, idx) => {
+        if (String(p.inventoryId) === String(batchInvId)) {
+          candidates.push(idx);
+        }
+      });
+
+      if (candidates.length === 0) {
         playAudioCue(false);
         toast.error(t("fulfillment.itemNotInOrder"));
         setBarcodeInput("");
         return;
       }
 
-      const targetProd = productStates[prodIndex];
-      const currentScannedQty = targetProd.scannedBatches.reduce(
-        (acc, b) => acc + b.quantity,
-        0
+      const getScannedForIndex = (idx: number) =>
+        productStates[idx].scannedBatches.reduce((acc, b) => acc + b.quantity, 0);
+
+      // ၂) ကျန်ရှိပမာဏ (requiredQty - scanned) >= scanFactor ရှိသော line များကို စစ်ထုတ်သည်
+      const fitCandidates = candidates.filter(
+        (idx) => productStates[idx].requiredQty - getScannedForIndex(idx) >= scanFactor
       );
+
+      let prodIndex = -1;
+      if (fitCandidates.length > 0) {
+        // ၃) scannedUnit ရှိလျှင် unit တူသော line ကို ဦးစားပေးသည် (မရှိလျှင် order အစဉ်အတိုင်း ပထမ line)
+        if (scannedBatch.scannedUnit) {
+          const targetUnitNorm = scannedBatch.scannedUnit.trim().toLowerCase();
+          const unitMatchedIdx = fitCandidates.find(
+            (idx) => (productStates[idx].unit || "").trim().toLowerCase() === targetUnitNorm
+          );
+          prodIndex = unitMatchedIdx !== undefined ? unitMatchedIdx : fitCandidates[0];
+        } else {
+          prodIndex = fitCandidates[0];
+        }
+      } else {
+        // နေရာလွတ် မလောက်တော့ပါက လက်ကျန်ရှိသေးသော line သို့မဟုတ် ပထမ candidate ဖြင့် warning ပြရန် ရွေးသည်
+        const partialIdx = candidates.find(
+          (idx) => productStates[idx].requiredQty - getScannedForIndex(idx) > 0
+        );
+        prodIndex = partialIdx !== undefined ? partialIdx : candidates[0];
+      }
+
+      const targetProd = productStates[prodIndex];
+      const currentScannedQty = getScannedForIndex(prodIndex);
 
       if (currentScannedQty >= targetProd.requiredQty) {
         playAudioCue(false);
@@ -249,8 +283,6 @@ export const OrderFulfillmentModal: React.FC<OrderFulfillmentModalProps> = ({
       }
 
       // Unit barcode (ပုံး/ဖာ) ဆိုလျှင် scan တစ်ကြိမ်ဖြင့် base unit အများ ဝင်သည်
-      const scanFactor = scannedBatch.scanFactor || 1;
-      const baseUnitLabel = scannedBatch.baseUnit || "";
       if (currentScannedQty + scanFactor > targetProd.requiredQty) {
         playAudioCue(false);
         toast.warning(
@@ -269,42 +301,42 @@ export const OrderFulfillmentModal: React.FC<OrderFulfillmentModalProps> = ({
         );
       }
 
-      // Update state
-      setProductStates((prev) => {
-        const next = [...prev];
-        const prod = { ...next[prodIndex] };
-        const batches = [...prod.scannedBatches];
+      // ရွေးချယ်ထားသော line ၏ orderProductId ဖြင့် state ကို အတိအကျ ပြင်သည်
+      const targetOrderProductId = targetProd.orderProductId;
+      setProductStates((prev) =>
+        prev.map((prod) => {
+          if (prod.orderProductId !== targetOrderProductId) return prod;
+          const batches = [...prod.scannedBatches];
 
-        const existingBatchIdx = batches.findIndex(
-          (b) => b.batchBarcode === scannedBatch.batchBarcode
-        );
+          const existingBatchIdx = batches.findIndex(
+            (b) => b.batchBarcode === scannedBatch.batchBarcode
+          );
 
-        if (existingBatchIdx > -1) {
-          batches[existingBatchIdx] = {
-            ...batches[existingBatchIdx],
-            quantity: batches[existingBatchIdx].quantity + scanFactor,
-          };
-        } else {
-          const locName =
-            scannedBatch.locationId?.locationName ||
-            scannedBatch.locationId?.name ||
-            scannedBatch.locationName ||
-            null;
-          batches.push({
-            batchStockId: scannedBatch._id,
-            batchNumber: scannedBatch.batchNumber,
-            batchBarcode: scannedBatch.batchBarcode,
-            expiryDate: scannedBatch.expiryDate,
-            quantity: scanFactor,
-            locationName: locName,
-            locationType: scannedBatch.locationType || null,
-          });
-        }
+          if (existingBatchIdx > -1) {
+            batches[existingBatchIdx] = {
+              ...batches[existingBatchIdx],
+              quantity: batches[existingBatchIdx].quantity + scanFactor,
+            };
+          } else {
+            const locName =
+              scannedBatch.locationId?.locationName ||
+              scannedBatch.locationId?.name ||
+              scannedBatch.locationName ||
+              null;
+            batches.push({
+              batchStockId: scannedBatch._id,
+              batchNumber: scannedBatch.batchNumber,
+              batchBarcode: scannedBatch.batchBarcode,
+              expiryDate: scannedBatch.expiryDate,
+              quantity: scanFactor,
+              locationName: locName,
+              locationType: scannedBatch.locationType || null,
+            });
+          }
 
-        prod.scannedBatches = batches;
-        next[prodIndex] = prod;
-        return next;
-      });
+          return { ...prod, scannedBatches: batches };
+        })
+      );
 
       playAudioCue(true);
       toast.success(
@@ -324,23 +356,23 @@ export const OrderFulfillmentModal: React.FC<OrderFulfillmentModalProps> = ({
     }
   };
 
-  const handleRemoveBatch = (prodIndex: number, batchIdx: number) => {
-    setProductStates((prev) => {
-      const next = [...prev];
-      const prod = { ...next[prodIndex] };
-      const batches = [...prod.scannedBatches];
-      if (batches[batchIdx].quantity > 1) {
-        batches[batchIdx] = {
-          ...batches[batchIdx],
-          quantity: batches[batchIdx].quantity - 1,
-        };
-      } else {
-        batches.splice(batchIdx, 1);
-      }
-      prod.scannedBatches = batches;
-      next[prodIndex] = prod;
-      return next;
-    });
+  // orderProductId ဖြင့် သက်ဆိုင်ရာ line ထဲမှ batch ကို ဖယ်သည်
+  const handleRemoveBatch = (orderProductId: string, batchIdx: number) => {
+    setProductStates((prev) =>
+      prev.map((prod) => {
+        if (prod.orderProductId !== orderProductId) return prod;
+        const batches = [...prod.scannedBatches];
+        if (batches[batchIdx].quantity > 1) {
+          batches[batchIdx] = {
+            ...batches[batchIdx],
+            quantity: batches[batchIdx].quantity - 1,
+          };
+        } else {
+          batches.splice(batchIdx, 1);
+        }
+        return { ...prod, scannedBatches: batches };
+      })
+    );
     inputRef.current?.focus();
   };
 
@@ -350,6 +382,7 @@ export const OrderFulfillmentModal: React.FC<OrderFulfillmentModalProps> = ({
     setIsSavingPartial(true);
     try {
       const productPayload = productStates.map((p) => ({
+        orderProductId: p.orderProductId,
         inventoryId: p.inventoryId,
         batches: p.scannedBatches.map((b) => ({
           batchStockId: b.batchStockId,
@@ -398,6 +431,7 @@ export const OrderFulfillmentModal: React.FC<OrderFulfillmentModalProps> = ({
     setIsFulfilling(true);
     try {
       const productPayload = productStates.map((p) => ({
+        orderProductId: p.orderProductId,
         inventoryId: p.inventoryId,
         batches: p.scannedBatches.map((b) => ({
           batchStockId: b.batchStockId,
@@ -492,7 +526,11 @@ export const OrderFulfillmentModal: React.FC<OrderFulfillmentModalProps> = ({
   // Scan ဖတ်ထားပြီးသော အခြေအနေအတိုင်း ကြိုက်သည့်အချိန် Print ထုတ်ရန် (Scan ပြီးသော batch များအတွက်သာ expiry ပြမည်)
   const handleDirectPrint = () => {
     if (!order) return;
-    printFulfillmentReceipt(order, productStates, navigate);
+    const printStates = productStates.map((p) => ({
+      ...p,
+      scannedQty: p.scannedBatches.reduce((sum, b) => sum + b.quantity, 0),
+    }));
+    printFulfillmentReceipt(order, printStates, navigate);
   };
 
   return (
@@ -625,7 +663,7 @@ export const OrderFulfillmentModal: React.FC<OrderFulfillmentModalProps> = ({
             </span>
           </div>
 
-          {productStates.map((prod, prodIdx) => {
+          {productStates.map((prod) => {
             const scannedCount = prod.scannedBatches.reduce(
               (acc, b) => acc + b.quantity,
               0
@@ -634,7 +672,7 @@ export const OrderFulfillmentModal: React.FC<OrderFulfillmentModalProps> = ({
 
             return (
               <div
-                key={prod.inventoryId}
+                key={prod.orderProductId}
                 className={`p-4 rounded-xl border transition-all ${
                   isProdComplete
                     ? "bg-emerald-50/50 border-emerald-300"
@@ -742,7 +780,7 @@ export const OrderFulfillmentModal: React.FC<OrderFulfillmentModalProps> = ({
                               </div>
                             </div>
                             <button
-                              onClick={() => handleRemoveBatch(prodIdx, bIdx)}
+                              onClick={() => handleRemoveBatch(prod.orderProductId, bIdx)}
                               className="p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
                               title={t("fulfillment.remove")}
                             >

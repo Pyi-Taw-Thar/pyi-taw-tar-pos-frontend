@@ -25,8 +25,6 @@ interface SelectedItem {
   productCode: string;
   quantity: number;
   unit: string;
-  // Order ထဲ ရှိပြီးသား product ဖြစ်၍ unit ကို ထို line ၏ unit ဖြင့် lock ထားခြင်း
-  unitLocked: boolean;
   unitPriceInput: string;
 }
 
@@ -103,16 +101,22 @@ export const AddItemsToEcommerceOrderModal: React.FC<
     [products],
   );
 
-  // Order ထဲ ရှိပြီးသား line ၏ unit (inventoryId → unit)
+  // Order ထဲ ရှိပြီးသား ပစ္စည်းတစ်ခုချင်း၏ unit အားလုံး (inventoryId → string[])
   const existingLineUnits = useMemo(() => {
-    const map = new Map<string, string>();
+    const map = new Map<string, string[]>();
     for (const p of order?.products || []) {
       const inv: any = p.inventoryId;
       const id = typeof inv === "string" ? inv : inv?._id;
-      if (id) map.set(id, p.unit);
+      if (!id) continue;
+      const units = map.get(id) || [];
+      const u = (p.unit || productMap.get(id)?.baseUnit || "").trim();
+      if (u && !units.some((x) => x.toLowerCase() === u.toLowerCase())) {
+        units.push(u);
+      }
+      map.set(id, units);
     }
     return map;
-  }, [order]);
+  }, [order, productMap]);
 
   const getDefaultPrice = (product: InventoryOption | undefined, unit: string) =>
     product
@@ -130,9 +134,12 @@ export const AddItemsToEcommerceOrderModal: React.FC<
       return;
     }
 
-    // Line ဟောင်းတွင် unit မပါလျှင် base unit ဖြင့် lock
-    const hasExistingLine = existingLineUnits.has(product._id);
-    const lockedUnit = existingLineUnits.get(product._id) || product.baseUnit;
+    // Order ထဲ ထိုပစ္စည်း line ရှိလျှင် ပထမ line ၏ unit ကို default ထားပြီး မရှိလျှင် base unit ထားခြင်း
+    const existingUnits = existingLineUnits.get(product._id);
+    const defaultUnit =
+      existingUnits && existingUnits.length > 0
+        ? existingUnits[0]
+        : product.baseUnit;
     setSelectedItems((prev) => [
       ...prev,
       {
@@ -140,8 +147,7 @@ export const AddItemsToEcommerceOrderModal: React.FC<
         productName: product.productName,
         productCode: product.productCode,
         quantity: 1,
-        unit: hasExistingLine ? lockedUnit : product.baseUnit,
-        unitLocked: hasExistingLine,
+        unit: defaultUnit,
         unitPriceInput: "",
       },
     ]);
@@ -150,7 +156,7 @@ export const AddItemsToEcommerceOrderModal: React.FC<
   const updateUnit = (inventoryId: string, unit: string) => {
     setSelectedItems((prev) =>
       prev.map((s) =>
-        s.inventoryId === inventoryId && !s.unitLocked
+        s.inventoryId === inventoryId
           ? { ...s, unit, unitPriceInput: "" }
           : s,
       ),
@@ -340,6 +346,13 @@ export const AddItemsToEcommerceOrderModal: React.FC<
                     ? getConversionFactor(product.baseUnit, item.unit, product.uomConversions)
                     : 1;
                   const stockInUnit = product ? Math.floor(product.stockBaseQty / factor) : 0;
+                  const existingUnits = existingLineUnits.get(item.inventoryId);
+                  const hasExistingLine = !!existingUnits && existingUnits.length > 0;
+                  const isExistingUnit =
+                    hasExistingLine &&
+                    existingUnits.some(
+                      (u) => u.toLowerCase() === item.unit.trim().toLowerCase(),
+                    );
                   return (
                   <div
                     key={item.inventoryId}
@@ -366,7 +379,7 @@ export const AddItemsToEcommerceOrderModal: React.FC<
                         </label>
                         <select
                           value={item.unit}
-                          disabled={item.unitLocked || !product}
+                          disabled={!product}
                           onChange={(e) => updateUnit(item.inventoryId, e.target.value)}
                           className="w-full border rounded px-2 py-1.5 text-sm bg-white disabled:bg-slate-100"
                         >
@@ -414,8 +427,10 @@ export const AddItemsToEcommerceOrderModal: React.FC<
                       </div>
                     </div>
                     <p className="text-[11px] text-slate-500">
-                      {item.unitLocked
-                        ? `Order ထဲတွင် ${item.unit} ဖြင့် မှာထားပြီးဖြစ်၍ ${item.unit} ဖြင့်သာ ထည့်နိုင်သည် · `
+                      {hasExistingLine
+                        ? isExistingUnit
+                          ? `Order ထဲရှိ ${item.unit} line ထဲသို့ ပေါင်းထည့်မည် · `
+                          : `${item.unit} line အသစ် ထည့်မည် · `
                         : ""}
                       Stock: {stockInUnit.toLocaleString()} {item.unit}
                     </p>

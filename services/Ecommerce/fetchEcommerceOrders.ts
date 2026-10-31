@@ -35,6 +35,7 @@ export interface EcommerceOrderBatch {
 }
 
 export interface EcommerceOrderProduct {
+  _id?: string;
   inventoryId: EcommerceOrderProductInventory;
   quantity: number;
   unit: string;

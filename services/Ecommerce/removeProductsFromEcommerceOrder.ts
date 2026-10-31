@@ -2,6 +2,8 @@ import axios from "../axios";
 import type { EcommerceOrder } from "./fetchEcommerceOrders";
 
 export interface EcommerceRemoveProductItem {
+  // ပစ္စည်းတူ unit မတူ line များကို တိကျစွာ ဖယ်ရှားရန် order line _id
+  lineId?: string;
   inventoryId: string;
   quantity: number;
 }
@@ -37,4 +39,3 @@ export const removeProductsFromEcommerceOrder = async (
     };
   }
 };
-
