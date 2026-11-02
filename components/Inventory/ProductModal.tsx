@@ -4,6 +4,7 @@ import { Product } from "../../types";
 import { UomConversion } from "../../types/uom";
 import { useLanguage } from "../../context/LanguageContext";
 import { UomConversionsEditor } from "./UomConversionsEditor";
+import { EcommerceUnitsSelector } from "./EcommerceUnitsSelector";
 import {
   WholesalePriceEditor,
   WholesalePriceTier,
@@ -46,6 +47,8 @@ export interface ProductFormData {
   sellingPrice: number;
   unitOfMeasure: string;
   uomConversions: UomConversion[];
+  ecommerceUnits?: string[];
+  ecommerceUnits?: string[];
   wholesalePrices?: WholesalePriceTier[];
   images?: File[];
   reorderPoint?: number;
@@ -576,6 +579,16 @@ export const ProductModal: React.FC<ProductModalProps> = ({
               baseUnit={formData.unitOfMeasure}
               conversions={formData.uomConversions}
               onChange={(uomConversions) => updateFormData({ uomConversions })}
+            />
+          </div>
+
+          {/* Ecommerce Visible Units — full width */}
+          <div className="col-span-1 sm:col-span-2">
+            <EcommerceUnitsSelector
+              baseUnit={formData.unitOfMeasure}
+              conversions={formData.uomConversions}
+              value={formData.ecommerceUnits || []}
+              onChange={(ecommerceUnits) => updateFormData({ ecommerceUnits })}
             />
           </div>
 

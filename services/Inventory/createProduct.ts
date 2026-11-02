@@ -10,6 +10,7 @@ export interface CreateProductPayload {
   sellingPrice: number;
   unitOfMeasure: string;
   uomConversions?: UomConversion[];
+  ecommerceUnits?: string[];
   wholesalePrices?: Array<{ quantity: number; price: number; unit?: string }>;
   images?: File[];
   quantity?: number;

@@ -54,6 +54,7 @@ export interface ProductDetail {
   sellingPrice: number;
   unitOfMeasure: string;
   uomConversions?: UomConversion[];
+  ecommerceUnits?: string[];
   wholesalePrices?: ProductWholesalePrice[];
   images?: ProductImage[];
   reorderPoint: number;

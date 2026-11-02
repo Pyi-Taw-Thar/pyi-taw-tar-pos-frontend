@@ -94,6 +94,7 @@ export const Inventory: React.FC = () => {
     category: "",
     subCategory: "",
     uomConversions: [],
+    ecommerceUnits: [],
     brand: "",
     chemicalNames: [],
     description: "",
@@ -222,6 +223,7 @@ export const Inventory: React.FC = () => {
       buyingPrice: 0,
       sellingPrice: 0,
       uomConversions: [],
+      ecommerceUnits: [],
       wholesalePrices: [],
       unitOfMeasure: "piece",
       reorderPoint: 0,
@@ -314,6 +316,7 @@ export const Inventory: React.FC = () => {
           sellingPrice: formData.sellingPrice,
           unitOfMeasure: formData.unitOfMeasure || "piece",
           uomConversions: formData.uomConversions || [],
+          ecommerceUnits: formData.ecommerceUnits || [],
           chemicalNames: formData.chemicalNames || [],
         };
 
@@ -383,6 +386,7 @@ export const Inventory: React.FC = () => {
         sellingPrice: formData.sellingPrice,
         unitOfMeasure: formData.unitOfMeasure || "piece",
         uomConversions: formData.uomConversions || [],
+        ecommerceUnits: formData.ecommerceUnits || [],
       };
 
       // Add SKU only if it has a value, otherwise provide a default
@@ -468,6 +472,7 @@ export const Inventory: React.FC = () => {
         price: tier.price,
       })),
       uomConversions: apiProduct?.uomConversions || [],
+      ecommerceUnits: apiProduct?.ecommerceUnits || [],
       unitOfMeasure: apiProduct?.unitOfMeasure || "piece",
       reorderPoint: p.lowStockThreshold,
       reorderQuantity: apiProduct?.reorderQuantity || 0,

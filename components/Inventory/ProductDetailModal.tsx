@@ -46,6 +46,21 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   onClose,
 }) => {
   const { t } = useLanguage();
+
+  // Ecommerce တွင် ပြသမည့် visible units တွက်ချက်ခြင်း (D-2 rule)
+  const visibleEcommerceUnits = useMemo(() => {
+    if (!product) return "";
+    const base = product.unitOfMeasure?.trim();
+    const convs = (product.uomConversions || []).map((c) => c.unit?.trim()).filter(Boolean);
+    const selected = (product.ecommerceUnits || []).map((u) => u.trim()).filter(Boolean);
+    if (selected.length > 0) {
+      return selected.join(", ");
+    }
+    if (convs.length > 0) {
+      return convs.join(", ");
+    }
+    return base || "—";
+  }, [product]);
   const [activeTab, setActiveTab] = useState<"about" | "quantity" | "batches">("about");
   const [batches, setBatches] = useState<BatchItem[]>([]);
   const [loadingBatches, setLoadingBatches] = useState(false);
@@ -314,6 +329,9 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                             ))}
                           </tbody>
                         </table>
+                      </div>
+                      <div className="px-4 py-2 text-xs text-slate-600 bg-slate-50 border-t border-slate-200">
+                        <span className="font-medium text-slate-700">{t("inventory.ecommerceUnitsPreview", { units: visibleEcommerceUnits })}</span>
                       </div>
                     </div>
                   )}

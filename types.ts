@@ -40,6 +40,7 @@ export interface Product {
   lowStockThreshold: number;
   status?: "active" | "inactive";
   unitOfMeasure?: string;
+  ecommerceUnits?: string[];
   uomConversions?: { unit: string; factor: number; isDefaultSellingUnit?: boolean; convertFrom?: string | null }[];
 }
 
