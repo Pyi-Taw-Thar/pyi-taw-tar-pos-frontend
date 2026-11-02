@@ -637,6 +637,7 @@ export const en = {
     itemsSummary: "{types} types ({count} units)",
   },
   ecommerceOrders: {
+    preVoucher: "Pre-Voucher",
     selectAtLeastOneItem: "Please select at least one item",
     invalidUnitPrice: "Invalid unit price",
     title: "Ecommerce Orders",

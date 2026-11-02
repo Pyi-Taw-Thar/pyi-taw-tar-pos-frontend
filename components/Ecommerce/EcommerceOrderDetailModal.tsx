@@ -13,6 +13,7 @@ import {
   Pencil,
   Truck,
   Printer,
+  FileText,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { EcommerceOrder } from "../../services/Ecommerce/fetchEcommerceOrders";
@@ -137,6 +138,49 @@ export const EcommerceOrderDetailModal: React.FC<
     );
   };
 
+  // ငွေပမာဏမပါသော ကြိုတင်ဘောက်ချာ (Pre-Voucher) ထုတ်ယူရန် handler
+  const handlePrintPreVoucher = () => {
+    if (!order) return;
+    const customer = typeof order.customerId === "object" ? order.customerId : null;
+    const customerAddress = order.shippingAddress
+      ? [order.shippingAddress.addressLine, order.shippingAddress.city]
+          .filter(Boolean)
+          .join(", ")
+      : customer?.address || "";
+    const customerTownship = customer?.township || "";
+
+    const receiptData: VoucherReceiptData = {
+      documentType: "pre-voucher",
+      invoiceNumber: order.orderNumber,
+      date: order.createdAt || new Date().toISOString(),
+      customerName: customer?.name || "Customer",
+      customerPhone: customer?.phone || "",
+      customerAddress: customerAddress || undefined,
+      customerTownship: customerTownship || undefined,
+      storefrontName: customer?.name || "Ecommerce Order",
+      items: (order.products || []).map((p) => ({
+        name: p.inventoryId?.productName || (p as any).productName || "Product",
+        code: p.inventoryId?.productCode || (p as any).productCode || "",
+        qty: p.quantity,
+        unit: p.unit || "",
+        price: 0,
+      })),
+      subtotal: 0,
+      discountPercent: 0,
+      total: 0,
+      paymentMethod: "",
+    };
+
+    localStorage.setItem(
+      `receipt_${order.orderNumber}-PRE`,
+      JSON.stringify(receiptData)
+    );
+
+    navigate(
+      `/print-receipt/${encodeURIComponent(order.orderNumber)}-PRE?size=${getSavedPrintPaperSize()}&autoprint=1`
+    );
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleString("en-US", {
@@ -182,6 +226,18 @@ export const EcommerceOrderDetailModal: React.FC<
                   <Printer className="w-4 h-4 shrink-0" />
                   <span className="hidden sm:inline">
                     {t("common.print")}
+                  </span>
+                </button>
+
+                {/* Pre-Voucher Button */}
+                <button
+                  onClick={handlePrintPreVoucher}
+                  className="h-9 px-2.5 sm:px-3 border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 rounded-lg transition-colors text-xs sm:text-sm font-semibold flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
+                  title={t("ecommerceOrders.preVoucher")}
+                >
+                  <FileText className="w-4 h-4 shrink-0 text-slate-600" />
+                  <span className="hidden sm:inline">
+                    {t("ecommerceOrders.preVoucher")}
                   </span>
                 </button>
 

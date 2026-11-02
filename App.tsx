@@ -272,7 +272,13 @@ const App: React.FC = () => {
   return (
     <LanguageProvider>
       <AppProvider>
-        <Toaster position="top-right" richColors />
+        {/* မြန်မာစာ ယူနီကုဒ် ဖောင့် မှန်ကန်စွာ ပေါ်စေရန်နှင့် Zawgyi မဖြစ်စေရန် Toaster တွင် font-family သတ်မှတ်ပေးခြင်း */}
+        <Toaster
+          position="top-right"
+          richColors
+          style={{ fontFamily: "var(--app-font-family)" }}
+          toastOptions={{ style: { fontFamily: "var(--app-font-family)" } }}
+        />
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<Login />} />

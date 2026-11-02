@@ -643,6 +643,7 @@ export const my = {
     itemsSummary: "{types} မျိုး ({count} ခု)",
   },
   ecommerceOrders: {
+    preVoucher: "ကြိုတင်ဘောက်ချာ",
     selectAtLeastOneItem: "ကျေးဇူးပြု၍ အနည်းဆုံး ပစ္စည်းတစ်ခု ရွေးပါ",
     invalidUnitPrice: "ပစ္စည်းတစ်ခုချင်း စျေးနှုန်း မမှန်ကန်ပါ",
     title: "အီးကော်မတ် အော်ဒါများ",

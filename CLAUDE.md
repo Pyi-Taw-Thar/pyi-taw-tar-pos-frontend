@@ -133,7 +133,7 @@ dashboard/
   - Primary: Green (`#4CAF50`)
   - Dark: `#1E2937` (sidebar, header)
   - Background: `#F8F9FA`
-  - Font: Inter (Google Fonts CDN)
+  - Font: Inter (Google Fonts CDN) + Noto Sans Myanmar (Google Fonts CDN - မြန်မာစာ ယူနီကုဒ် ဖောင့် မှန်ကန်စွာ ပေါ်စေရန်နှင့် Zawgyi မဖြစ်စေရန် Toaster နှင့် Body တွင် အသုံးပြုသည်)
   - Custom shadows: `glow-sm`, `glow-md`, `glow-lg`
 - Some dependencies via **CDN importmap** in `index.html` (uuid, react, lucide-react, recharts)
 

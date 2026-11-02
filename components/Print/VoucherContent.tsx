@@ -35,7 +35,7 @@ function formatReceiptUnit(item: VoucherReceiptItem): string {
 /** Item names longer than this get underline + 2-line wrap on 80mm thermal. */
 const THERMAL_ITEM_LONG_CHARS = 12;
 
-export type VoucherDocumentType = "invoice" | "quotation";
+export type VoucherDocumentType = "invoice" | "quotation" | "pre-voucher";
 
 export interface VoucherReceiptData {
   invoiceNumber: string;
@@ -57,6 +57,7 @@ export interface VoucherReceiptData {
   customerName?: string;
   customerPhone?: string;
   customerAddress?: string;
+  customerTownship?: string;
   /** Credit person info (for credit orders) */
   creditPersonName?: string;
   creditPersonOutstanding?: number;

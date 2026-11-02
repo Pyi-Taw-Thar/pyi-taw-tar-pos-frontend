@@ -26,6 +26,7 @@ import {
   VoucherContent,
   VoucherReceiptData,
 } from "../components/Print/VoucherContent";
+import { PreVoucherContent } from "../components/Print/PreVoucherContent";
 
 const loadReceiptData = (
   orderId: string | undefined,
@@ -79,6 +80,8 @@ const PrintReceipt: React.FC = () => {
   const [loadError, setLoadError] = useState<string | null>(null);
   const hasTriggeredPrint = useRef(false);
   const shouldAutoPrint = searchParams.get("autoprint") === "1";
+  // Pre-Voucher ဖြစ်မဖြစ် စစ်ဆေးခြင်း
+  const isPreVoucher = receiptData?.documentType === "pre-voucher";
 
   const handleBack = useCallback(() => {
     navigate(-1);
@@ -265,7 +268,7 @@ const PrintReceipt: React.FC = () => {
               onChange={handlePaperSizeChange}
             />
 
-            {(paperSize === "thermal-80mm" || (paperSize as any) === "thermal-72mm") && (
+            {!isPreVoucher && (paperSize === "thermal-80mm" || (paperSize as any) === "thermal-72mm") && (
               <div className="flex flex-col sm:flex-row sm:items-center gap-2 pt-1 border-t border-slate-100">
                 <span className="text-sm font-semibold text-slate-700 whitespace-nowrap">
                   Thermal Format:
@@ -297,13 +300,23 @@ const PrintReceipt: React.FC = () => {
       )}
 
       <div className="pb-8 print:pb-0 print:m-0 print:p-0">
-        <VoucherContent
-          receiptData={receiptData}
-          shopBranding={shopBranding}
-          paperSize={paperSize}
-          thermalLayout={thermalLayout}
-          formatDate={formatDate}
-        />
+        {/* Pre-Voucher ဖြစ်ပါက PreVoucherContent ကိုသာ render လုပ်မည် */}
+        {isPreVoucher ? (
+          <PreVoucherContent
+            receiptData={receiptData}
+            shopBranding={shopBranding}
+            paperSize={paperSize}
+            formatDate={formatDate}
+          />
+        ) : (
+          <VoucherContent
+            receiptData={receiptData}
+            shopBranding={shopBranding}
+            paperSize={paperSize}
+            thermalLayout={thermalLayout}
+            formatDate={formatDate}
+          />
+        )}
       </div>
     </div>
   );

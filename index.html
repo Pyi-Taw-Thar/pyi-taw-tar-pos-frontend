@@ -67,7 +67,7 @@
               },
             },
             fontFamily: {
-              sans: ["Inter", "system-ui", "sans-serif"],
+              sans: ["Inter", "Noto Sans Myanmar", "system-ui", "sans-serif"],
             },
             boxShadow: {
               glow: "0 0 20px rgba(76, 175, 80, 0.3)",
@@ -77,13 +77,19 @@
         },
       };
     </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Myanmar:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <style>
+      :root {
+        --app-font-family: "Inter", "Noto Sans Myanmar", sans-serif;
+      }
+
       body {
-        font-family: "Inter", sans-serif;
+        font-family: "Inter", "Noto Sans Myanmar", sans-serif;
       }
 
       header.app-navbar-fixed {
